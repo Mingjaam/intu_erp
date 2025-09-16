@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 
 export interface User {
@@ -28,6 +28,7 @@ interface AuthContextType {
     organizationId?: string;
   }) => Promise<void>;
   logout: () => void;
+  refreshUserProfile: () => Promise<void>;
   loading: boolean;
 }
 
@@ -36,6 +37,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      console.log('=== fetchUserProfile 시작 ===');
+      const response = await apiClient.get<User>(API_ENDPOINTS.AUTH.PROFILE);
+      console.log('API 응답:', response);
+      const data = response.data || response;
+      console.log('설정할 사용자 데이터:', data);
+      setUser(data);
+      console.log('=== fetchUserProfile 완료 ===');
+    } catch (error) {
+      console.error('사용자 정보 조회 실패:', error);
+      // 토큰이 유효하지 않으면 로그아웃
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const refreshUserProfile = useCallback(async () => {
+    await fetchUserProfile();
+  }, [fetchUserProfile]);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -46,21 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     } else {
       setLoading(false);
     }
-  }, []);
-
-  const fetchUserProfile = async () => {
-    try {
-      const response = await apiClient.get<User>(API_ENDPOINTS.AUTH.PROFILE);
-      const data = response.data || response;
-      setUser(data);
-    } catch (error) {
-      console.error('사용자 정보 조회 실패:', error);
-      // 토큰이 유효하지 않으면 로그아웃
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchUserProfile]);
 
   const login = async (credentials: { email: string; password: string }) => {
     try {
@@ -99,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, refreshUserProfile, loading }}>
       {children}
     </AuthContext.Provider>
   );
