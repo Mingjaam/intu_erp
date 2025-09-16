@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
@@ -17,12 +17,12 @@ import { CreateProgramData } from '@/types/program';
 
 export default function NewProgramPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshUserProfile, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CreateProgramData>({
     title: '',
     description: '',
-    organizerId: user?.organizationId || '',
+    organizerId: '',
     status: 'draft',
     applyStart: '',
     applyEnd: '',
@@ -30,7 +30,8 @@ export default function NewProgramPage() {
     metadata: {},
   });
 
-  const handleInputChange = (field: keyof CreateProgramData, value: any) => {
+
+  const handleInputChange = (field: keyof CreateProgramData, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -62,6 +63,19 @@ export default function NewProgramPage() {
     }
   };
 
+
+  // 로딩 중이면 로딩 표시
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">로딩 중...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  // 사용자 정보가 없거나 권한이 없으면 접근 거부
   if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -133,6 +147,39 @@ export default function NewProgramPage() {
                 placeholder="프로그램에 대한 자세한 설명을 입력하세요"
                 rows={4}
               />
+            </div>
+
+            {/* 주최 기관 ID 필드 */}
+            <div className="space-y-2">
+              <Label htmlFor="organizerId">주최 기관 ID</Label>
+              <Input
+                id="organizerId"
+                value={formData.organizerId}
+                placeholder="주최 기관 ID를 입력하세요"
+                disabled
+                className="bg-gray-50 mb-2"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (user?.organizationId) {
+                    setFormData(prev => ({
+                      ...prev,
+                      organizerId: user.organizationId || '',
+                    }));
+                  }
+                }}
+                className="w-full"
+              >
+                자동 입력
+              </Button>
+              {user?.organization && (
+                <p className="text-sm text-gray-500">
+                  사용 가능한 조직: {user.organization.name} ({user.organization.type})
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
