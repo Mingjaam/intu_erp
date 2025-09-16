@@ -90,7 +90,7 @@ export default function ProgramDetailPage() {
   }
 
   const isAdmin = user?.role === 'admin' || user?.role === 'operator';
-  const canApply = user?.role === 'applicant' && program.status === 'open';
+  const canApply = user && program.status === 'open'; // admin도 신청 가능하도록 수정 (테스트용)
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -144,15 +144,15 @@ export default function ProgramDetailPage() {
               <CardContent className="space-y-4">
                 <div className="flex gap-3">
                   <Button asChild>
-                    <Link href={`/programs/${program.id}/edit`}>
+                    <Link href={`/admin/programs/${program.id}/edit`}>
                       <Edit className="h-4 w-4 mr-2" />
                       수정
                     </Link>
                   </Button>
                   <Button asChild variant="outline">
-                    <Link href={`/programs/${program.id}/applications`}>
+                    <Link href={`/admin/programs/${program.id}/applications`}>
                       <Users className="h-4 w-4 mr-2" />
-                      신청서 관리
+                      신청자 목록
                     </Link>
                   </Button>
                 </div>

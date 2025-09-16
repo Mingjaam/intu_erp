@@ -93,7 +93,7 @@ export default function ApplyPage() {
       await apiClient.post(API_ENDPOINTS.APPLICATIONS.CREATE, applicationData);
       
       toast.success('신청이 완료되었습니다.');
-      router.push('/applications');
+      router.push(`/programs/${programId}`);
     } catch (error) {
       console.error('신청 제출 오류:', error);
       toast.error('신청 제출에 실패했습니다.');
