@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
@@ -17,7 +17,7 @@ import { CreateProgramData } from '@/types/program';
 
 export default function NewProgramPage() {
   const router = useRouter();
-  const { user, refreshUserProfile, loading } = useAuth();
+  const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CreateProgramData>({
     title: '',
@@ -82,9 +82,17 @@ export default function NewProgramPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">접근 권한이 없습니다</h1>
           <p className="text-gray-600 mb-6">프로그램을 생성할 권한이 없습니다.</p>
-          <Button asChild>
-            <Link href="/programs">프로그램 목록으로 돌아가기</Link>
-          </Button>
+          <div className="space-y-3">
+            <Button asChild>
+              <Link href="/programs">프로그램 목록으로 돌아가기</Link>
+            </Button>
+            <div>
+              <p className="text-sm text-gray-500 mb-2">관리자라면 다음 경로를 사용하세요:</p>
+              <Button variant="outline" asChild>
+                <Link href="/admin/programs/new">관리자 프로그램 생성</Link>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -149,37 +157,23 @@ export default function NewProgramPage() {
               />
             </div>
 
-            {/* 주최 기관 ID 필드 */}
+            {/* 주최 기관 필드 */}
             <div className="space-y-2">
-              <Label htmlFor="organizerId">주최 기관 ID</Label>
-              <Input
-                id="organizerId"
-                value={formData.organizerId}
-                placeholder="주최 기관 ID를 입력하세요"
-                disabled
-                className="bg-gray-50 mb-2"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (user?.organizationId) {
-                    setFormData(prev => ({
-                      ...prev,
-                      organizerId: user.organizationId || '',
-                    }));
-                  }
-                }}
-                className="w-full"
-              >
-                자동 입력
-              </Button>
-              {user?.organization && (
-                <p className="text-sm text-gray-500">
-                  사용 가능한 조직: {user.organization.name} ({user.organization.type})
-                </p>
-              )}
+              <Label htmlFor="organizerId">주최 기관</Label>
+              <div className="relative">
+                <Input
+                  id="organizerId"
+                  value={user?.organization?.name || ''}
+                  placeholder="주최 기관을 선택해주세요"
+                  disabled
+                  className="bg-gray-50"
+                />
+                <input
+                  type="hidden"
+                  value={formData.organizerId}
+                  onChange={(e) => handleInputChange('organizerId', e.target.value)}
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
+import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 
@@ -42,6 +43,7 @@ interface FormField {
 
 export default function NewProgramPage() {
   const router = useRouter();
+  const { user, refreshUserProfile, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formFields, setFormFields] = useState<FormField[]>([]);
 
@@ -58,6 +60,18 @@ export default function NewProgramPage() {
       fee: 0,
     },
   });
+
+  // 사용자 정보 로드
+  useEffect(() => {
+    refreshUserProfile();
+  }, [refreshUserProfile]);
+
+  // 사용자 조직 ID가 있으면 자동으로 설정
+  useEffect(() => {
+    if (user?.organizationId) {
+      setValue('organizerId', user.organizationId);
+    }
+  }, [user?.organizationId, setValue]);
 
   const onSubmit = async (data: ProgramFormData) => {
     setIsLoading(true);
@@ -103,6 +117,30 @@ export default function NewProgramPage() {
   const removeFormField = (index: number) => {
     setFormFields(formFields.filter((_, i) => i !== index));
   };
+
+  // 로딩 중이면 로딩 표시
+  if (loading) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">로딩 중...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  // 사용자 정보가 없거나 권한이 없으면 접근 거부
+  if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">접근 권한이 없습니다</h1>
+          <p className="text-gray-600 mb-6">프로그램을 생성할 권한이 없습니다.</p>
+          <Button onClick={() => router.back()}>뒤로가기</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -200,11 +238,20 @@ export default function NewProgramPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="organizerId">주최 기관 *</Label>
-                <Input
-                  id="organizerId"
-                  {...register('organizerId')}
-                  placeholder="주최 기관 ID를 입력해주세요"
-                />
+                <div className="relative">
+                  <Input
+                    id="organizerId"
+                    value={user?.organization?.name || ''}
+                    placeholder="주최 기관을 선택해주세요"
+                    className="bg-gray-50"
+                    readOnly
+                  />
+                  <input
+                    type="hidden"
+                    {...register('organizerId')}
+                    value={user?.organizationId || ''}
+                  />
+                </div>
                 {errors.organizerId && (
                   <p className="text-sm text-red-600">{errors.organizerId.message}</p>
                 )}
