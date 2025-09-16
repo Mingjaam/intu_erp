@@ -1,81 +1,94 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api';
-import { User, LoginRequest, RegisterRequest, AuthResponse } from '@/types/auth';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { apiClient, API_ENDPOINTS } from '@/lib/api';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  role: 'admin' | 'operator' | 'reviewer' | 'applicant';
+  organizationId?: string;
+  organization?: {
+    id: string;
+    name: string;
+    type: string;
+  };
+}
 
 interface AuthContextType {
   user: User | null;
-  login: (credentials: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  login: (credentials: { email: string; password: string }) => Promise<void>;
+  register: (data: {
+    email: string;
+    password: string;
+    name: string;
+    phone?: string;
+    organizationId?: string;
+  }) => Promise<void>;
   logout: () => void;
-  isLoading: boolean;
-  isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-
-  const isAuthenticated = !!user;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        apiClient.setToken(token);
-        try {
-          const response = await apiClient.get<{ user: User }>('/auth/profile');
-          setUser(response.data.user);
-        } catch (error) {
-          console.error('Auth initialization failed:', error);
-          apiClient.clearToken();
-        }
-      }
-      setIsLoading(false);
-    };
-
-    initAuth();
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      apiClient.setToken(token);
+      // 토큰이 있으면 사용자 정보를 가져옴
+      fetchUserProfile();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  const login = async (credentials: LoginRequest) => {
+  const fetchUserProfile = async () => {
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
-      const { accessToken, user: userData } = response.data;
-      
-      apiClient.setToken(accessToken);
-      setUser(userData as User);
-      
-      // Redirect based on role
-      if (userData.role === 'admin' || userData.role === 'operator') {
-        router.push('/dashboard');
-      } else {
-        router.push('/programs');
-      }
+      const response = await apiClient.get<User>(API_ENDPOINTS.AUTH.PROFILE);
+      const data = response.data || response;
+      setUser(data);
     } catch (error) {
+      console.error('사용자 정보 조회 실패:', error);
+      // 토큰이 유효하지 않으면 로그아웃
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (credentials: { email: string; password: string }) => {
+    try {
+      const response = await apiClient.post<{ accessToken: string; user: User }>(
+        API_ENDPOINTS.AUTH.LOGIN,
+        credentials
+      );
+      const data = response.data || response;
+      
+      apiClient.setToken(data.accessToken);
+      setUser(data.user);
+    } catch (error) {
+      console.error('로그인 실패:', error);
       throw error;
     }
   };
 
-  const register = async (data: RegisterRequest) => {
+  const register = async (data: {
+    email: string;
+    password: string;
+    name: string;
+    phone?: string;
+    organizationId?: string;
+  }) => {
     try {
-      const response = await apiClient.post<AuthResponse>('/auth/register', data);
-      const { accessToken, user: userData } = response.data;
-      
-      apiClient.setToken(accessToken);
-      setUser(userData as User);
-      
-      // Redirect based on role
-      if (userData.role === 'admin' || userData.role === 'operator') {
-        router.push('/dashboard');
-      } else {
-        router.push('/programs');
-      }
+      await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, data);
     } catch (error) {
+      console.error('회원가입 실패:', error);
       throw error;
     }
   };
@@ -83,20 +96,10 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
   const logout = () => {
     apiClient.clearToken();
     setUser(null);
-    router.push('/login');
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        register,
-        logout,
-        isLoading,
-        isAuthenticated,
-      }}
-    >
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

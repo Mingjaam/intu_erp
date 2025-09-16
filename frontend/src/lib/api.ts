@@ -113,3 +113,82 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
+
+// API 엔드포인트 상수
+export const API_ENDPOINTS = {
+  // 인증
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    PROFILE: '/auth/profile',
+  },
+  
+  // 사용자
+  USERS: {
+    LIST: '/users',
+    DETAIL: (id: string) => `/users/${id}`,
+    UPDATE: (id: string) => `/users/${id}`,
+    DELETE: (id: string) => `/users/${id}`,
+  },
+  
+  // 프로그램
+  PROGRAMS: {
+    LIST: '/programs',
+    CREATE: '/programs',
+    DETAIL: (id: string) => `/programs/${id}`,
+    UPDATE: (id: string) => `/programs/${id}`,
+    DELETE: (id: string) => `/programs/${id}`,
+    STATS: (id: string) => `/programs/${id}/stats`,
+  },
+  
+  // 신청서
+  APPLICATIONS: {
+    LIST: '/applications',
+    CREATE: '/applications',
+    DETAIL: (id: string) => `/applications/${id}`,
+    UPDATE: (id: string) => `/applications/${id}`,
+    WITHDRAW: (id: string) => `/applications/${id}/withdraw`,
+    BY_PROGRAM: (programId: string) => `/applications/programs/${programId}`,
+    STATS: (programId: string) => `/applications/programs/${programId}/stats`,
+  },
+  
+  // 선정
+  SELECTIONS: {
+    LIST: '/selections',
+    CREATE: '/selections',
+    DETAIL: (id: string) => `/selections/${id}`,
+    UPDATE: (id: string) => `/selections/${id}`,
+    BY_PROGRAM: (programId: string) => `/selections/programs/${programId}`,
+    STATS: (programId: string) => `/selections/programs/${programId}/stats`,
+  },
+  
+  // 방문
+  VISITS: {
+    LIST: '/visits',
+    CREATE: '/visits',
+    DETAIL: (id: string) => `/visits/${id}`,
+    UPDATE: (id: string) => `/visits/${id}`,
+    COMPLETE: (id: string) => `/visits/${id}/complete`,
+    CANCEL: (id: string) => `/visits/${id}/cancel`,
+    BY_PROGRAM: (programId: string) => `/visits/programs/${programId}`,
+    STATS: (programId: string) => `/visits/programs/${programId}/stats`,
+  },
+  
+        // 조직
+        ORGANIZATIONS: {
+          LIST: '/organizations',
+          CREATE: '/organizations',
+          DETAIL: (id: string) => `/organizations/${id}`,
+          UPDATE: (id: string) => `/organizations/${id}`,
+          DELETE: (id: string) => `/organizations/${id}`,
+          STATS: (id: string) => `/organizations/${id}/stats`,
+          TYPES: '/organizations/types',
+        },
+
+        // 대시보드
+        DASHBOARD: {
+          STATS: '/dashboard/stats',
+          HEALTH: '/dashboard/health',
+          EXPORT: '/dashboard/export',
+        },
+} as const;

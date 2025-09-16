@@ -26,6 +26,11 @@ export class RegisterDto {
   @IsString()
   name: string;
 
+  @ApiProperty({ example: 'admin', required: false })
+  @IsString()
+  @IsOptional()
+  role?: string;
+
   @ApiProperty({ example: '010-1234-5678', required: false })
   @IsString()
   @IsOptional()

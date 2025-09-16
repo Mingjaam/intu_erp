@@ -6,20 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Users, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { apiClient, API_ENDPOINTS } from '@/lib/api';
+import Link from 'next/link';
+import { Program } from '@/types/program';
 
-interface Program {
-  id: string;
-  title: string;
-  description: string;
-  status: 'draft' | 'open' | 'closed' | 'archived';
-  applyStart: string;
-  applyEnd: string;
-  organizer: {
-    name: string;
-    type: string;
-  };
-  createdAt: string;
-}
+// Program interface는 이미 types/program.ts에서 import하므로 제거
 
 const statusLabels = {
   draft: '임시저장',
@@ -48,36 +39,10 @@ export default function ProgramsPage() {
   const fetchPrograms = async () => {
     try {
       setLoading(true);
-      // TODO: 실제 API 호출로 교체
-      const mockPrograms: Program[] = [
-        {
-          id: '1',
-          title: '2024년 마을 공동체 지원 프로그램',
-          description: '마을 공동체 활성화를 위한 종합 지원 프로그램입니다.',
-          status: 'open',
-          applyStart: '2024-01-01T00:00:00Z',
-          applyEnd: '2024-12-31T23:59:59Z',
-          organizer: {
-            name: '서울시 강남구',
-            type: 'village',
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '2',
-          title: '청년 창업 지원 사업',
-          description: '청년들의 창업을 지원하는 프로그램입니다.',
-          status: 'closed',
-          applyStart: '2024-01-01T00:00:00Z',
-          applyEnd: '2024-06-30T23:59:59Z',
-          organizer: {
-            name: '한국청년기업가정신재단',
-            type: 'ngo',
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-        },
-      ];
-      setPrograms(mockPrograms);
+      const response = await apiClient.get<{ programs: Program[]; total: number }>(API_ENDPOINTS.PROGRAMS.LIST);
+      // 백엔드가 ApiResponse 래퍼 없이 직접 데이터를 반환하므로 response.data가 아닌 response를 사용
+      const data = response.data || response;
+      setPrograms(data.programs || []);
     } catch (err) {
       setError('프로그램 목록을 불러오는데 실패했습니다.');
       console.error('Error fetching programs:', err);
@@ -136,7 +101,7 @@ export default function ProgramsPage() {
       ) : null}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {programs.map((program) => (
+        {programs && programs.length > 0 ? programs.map((program) => (
           <Card key={program.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -165,19 +130,25 @@ export default function ProgramsPage() {
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
-                <Button variant="outline" className="flex-1">
-                  상세보기
+                <Button variant="outline" className="flex-1" asChild>
+                  <Link href={`/programs/${program.id}`}>
+                    상세보기
+                  </Link>
                 </Button>
                 {isApplicationOpen(program) && user?.role === 'applicant' && (
-                  <Button className="flex-1">신청하기</Button>
+                  <Button className="flex-1" asChild>
+                    <Link href={`/programs/${program.id}/apply`}>
+                      신청하기
+                    </Link>
+                  </Button>
                 )}
               </div>
             </CardContent>
           </Card>
-        ))}
+        )) : null}
       </div>
 
-      {programs.length === 0 && (
+      {programs && programs.length === 0 && (
         <div className="text-center py-12">
           <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">등록된 프로그램이 없습니다</h3>

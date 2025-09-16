@@ -5,6 +5,12 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppDataSource } from './database/data-source';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { ProgramsModule } from './programs/programs.module';
+import { ApplicationsModule } from './applications/applications.module';
+import { SelectionsModule } from './selections/selections.module';
+import { VisitsModule } from './visits/visits.module';
+import { OrganizationsModule } from './organizations/organizations.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -21,6 +27,12 @@ import { UsersModule } from './users/users.module';
     ]),
     AuthModule,
     UsersModule,
-  ],
-})
-export class AppModule {}
+    ProgramsModule,
+    ApplicationsModule,
+    SelectionsModule,
+    VisitsModule,
+          OrganizationsModule,
+          DashboardModule,
+        ],
+      })
+      export class AppModule {}
