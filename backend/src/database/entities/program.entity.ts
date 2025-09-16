@@ -48,6 +48,21 @@ export class Program {
   @Column({ type: 'timestamp' })
   applyEnd: Date;
 
+  @Column({ type: 'timestamp' })
+  programStart: Date;
+
+  @Column({ type: 'timestamp' })
+  programEnd: Date;
+
+  @Column()
+  location: string;
+
+  @Column({ type: 'int', default: 0 })
+  fee: number;
+
+  @Column({ type: 'int', default: 20 })
+  maxParticipants: number;
+
   @Column('jsonb', { nullable: true })
   applicationForm: Record<string, any>;
 
