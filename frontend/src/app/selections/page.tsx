@@ -150,7 +150,7 @@ export default function SelectionsPage() {
                         <strong>심사 기준:</strong>
                         <ul className="list-disc list-inside mt-1">
                           {Object.entries(selection.criteria).map(([key, value]) => (
-                            <li key={key}>{key}: {value}</li>
+                            <li key={key}>{key}: {String(value)}</li>
                           ))}
                         </ul>
                       </div>

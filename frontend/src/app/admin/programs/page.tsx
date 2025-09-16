@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,9 +13,7 @@ import {
   Edit, 
   Trash2, 
   Eye, 
-  Search,
-  Filter,
-  MoreHorizontal
+  Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -57,7 +55,7 @@ const statusLabels = {
 };
 
 export default function ProgramsPage() {
-  const router = useRouter();
+  // const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

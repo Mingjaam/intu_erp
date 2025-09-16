@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Calendar, Clock, Filter, User, CheckCircle, XCircle } from 'lucide-react';
+import { MapPin, Calendar, Filter, User, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Visit, VisitQuery } from '@/types/visit';
@@ -175,7 +175,7 @@ export default function VisitsPage() {
                     
                     <div className="flex items-center text-sm text-gray-600">
                       <MapPin className="h-4 w-4 mr-2" />
-                      <span>주소: {visit.organization.address}</span>
+                      <span>주소: {visit.organization.name}</span>
                     </div>
                     
                     {visit.notes && (

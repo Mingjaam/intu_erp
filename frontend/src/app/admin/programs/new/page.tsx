@@ -50,7 +50,6 @@ export default function NewProgramPage() {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
   } = useForm<ProgramFormData>({
     resolver: zodResolver(programSchema),
     defaultValues: {
@@ -145,7 +144,7 @@ export default function NewProgramPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="status">상태 *</Label>
-                <Select onValueChange={(value) => setValue('status', value as any)}>
+                <Select onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'archived')}>
                   <SelectTrigger>
                     <SelectValue placeholder="상태를 선택해주세요" />
                   </SelectTrigger>
@@ -374,7 +373,7 @@ export default function NewProgramPage() {
               {formFields.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   <p>아직 추가된 신청서 필드가 없습니다.</p>
-                  <p className="text-sm">위의 "필드 추가" 버튼을 클릭하여 필드를 추가해주세요.</p>
+                  <p className="text-sm">위의 &quot;필드 추가&quot; 버튼을 클릭하여 필드를 추가해주세요.</p>
                 </div>
               )}
             </div>

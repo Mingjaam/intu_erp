@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { apiClient, API_ENDPOINTS } from '@/lib/api';
+import { apiClient } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,13 +10,8 @@ import {
   Users, 
   FolderOpen, 
   FileText, 
-  CheckCircle, 
-  MapPin, 
-  Building,
   TrendingUp,
-  Calendar,
   BarChart3,
-  PieChart,
   Download,
   Activity,
   RefreshCw,
@@ -35,17 +30,17 @@ interface DashboardStats {
     totalOrganizations: number;
   };
   recent: {
-    applications: any[];
-    programs: any[];
-    visits: any[];
+    applications: Record<string, unknown>[];
+    programs: Record<string, unknown>[];
+    visits: Record<string, unknown>[];
   };
   charts: {
-    programStats: any[];
-    userRoleStats: any[];
-    organizationTypeStats: any[];
-    monthlyStats: any[];
-    applicationTrends: any[];
-    programStatusStats: any[];
+    programStats: Record<string, unknown>[];
+    userRoleStats: Record<string, unknown>[];
+    organizationTypeStats: Record<string, unknown>[];
+    monthlyStats: Record<string, unknown>[];
+    applicationTrends: Record<string, unknown>[];
+    programStatusStats: Record<string, unknown>[];
   };
 }
 
@@ -54,7 +49,7 @@ interface SystemHealth {
   totalPrograms: number;
   totalApplications: number;
   activePrograms: number;
-  recentErrors: any[];
+  recentErrors: Record<string, unknown>[];
   healthScore: number;
 }
 
@@ -75,18 +70,11 @@ const statusLabels = {
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
+  const [systemHealth] = useState<SystemHealth | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
 
-  useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'operator') {
-      fetchDashboardStats();
-      fetchSystemHealth();
-    }
-  }, [user, dateRange]);
-
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = useCallback(async () => {
     try {
       const response = await apiClient.get<DashboardStats>(`/dashboard/stats?dateRange=${dateRange}`);
       const data = response.data || response;
@@ -97,21 +85,28 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dateRange]);
 
-  const fetchSystemHealth = async () => {
+  const fetchSystemHealth = useCallback(async () => {
     try {
-      const response = await apiClient.get<SystemHealth>('/dashboard/health');
-      const data = response.data || response;
-      setSystemHealth(data);
+      await apiClient.get<SystemHealth>('/dashboard/health');
+      // const data = response.data || response;
+      // setSystemHealth(data);
     } catch (error) {
       console.error('시스템 상태 조회 오류:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user?.role === 'admin' || user?.role === 'operator') {
+      fetchDashboardStats();
+      fetchSystemHealth();
+    }
+  }, [user, dateRange, fetchDashboardStats, fetchSystemHealth]);
 
   const handleExport = async (type: string) => {
     try {
-      const response = await apiClient.get(`/dashboard/export?type=${type}`);
+      await apiClient.get(`/dashboard/export?type=${type}`);
       toast.success(`${type} 데이터 내보내기가 준비되었습니다.`);
     } catch (error) {
       console.error('데이터 내보내기 오류:', error);
@@ -256,27 +251,27 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats?.recent.programs?.slice(0, 8).map((program) => (
-                <div key={program.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              {stats?.recent.programs?.slice(0, 8).map((program: Record<string, unknown>) => (
+                <div key={program.id as string} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900">{program.title}</p>
+                    <p className="font-medium text-gray-900">{program.title as string}</p>
                     <p className="text-sm text-gray-600">
-                      {new Date(program.createdAt).toLocaleDateString()}
+                      {new Date(program.createdAt as string).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <Badge className={statusColors[program.status] || 'bg-gray-100 text-gray-800'}>
-                      {statusLabels[program.status] || program.status}
+                    <Badge className={statusColors[program.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}>
+                      {statusLabels[program.status as keyof typeof statusLabels] || (program.status as string)}
                     </Badge>
                     <div className="text-right">
                       <p className="text-sm text-gray-600">참여자</p>
-                      <p className="font-medium">{program.applicationCount || 0}/{program.maxParticipants || 0}</p>
+                      <p className="font-medium">{(program.applicationCount as number) || 0}/{(program.maxParticipants as number) || 0}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-600">매출</p>
-                      <p className="font-medium">₩{((program.applicationCount || 0) * 150000).toLocaleString()}</p>
+                      <p className="font-medium">₩{(((program.applicationCount as number) || 0) * 150000).toLocaleString()}</p>
                     </div>
-                    <Link href={`/programs/${program.id}`}>
+                    <Link href={`/programs/${program.id as string}`}>
                       <Button size="sm" variant="outline">
                         <FileText className="h-4 w-4" />
                       </Button>
@@ -302,21 +297,21 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {stats?.charts.monthlyStats?.slice(0, 7).map((item, index) => (
+              {stats?.charts.monthlyStats?.slice(0, 7).map((item: Record<string, unknown>, index: number) => (
                 <div key={index} className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">
-                    {new Date(item.month).toLocaleDateString('ko-KR', { month: 'short' })}월
+                    {new Date(item.month as string).toLocaleDateString('ko-KR', { month: 'short' })}월
                   </span>
                   <div className="flex items-center">
                     <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
                       <div 
                         className="bg-blue-600 h-2 rounded-full" 
                         style={{ 
-                          width: `${Math.min(100, (item.count / Math.max(...(stats?.charts.monthlyStats || []).map((m: any) => m.count))) * 100)}%` 
+                          width: `${Math.min(100, ((item.count as number) / Math.max(...(stats?.charts.monthlyStats || []).map((m: Record<string, unknown>) => m.count as number))) * 100)}%` 
                         }}
                       ></div>
                     </div>
-                    <span className="text-sm font-medium w-8 text-right">{item.count}</span>
+                    <span className="text-sm font-medium w-8 text-right">{item.count as number}</span>
                   </div>
                 </div>
               )) || (

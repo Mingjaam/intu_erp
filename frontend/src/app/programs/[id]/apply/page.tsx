@@ -30,7 +30,7 @@ export default function ApplyPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [program, setProgram] = useState<Program | null>(null);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,7 +45,7 @@ export default function ApplyPage() {
         
         // 로그인된 사용자 정보로 기본값 설정
         if (user) {
-          const initialData: Record<string, any> = {
+          const initialData: Record<string, unknown> = {
             name: user.name || '',
             email: user.email || '',
             phone: user.phone || '',
@@ -66,7 +66,7 @@ export default function ApplyPage() {
     }
   }, [programId, user, router]);
 
-  const handleInputChange = (fieldName: string, value: any) => {
+  const handleInputChange = (fieldName: string, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [fieldName]: value
@@ -118,7 +118,7 @@ export default function ApplyPage() {
             <Input
               id={name}
               type={type}
-              value={value}
+              value={value as string}
               onChange={(e) => handleInputChange(name, e.target.value)}
               placeholder={placeholder}
               required={required}
@@ -136,7 +136,7 @@ export default function ApplyPage() {
             <Input
               id={name}
               type="number"
-              value={value}
+              value={value as string}
               onChange={(e) => handleInputChange(name, parseInt(e.target.value) || '')}
               placeholder={placeholder}
               required={required}
@@ -152,7 +152,7 @@ export default function ApplyPage() {
             </Label>
             <Textarea
               id={name}
-              value={value}
+              value={value as string}
               onChange={(e) => handleInputChange(name, e.target.value)}
               placeholder={placeholder}
               required={required}
@@ -169,7 +169,7 @@ export default function ApplyPage() {
             </Label>
             <select
               id={name}
-              value={value}
+              value={value as string}
               onChange={(e) => handleInputChange(name, e.target.value)}
               required={required}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -6,9 +6,9 @@ import { RegisterForm } from '@/components/auth/register-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function HomePage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -19,7 +19,7 @@ export default function HomePage() {
     );
   }
 
-  if (isAuthenticated) {
+  if (user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

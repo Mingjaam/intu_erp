@@ -62,7 +62,7 @@ export default function EditProgramPage() {
     }
   }, [programId, router]);
 
-  const handleInputChange = (field: keyof UpdateProgramData, value: any) => {
+  const handleInputChange = (field: keyof UpdateProgramData, value: unknown) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,

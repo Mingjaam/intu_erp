@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Phone, Mail, Filter, Building, Users } from 'lucide-react';
+import { MapPin, Phone, Filter, Building, Users } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Organization, OrganizationQuery } from '@/types/organization';
@@ -59,7 +59,7 @@ export default function OrganizationsPage() {
   const handleTypeFilter = (type: string) => {
     setQuery(prev => ({
       ...prev,
-      type: type === 'all' ? undefined : type as 'company' | 'village' | 'government' | 'ngo',
+      type: type === 'all' ? undefined : type as 'company' | 'village' | 'institution' | 'ngo',
       page: 1,
     }));
   };
