@@ -57,32 +57,51 @@ intu_erp/
 
 ## 핵심 기능
 
-### 1. 사용자 & 조직 관리
-- 회원가입, 로그인, 역할 기반 접근 제어
-- 조직(마을, 기관) 엔터티 관리
+### 1. 사용자 & 조직 관리 ✅
+- JWT 기반 인증 시스템
+- 역할 기반 접근 제어 (관리자/운영자/심사자/신청자)
+- 조직(마을, 기관, 기업, NGO) 관리
 - 사용자 ↔ 조직 관계 관리
 
-### 2. 프로그램 관리
-- 프로그램 생성 및 관리
-- 신청 기간 설정
-- 다단계 신청 폼 (JSONB)
+### 2. 프로그램 관리 ✅
+- 프로그램 CRUD (생성/조회/수정/삭제)
+- 상태 관리 (임시저장/모집중/종료/보관)
+- 신청 기간 설정 및 관리
+- 프로그램별 통계 제공
 
-### 3. 신청 & 선정
-- 신청서 작성 및 제출
-- 심사자 점수 입력
+### 3. 신청서 관리 ✅
+- 폼 기반 신청서 작성 및 제출
+- 로그인된 사용자 정보 자동 채움
+- 신청서 상태 관리 (제출됨/심사중/선정됨/탈락/철회됨)
+- 신청서 수정 및 철회 기능
+
+### 4. 선정 관리 ✅
+- 신청서 심사 및 점수 입력
 - 선정/탈락 처리
+- 심사 기준 및 사유 기록
+- 선정 결과 통계
 
-### 4. 방문 & 후속 관리
-- 방문 예약 및 결과 기록
-- 후속 협업 추적
+### 5. 방문 관리 ✅
+- 방문 예약 및 일정 관리
+- 방문 완료/취소 처리
+- 방문 결과 및 후속 조치 기록
+- 방문 통계 및 추적
 
-### 5. 보고서 & 대시보드
-- KPI 대시보드
-- 데이터 내보내기 (CSV/Excel)
-- 통계 및 차트
+### 6. 조직 관리 ✅
+- 조직 CRUD (생성/조회/수정/삭제)
+- 조직 유형별 관리 (마을/기관/기업/NGO)
+- 조직별 통계 및 현황
+- 조직 검색 및 필터링
 
-### 6. 감사 & 로그
-- 모든 변경 내역 기록
+### 7. 대시보드 & 통계 ✅
+- 실시간 KPI 대시보드
+- 프로그램별 신청/선정 통계
+- 조직별 활동 현황
+- 방문 및 후속 활동 추적
+
+### 8. 감사 & 로그 ✅
+- 모든 변경 내역 자동 기록
+- 사용자 활동 추적
 - 시스템 전역 감사 로그
 
 ## 시작하기
@@ -97,31 +116,55 @@ cd intu_erp
 
 2. **환경 변수 설정**
 ```bash
-cp .env.example .env
+cp env.example .env
 # 환경 변수 수정
 ```
 
-3. **Docker로 로컬 환경 실행**
+3. **PostgreSQL 설치 및 설정**
 ```bash
-docker-compose up -d
+# macOS (Homebrew)
+brew install postgresql@15
+brew services start postgresql@15
+createdb intu_erp
+
+# 환경 변수 설정
+export DATABASE_URL="postgresql://$(whoami)@localhost:5432/intu_erp"
+export NODE_ENV="development"
+export JWT_SECRET="your-super-secret-jwt-key-for-development"
+export JWT_EXPIRES_IN="7d"
+export PORT=3001
+export CORS_ORIGIN="http://localhost:3000"
 ```
 
-4. **데이터베이스 마이그레이션**
+4. **의존성 설치**
 ```bash
+# 루트 디렉토리
+npm install
+
+# 백엔드
 cd backend
-npm run migration:run
+npm install
+
+# 프론트엔드
+cd ../frontend
+npm install
 ```
 
 5. **개발 서버 실행**
 ```bash
-# 백엔드
+# 백엔드 (터미널 1)
 cd backend
 npm run start:dev
 
-# 프론트엔드
+# 프론트엔드 (터미널 2)
 cd frontend
 npm run dev
 ```
+
+6. **접속**
+- 프론트엔드: http://localhost:3000
+- 백엔드 API: http://localhost:3001/api
+- API 문서: http://localhost:3001/api/docs
 
 ## API 문서
 
