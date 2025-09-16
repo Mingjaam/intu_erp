@@ -1,0 +1,209 @@
+import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Application, ApplicationStatus } from '@/database/entities/application.entity';
+import { Program } from '@/database/entities/program.entity';
+import { User, UserRole } from '@/database/entities/user.entity';
+import { CreateApplicationDto, UpdateApplicationDto, ApplicationQueryDto } from './dto/application.dto';
+
+@Injectable()
+export class ApplicationsService {
+  constructor(
+    @InjectRepository(Application)
+    private applicationRepository: Repository<Application>,
+    @InjectRepository(Program)
+    private programRepository: Repository<Program>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  async create(createApplicationDto: CreateApplicationDto, user: User): Promise<Application> {
+    const { programId, payload } = createApplicationDto;
+
+    // 프로그램 존재 확인
+    const program = await this.programRepository.findOne({
+      where: { id: programId, isActive: true },
+    });
+
+    if (!program) {
+      throw new NotFoundException('프로그램을 찾을 수 없습니다.');
+    }
+
+    // 프로그램이 모집 중인지 확인
+    if (program.status !== 'open') {
+      throw new ForbiddenException('현재 모집 중이 아닌 프로그램입니다.');
+    }
+
+    // 신청 기간 확인
+    const now = new Date();
+    if (now < program.applyStart || now > program.applyEnd) {
+      throw new ForbiddenException('신청 기간이 아닙니다.');
+    }
+
+    // 중복 신청 확인
+    const existingApplication = await this.applicationRepository.findOne({
+      where: { programId, applicantId: user.id },
+    });
+
+    if (existingApplication) {
+      throw new ConflictException('이미 신청한 프로그램입니다.');
+    }
+
+    // 사용자 정보를 payload에 자동 추가
+    const enrichedPayload = {
+      ...payload,
+      applicantInfo: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        organizationId: user.organizationId,
+      },
+    };
+
+    const application = this.applicationRepository.create({
+      programId,
+      applicantId: user.id,
+      payload: enrichedPayload,
+      status: ApplicationStatus.SUBMITTED,
+    });
+
+    return await this.applicationRepository.save(application);
+  }
+
+  async findAll(query: ApplicationQueryDto, user: User): Promise<{ applications: Application[]; total: number }> {
+    const { programId, applicantId, status, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.applicationRepository
+      .createQueryBuilder('application')
+      .leftJoinAndSelect('application.program', 'program')
+      .leftJoinAndSelect('application.applicant', 'applicant')
+      .leftJoinAndSelect('applicant.organization', 'organization')
+      .leftJoinAndSelect('application.selection', 'selection');
+
+    // 일반 사용자는 자신의 신청서만 조회 가능
+    if (user.role === UserRole.APPLICANT) {
+      queryBuilder.andWhere('application.applicantId = :applicantId', { applicantId: user.id });
+    }
+
+    if (programId) {
+      queryBuilder.andWhere('application.programId = :programId', { programId });
+    }
+
+    if (applicantId) {
+      queryBuilder.andWhere('application.applicantId = :applicantId', { applicantId });
+    }
+
+    if (status) {
+      queryBuilder.andWhere('application.status = :status', { status });
+    }
+
+    const [applications, total] = await queryBuilder
+      .orderBy('application.createdAt', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    return { applications, total };
+  }
+
+  async findOne(id: string, user: User): Promise<Application> {
+    const application = await this.applicationRepository.findOne({
+      where: { id },
+      relations: ['program', 'applicant', 'applicant.organization', 'selection', 'selection.reviewer'],
+    });
+
+    if (!application) {
+      throw new NotFoundException('신청서를 찾을 수 없습니다.');
+    }
+
+    // 권한 확인: 신청자 본인 또는 관리자/운영자/심사자만 조회 가능
+    if (
+      user.role === UserRole.APPLICANT &&
+      application.applicantId !== user.id
+    ) {
+      throw new ForbiddenException('접근 권한이 없습니다.');
+    }
+
+    return application;
+  }
+
+  async update(id: string, updateApplicationDto: UpdateApplicationDto, user: User): Promise<Application> {
+    const application = await this.findOne(id, user);
+
+    // 권한 확인: 신청자 본인은 제출 전에만 수정 가능, 관리자/운영자/심사자는 언제든 수정 가능
+    if (user.role === UserRole.APPLICANT) {
+      if (application.applicantId !== user.id) {
+        throw new ForbiddenException('수정 권한이 없습니다.');
+      }
+      if (application.status !== ApplicationStatus.SUBMITTED) {
+        throw new ForbiddenException('제출된 신청서는 수정할 수 없습니다.');
+      }
+    }
+
+    Object.assign(application, updateApplicationDto);
+    return await this.applicationRepository.save(application);
+  }
+
+  async withdraw(id: string, user: User): Promise<Application> {
+    const application = await this.findOne(id, user);
+
+    // 신청자 본인만 철회 가능
+    if (user.role === UserRole.APPLICANT && application.applicantId !== user.id) {
+      throw new ForbiddenException('철회 권한이 없습니다.');
+    }
+
+    // 이미 처리된 신청서는 철회 불가
+    if (application.status === ApplicationStatus.SELECTED || application.status === ApplicationStatus.REJECTED) {
+      throw new ForbiddenException('이미 처리된 신청서는 철회할 수 없습니다.');
+    }
+
+    application.status = ApplicationStatus.WITHDRAWN;
+    return await this.applicationRepository.save(application);
+  }
+
+  async getApplicationStats(programId: string, user: User): Promise<any> {
+    // 프로그램 존재 확인
+    const program = await this.programRepository.findOne({
+      where: { id: programId, isActive: true },
+    });
+
+    if (!program) {
+      throw new NotFoundException('프로그램을 찾을 수 없습니다.');
+    }
+
+    // 권한 확인
+    if (user.role === UserRole.APPLICANT) {
+      throw new ForbiddenException('통계 조회 권한이 없습니다.');
+    }
+
+    const stats = await this.applicationRepository
+      .createQueryBuilder('application')
+      .leftJoin('application.selection', 'selection')
+      .where('application.programId = :programId', { programId })
+      .select([
+        'COUNT(application.id) as totalApplications',
+        'COUNT(CASE WHEN application.status = :submitted THEN 1 END) as submittedCount',
+        'COUNT(CASE WHEN application.status = :underReview THEN 1 END) as underReviewCount',
+        'COUNT(CASE WHEN application.status = :selected THEN 1 END) as selectedCount',
+        'COUNT(CASE WHEN application.status = :rejected THEN 1 END) as rejectedCount',
+        'COUNT(CASE WHEN application.status = :withdrawn THEN 1 END) as withdrawnCount',
+        'COUNT(CASE WHEN selection.selected = true THEN 1 END) as finalSelectedCount',
+      ])
+      .setParameters({
+        submitted: ApplicationStatus.SUBMITTED,
+        underReview: ApplicationStatus.UNDER_REVIEW,
+        selected: ApplicationStatus.SELECTED,
+        rejected: ApplicationStatus.REJECTED,
+        withdrawn: ApplicationStatus.WITHDRAWN,
+      })
+      .getRawOne();
+
+    return {
+      programId,
+      programTitle: program.title,
+      ...stats,
+    };
+  }
+}
