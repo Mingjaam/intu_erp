@@ -25,7 +25,7 @@ export interface Selection {
     email: string;
   };
   reviewedAt: string;
-  criteria?: Record<string, any>;
+  criteria?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,13 +34,13 @@ export interface CreateSelectionData {
   applicationId: string;
   selected: boolean;
   reason?: string;
-  criteria?: Record<string, any>;
+  criteria?: Record<string, unknown>;
 }
 
 export interface UpdateSelectionData {
   selected?: boolean;
   reason?: string;
-  criteria?: Record<string, any>;
+  criteria?: Record<string, unknown>;
 }
 
 export interface SelectionQuery {

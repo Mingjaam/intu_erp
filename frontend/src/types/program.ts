@@ -11,8 +11,8 @@ export interface Program {
   status: 'draft' | 'open' | 'closed' | 'archived';
   applyStart: string;
   applyEnd: string;
-  applicationForm?: Record<string, any>;
-  metadata?: Record<string, any>;
+  applicationForm?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -25,8 +25,8 @@ export interface CreateProgramData {
   status: 'draft' | 'open' | 'closed' | 'archived';
   applyStart: string;
   applyEnd: string;
-  applicationForm?: Record<string, any>;
-  metadata?: Record<string, any>;
+  applicationForm?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UpdateProgramData {
@@ -35,8 +35,8 @@ export interface UpdateProgramData {
   status?: 'draft' | 'open' | 'closed' | 'archived';
   applyStart?: string;
   applyEnd?: string;
-  applicationForm?: Record<string, any>;
-  metadata?: Record<string, any>;
+  applicationForm?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   isActive?: boolean;
 }
 

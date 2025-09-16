@@ -20,7 +20,7 @@ export interface Visit {
   scheduledAt: string;
   performedAt?: string;
   notes?: string;
-  outcome?: Record<string, any>;
+  outcome?: Record<string, unknown>;
   status: 'scheduled' | 'completed' | 'cancelled' | 'postponed';
   followUpNotes?: string;
   createdAt: string;
@@ -32,14 +32,14 @@ export interface CreateVisitData {
   programId: string;
   scheduledAt: string;
   notes?: string;
-  outcome?: Record<string, any>;
+  outcome?: Record<string, unknown>;
 }
 
 export interface UpdateVisitData {
   scheduledAt?: string;
   performedAt?: string;
   notes?: string;
-  outcome?: Record<string, any>;
+  outcome?: Record<string, unknown>;
   status?: 'scheduled' | 'completed' | 'cancelled' | 'postponed';
   followUpNotes?: string;
 }

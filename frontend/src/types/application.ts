@@ -20,7 +20,7 @@ export interface Application {
       name: string;
     };
   };
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
   status: 'submitted' | 'under_review' | 'selected' | 'rejected' | 'withdrawn';
   score?: number;
   notes?: string;
@@ -36,17 +36,17 @@ export interface Application {
       name: string;
     };
     reviewedAt: string;
-    criteria?: Record<string, any>;
+    criteria?: Record<string, unknown>;
   };
 }
 
 export interface CreateApplicationData {
   programId: string;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
 }
 
 export interface UpdateApplicationData {
-  payload?: Record<string, any>;
+  payload?: Record<string, unknown>;
   status?: 'submitted' | 'under_review' | 'selected' | 'rejected' | 'withdrawn';
   score?: number;
   notes?: string;
