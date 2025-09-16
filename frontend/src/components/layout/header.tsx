@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Settings, Search, Bell } from 'lucide-react';
+import { LogOut, User, Settings, Search, Bell, FileText } from 'lucide-react';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -92,6 +92,12 @@ export function Header() {
                   <Link href="/profile" className="flex items-center">
                     <User className="mr-2 h-4 w-4" />
                     프로필
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/applications" className="flex items-center">
+                    <FileText className="mr-2 h-4 w-4" />
+                    내 신청 목록
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

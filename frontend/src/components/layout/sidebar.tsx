@@ -11,7 +11,8 @@ import {
   FolderOpen,
   Calendar,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 
 const navigation = [
@@ -29,6 +30,15 @@ const navigation = [
       { name: '전체 프로그램', href: '/admin/programs' },
       { name: '프로그램 등록', href: '/admin/programs/new' },
       { name: '프로그램 관리', href: '/admin/programs/manage' },
+    ]
+  },
+  { 
+    name: '신청서', 
+    href: '/admin/applications', 
+    icon: FileText,
+    children: [
+      { name: '전체 신청서', href: '/admin/applications' },
+      { name: '신청서 관리', href: '/admin/applications/manage' },
     ]
   },
   { 
