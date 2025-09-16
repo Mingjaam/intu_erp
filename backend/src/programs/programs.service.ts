@@ -100,19 +100,21 @@ export class ProgramsService {
       throw new ForbiddenException('프로그램 수정 권한이 없습니다.');
     }
 
+    // organizerId는 업데이트하지 않음 (보안상의 이유)
+    const { ...updateData } = updateProgramDto;
+
     // 날짜 필드 처리
-    const updateData: any = { ...updateProgramDto };
-    if (updateProgramDto.applyStart) {
-      updateData.applyStart = new Date(updateProgramDto.applyStart);
+    if (updateData.applyStart) {
+      updateData.applyStart = new Date(updateData.applyStart) as any;
     }
-    if (updateProgramDto.applyEnd) {
-      updateData.applyEnd = new Date(updateProgramDto.applyEnd);
+    if (updateData.applyEnd) {
+      updateData.applyEnd = new Date(updateData.applyEnd) as any;
     }
-    if (updateProgramDto.programStart) {
-      updateData.programStart = new Date(updateProgramDto.programStart);
+    if (updateData.programStart) {
+      updateData.programStart = new Date(updateData.programStart) as any;
     }
-    if (updateProgramDto.programEnd) {
-      updateData.programEnd = new Date(updateProgramDto.programEnd);
+    if (updateData.programEnd) {
+      updateData.programEnd = new Date(updateData.programEnd) as any;
     }
 
     Object.assign(program, updateData);

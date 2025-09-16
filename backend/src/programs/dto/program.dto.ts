@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsDateString, IsObject, IsBoolean, IsNumber, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString, IsObject, IsBoolean, IsNumber } from 'class-validator';
 import { ProgramStatus } from '@/database/entities/program.entity';
 
 export class CreateProgramDto {
@@ -69,6 +69,8 @@ export class UpdateProgramDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  // organizerId는 업데이트에서 제외 (보안상의 이유)
 
   @ApiProperty({ example: 'open', enum: ProgramStatus, required: false })
   @IsEnum(ProgramStatus)
