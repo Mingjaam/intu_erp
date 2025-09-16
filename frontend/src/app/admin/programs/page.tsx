@@ -13,7 +13,8 @@ import {
   Edit, 
   Trash2, 
   Eye, 
-  Search
+  Search,
+  Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -224,12 +225,18 @@ export default function ProgramsPage() {
 
                   <div className="flex items-center gap-2 ml-4">
                     <Link href={`/programs/${program.id}`}>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" title="프로그램 상세보기">
                         <Eye className="h-4 w-4" />
                       </Button>
                     </Link>
+                    <Link href={`/admin/programs/${program.id}/applications`}>
+                      <Button variant="outline" size="sm" title="신청자 목록">
+                        <Users className="h-4 w-4 mr-1" />
+                        {program.applicationCount || 0}
+                      </Button>
+                    </Link>
                     <Link href={`/admin/programs/${program.id}/edit`}>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" title="프로그램 수정">
                         <Edit className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -238,6 +245,7 @@ export default function ProgramsPage() {
                       size="sm"
                       onClick={() => handleDelete(program.id)}
                       className="text-red-600 hover:text-red-700"
+                      title="프로그램 삭제"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
