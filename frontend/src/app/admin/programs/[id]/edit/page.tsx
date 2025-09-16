@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -54,7 +54,7 @@ interface Program {
   fee: number;
   organizerId: string;
   applicationForm?: FormField[];
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export default function EditProgramPage() {
@@ -72,19 +72,12 @@ export default function EditProgramPage() {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
     reset,
   } = useForm<ProgramFormData>({
     resolver: zodResolver(programSchema),
   });
 
-  useEffect(() => {
-    if (programId) {
-      fetchProgram();
-    }
-  }, [programId]);
-
-  const fetchProgram = async () => {
+  const fetchProgram = useCallback(async () => {
     try {
       setIsLoadingData(true);
       const response = await apiClient.get<Program>(API_ENDPOINTS.PROGRAMS.DETAIL(programId));
@@ -110,8 +103,8 @@ export default function EditProgramPage() {
       if (data.applicationForm) {
         if (Array.isArray(data.applicationForm)) {
           setFormFields(data.applicationForm);
-        } else if (data.applicationForm.fields) {
-          setFormFields(data.applicationForm.fields);
+        } else if (data.applicationForm && typeof data.applicationForm === 'object' && 'fields' in data.applicationForm) {
+          setFormFields((data.applicationForm as { fields: FormField[] }).fields);
         }
       }
     } catch (error) {
@@ -121,7 +114,13 @@ export default function EditProgramPage() {
     } finally {
       setIsLoadingData(false);
     }
-  };
+  }, [programId, router, reset]);
+
+  useEffect(() => {
+    if (programId) {
+      fetchProgram();
+    }
+  }, [programId, fetchProgram]);
 
   const onSubmit = async (data: ProgramFormData) => {
     setIsLoading(true);
@@ -235,7 +234,7 @@ export default function EditProgramPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="status">상태 *</Label>
-                <Select onValueChange={(value) => setValue('status', value as any)}>
+                <Select onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'archived')}>
                   <SelectTrigger>
                     <SelectValue placeholder="상태를 선택해주세요" />
                   </SelectTrigger>
@@ -464,7 +463,7 @@ export default function EditProgramPage() {
               {formFields.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   <p>아직 추가된 신청서 필드가 없습니다.</p>
-                  <p className="text-sm">위의 "필드 추가" 버튼을 클릭하여 필드를 추가해주세요.</p>
+                  <p className="text-sm">위의 &quot;필드 추가&quot; 버튼을 클릭하여 필드를 추가해주세요.</p>
                 </div>
               )}
             </div>
