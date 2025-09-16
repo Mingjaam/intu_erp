@@ -1,13 +1,30 @@
+export interface Program {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  applyStart: string;
+  applyEnd: string;
+  programStart: string;
+  programEnd: string;
+  location: string;
+  fee: number;
+  maxParticipants: number;
+  organizerId: string;
+  organizer: {
+    id: string;
+    name: string;
+  };
+  applicationForm?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Application {
   id: string;
   programId: string;
-  program: {
-    id: string;
-    title: string;
-    status: string;
-    applyStart: string;
-    applyEnd: string;
-  };
+  program: Program;
   applicantId: string;
   applicant: {
     id: string;
