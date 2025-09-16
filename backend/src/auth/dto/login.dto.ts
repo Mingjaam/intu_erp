@@ -53,5 +53,10 @@ export class AuthResponseDto {
     name: string;
     role: string;
     organizationId?: string;
+    organization?: {
+      id: string;
+      name: string;
+      type: string;
+    };
   };
 }

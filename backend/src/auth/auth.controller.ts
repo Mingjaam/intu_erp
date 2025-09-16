@@ -56,8 +56,7 @@ export class AuthController {
     description: '프로필 조회 성공',
   })
   async getProfile(@Request() req): Promise<ApiResponseDto<any>> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, ...user } = req.user;
+    const user = await this.authService.getUserProfile(req.user.id);
     return new ApiResponseDto(user, true, '프로필을 조회했습니다.');
   }
 

@@ -57,6 +57,7 @@ export class AuthService {
         name: user.name,
         role: user.role,
         organizationId: user.organizationId,
+        organization: user.organization,
       },
     };
   }
@@ -103,6 +104,21 @@ export class AuthService {
     return {
       accessToken: this.jwtService.sign(payload),
     };
+  }
+
+  async getUserProfile(userId: string): Promise<any> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['organization'],
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, ...result } = user;
+    return result;
   }
 
   async changePassword(
