@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
+import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2, Loader2 } from 'lucide-react';
 
@@ -60,6 +61,7 @@ interface Program {
 export default function EditProgramPage() {
   const router = useRouter();
   const params = useParams();
+  const { user, refreshUserProfile, loading } = useAuth();
   const programId = params.id as string;
   
   const [isLoading, setIsLoading] = useState(false);
@@ -73,6 +75,7 @@ export default function EditProgramPage() {
     formState: { errors },
     setValue,
     reset,
+    watch,
   } = useForm<ProgramFormData>({
     resolver: zodResolver(programSchema),
   });
@@ -117,16 +120,31 @@ export default function EditProgramPage() {
   }, [programId, router, reset]);
 
   useEffect(() => {
+    refreshUserProfile();
+  }, [refreshUserProfile]);
+
+  useEffect(() => {
     if (programId) {
       fetchProgram();
     }
   }, [programId, fetchProgram]);
 
+  // 사용자 조직 ID가 있으면 자동으로 설정
+  useEffect(() => {
+    if (user?.organizationId) {
+      setValue('organizerId', user.organizationId);
+    }
+  }, [user?.organizationId, setValue]);
+
   const onSubmit = async (data: ProgramFormData) => {
     setIsLoading(true);
     try {
+      // organizerId는 업데이트하지 않음 (백엔드에서 제한됨)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { organizerId, ...updateData } = data;
+      
       const programData = {
-        ...data,
+        ...updateData,
         applicationForm: { fields: formFields },
         metadata: {
           ...program?.metadata,
@@ -135,6 +153,7 @@ export default function EditProgramPage() {
         },
       };
 
+      console.log('수정 전송 데이터:', programData);
       await apiClient.patch(API_ENDPOINTS.PROGRAMS.UPDATE(programId), programData);
       toast.success('프로그램이 성공적으로 수정되었습니다.');
       router.push('/admin/programs');
@@ -167,7 +186,8 @@ export default function EditProgramPage() {
     setFormFields(formFields.filter((_, i) => i !== index));
   };
 
-  if (isLoadingData) {
+  // 로딩 중이면 로딩 표시
+  if (loading || isLoadingData) {
     return (
       <div className="p-8">
         <div className="flex items-center justify-center h-64">
@@ -175,6 +195,19 @@ export default function EditProgramPage() {
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
             <p className="text-gray-600">프로그램 정보를 불러오는 중...</p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 사용자 정보가 없거나 권한이 없으면 접근 거부
+  if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">접근 권한이 없습니다</h1>
+          <p className="text-gray-600 mb-6">프로그램을 수정할 권한이 없습니다.</p>
+          <Button onClick={() => router.back()}>뒤로가기</Button>
         </div>
       </div>
     );
@@ -234,7 +267,10 @@ export default function EditProgramPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="status">상태 *</Label>
-                <Select onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'archived')}>
+                <Select 
+                  value={watch('status') || ''} 
+                  onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'archived')}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="상태를 선택해주세요" />
                   </SelectTrigger>
@@ -290,11 +326,20 @@ export default function EditProgramPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="organizerId">주최 기관 *</Label>
-                <Input
-                  id="organizerId"
-                  {...register('organizerId')}
-                  placeholder="주최 기관 ID를 입력해주세요"
-                />
+                <div className="relative">
+                  <Input
+                    id="organizerId"
+                    value={user?.organization?.name || ''}
+                    placeholder="주최 기관을 선택해주세요"
+                    className="bg-gray-50"
+                    readOnly
+                  />
+                  <input
+                    type="hidden"
+                    {...register('organizerId')}
+                    value={user?.organizationId || ''}
+                  />
+                </div>
                 {errors.organizerId && (
                   <p className="text-sm text-red-600">{errors.organizerId.message}</p>
                 )}
