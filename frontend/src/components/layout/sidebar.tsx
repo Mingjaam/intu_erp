@@ -8,7 +8,6 @@ import {
   Home, 
   Users, 
   Settings, 
-  BarChart3,
   FolderOpen,
   Calendar,
   ChevronDown,
