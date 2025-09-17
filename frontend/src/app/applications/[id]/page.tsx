@@ -41,6 +41,13 @@ export default function ApplicationDetailPage() {
       try {
         const response = await apiClient.get<Application>(API_ENDPOINTS.APPLICATIONS.DETAIL(applicationId));
         const data = response.data || response;
+        
+        console.log('신청서 상세 응답:', data);
+        console.log('프로그램 정보:', data.program);
+        console.log('organizer 정보:', data.program?.organizer);
+        console.log('organizer name:', data.program?.organizer?.name);
+        console.log('전체 데이터 구조:', JSON.stringify(data, null, 2));
+        
         setApplication(data);
       } catch (error) {
         console.error('신청서 조회 오류:', error);
@@ -129,23 +136,17 @@ export default function ApplicationDetailPage() {
               
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin className="h-4 w-4 mr-2" />
-                <span>주최: {application.program.organizer.name}</span>
+                <span>주최: {application.program.organizer?.name || '정보 없음'}</span>
               </div>
               
               <div className="flex items-center text-sm text-gray-600">
                 <Calendar className="h-4 w-4 mr-2" />
                 <span>
-                  프로그램 기간: {new Date(application.program.programStart).toLocaleDateString()} -{' '}
-                  {new Date(application.program.programEnd).toLocaleDateString()}
+                  프로그램 기간: {application.program.programStart ? new Date(application.program.programStart).toLocaleDateString() : '미정'} -{' '}
+                  {application.program.programEnd ? new Date(application.program.programEnd).toLocaleDateString() : '미정'}
                 </span>
               </div>
 
-              {application.program.description && (
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">프로그램 설명</h4>
-                  <p className="text-gray-600 whitespace-pre-wrap">{application.program.description}</p>
-                </div>
-              )}
             </CardContent>
           </Card>
 
