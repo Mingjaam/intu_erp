@@ -57,6 +57,11 @@ export class CreateProgramDto {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
+
+  @ApiProperty({ example: '/uploads/images/program-image.jpg', required: false })
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
 }
 
 export class UpdateProgramDto {
@@ -121,6 +126,11 @@ export class UpdateProgramDto {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, any>;
+
+  @ApiProperty({ example: '/uploads/images/program-image.jpg', required: false })
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
 
   @ApiProperty({ example: true, required: false })
   @IsBoolean()

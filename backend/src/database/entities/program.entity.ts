@@ -69,6 +69,9 @@ export class Program {
   @Column('jsonb', { nullable: true })
   metadata: Record<string, any>;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column({ default: true })
   isActive: boolean;
 

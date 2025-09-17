@@ -11,6 +11,7 @@ import { SelectionsModule } from './selections/selections.module';
 import { VisitsModule } from './visits/visits.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -31,8 +32,9 @@ import { DashboardModule } from './dashboard/dashboard.module';
     ApplicationsModule,
     SelectionsModule,
     VisitsModule,
-          OrganizationsModule,
-          DashboardModule,
-        ],
+    OrganizationsModule,
+    DashboardModule,
+    UploadModule,
+  ],
       })
       export class AppModule {}

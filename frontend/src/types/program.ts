@@ -13,6 +13,7 @@ export interface Program {
   applyEnd: string;
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
+  imageUrl?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -27,6 +28,7 @@ export interface CreateProgramData {
   applyEnd: string;
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
+  imageUrl?: string;
 }
 
 export interface UpdateProgramData {
@@ -37,6 +39,7 @@ export interface UpdateProgramData {
   applyEnd?: string;
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
+  imageUrl?: string;
   isActive?: boolean;
 }
 

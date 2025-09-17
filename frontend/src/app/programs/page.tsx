@@ -128,6 +128,15 @@ export default function ProgramsPage() {
           return (
             <Card key={program.id} className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white/90 backdrop-blur-sm border-0 overflow-hidden">
               <div className={`h-2 bg-gradient-to-r ${gradientColor}`}></div>
+              {program.imageUrl && (
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={program.imageUrl}
+                    alt={program.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              )}
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between mb-3">
                   <CardTitle className="text-xl text-gray-800 group-hover:text-blue-600 transition-colors">
