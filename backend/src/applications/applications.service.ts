@@ -115,10 +115,16 @@ export class ApplicationsService {
   }
 
   async findOne(id: string, user: User): Promise<Application> {
-    const application = await this.applicationRepository.findOne({
-      where: { id },
-      relations: ['program', 'applicant', 'applicant.organization', 'selection', 'selection.reviewer'],
-    });
+    const application = await this.applicationRepository
+      .createQueryBuilder('application')
+      .leftJoinAndSelect('application.program', 'program')
+      .leftJoinAndSelect('program.organizer', 'organizer')
+      .leftJoinAndSelect('application.applicant', 'applicant')
+      .leftJoinAndSelect('applicant.organization', 'organization')
+      .leftJoinAndSelect('application.selection', 'selection')
+      .leftJoinAndSelect('selection.reviewer', 'reviewer')
+      .where('application.id = :id', { id })
+      .getOne();
 
     if (!application) {
       throw new NotFoundException('신청서를 찾을 수 없습니다.');
