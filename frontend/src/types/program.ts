@@ -2,6 +2,7 @@ export interface Program {
   id: string;
   title: string;
   description?: string;
+  summary?: string;
   organizerId: string;
   organizer: {
     id: string;
@@ -11,6 +12,11 @@ export interface Program {
   status: 'draft' | 'open' | 'closed' | 'archived';
   applyStart: string;
   applyEnd: string;
+  programStart: string;
+  programEnd: string;
+  location: string;
+  fee: number;
+  maxParticipants: number;
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
   imageUrl?: string;
@@ -22,10 +28,16 @@ export interface Program {
 export interface CreateProgramData {
   title: string;
   description?: string;
+  summary?: string;
   organizerId: string;
   status: 'draft' | 'open' | 'closed' | 'archived';
   applyStart: string;
   applyEnd: string;
+  programStart: string;
+  programEnd: string;
+  location: string;
+  fee: number;
+  maxParticipants: number;
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
   imageUrl?: string;
@@ -34,9 +46,15 @@ export interface CreateProgramData {
 export interface UpdateProgramData {
   title?: string;
   description?: string;
+  summary?: string;
   status?: 'draft' | 'open' | 'closed' | 'archived';
   applyStart?: string;
   applyEnd?: string;
+  programStart?: string;
+  programEnd?: string;
+  location?: string;
+  fee?: number;
+  maxParticipants?: number;
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
   imageUrl?: string;

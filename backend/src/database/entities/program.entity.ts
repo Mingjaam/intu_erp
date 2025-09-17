@@ -28,6 +28,9 @@ export class Program {
   @Column('text', { nullable: true })
   description: string;
 
+  @Column({ nullable: true })
+  summary: string;
+
   @Column()
   organizerId: string;
 

@@ -12,6 +12,11 @@ export class CreateProgramDto {
   @IsOptional()
   description?: string;
 
+  @ApiProperty({ example: '환경 개선을 통한 마을 발전 프로젝트', required: false })
+  @IsString()
+  @IsOptional()
+  summary?: string;
+
   @ApiProperty({ example: 'village-uuid' })
   @IsString()
   organizerId: string;
@@ -74,6 +79,11 @@ export class UpdateProgramDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @ApiProperty({ example: '환경 개선을 통한 마을 발전 프로젝트', required: false })
+  @IsString()
+  @IsOptional()
+  summary?: string;
 
   // organizerId는 업데이트에서 제외 (보안상의 이유)
 
