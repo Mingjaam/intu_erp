@@ -13,7 +13,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole } from '@/database/entities/user.entity';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 @Controller('upload')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -25,7 +25,7 @@ export class UploadController {
       storage: diskStorage({
         destination: './uploads/images',
         filename: (req, file, cb) => {
-          const uniqueName = `${uuidv4()}${extname(file.originalname)}`;
+          const uniqueName = `${randomUUID()}${extname(file.originalname)}`;
           cb(null, uniqueName);
         },
       }),
