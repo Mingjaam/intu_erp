@@ -338,7 +338,7 @@ export default function ApplyPage() {
       <Header />
       <div className="flex">
         <UserSidebar />
-        <div className="flex-1">
+        <div className="flex-1 pb-16 md:pb-0">
           <div className="container mx-auto px-4 py-8">
             <div className="mb-6">
               <Button variant="outline" asChild className="mb-4">
