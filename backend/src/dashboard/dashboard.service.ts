@@ -297,9 +297,9 @@ export class DashboardService {
     let query = this.applicationRepository
       .createQueryBuilder('application')
       .leftJoin('application.program', 'program')
-      .select('strftime(\'%Y-%m\', application.createdAt)', 'month')
+      .select('DATE_TRUNC(\'month\', application.createdAt)', 'month')
       .addSelect('COUNT(*)', 'count')
-      .groupBy('strftime(\'%Y-%m\', application.createdAt)')
+      .groupBy('DATE_TRUNC(\'month\', application.createdAt)')
       .orderBy('month', 'ASC');
 
     if (organizationId) {
@@ -325,9 +325,9 @@ export class DashboardService {
     let query = this.applicationRepository
       .createQueryBuilder('application')
       .leftJoin('application.program', 'program')
-      .select('strftime(\'%Y-%m-%d\', application.createdAt)', 'day')
+      .select('DATE_TRUNC(\'day\', application.createdAt)', 'day')
       .addSelect('COUNT(*)', 'count')
-      .groupBy('strftime(\'%Y-%m-%d\', application.createdAt)')
+      .groupBy('DATE_TRUNC(\'day\', application.createdAt)')
       .orderBy('day', 'ASC')
       .limit(30);
 
