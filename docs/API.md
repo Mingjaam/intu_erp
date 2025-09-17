@@ -33,6 +33,7 @@ Intu ERP API는 RESTful API를 기반으로 하며, JSON 형태로 데이터를 
 ### 로그인
 ```http
 POST /auth/login
+
 Content-Type: application/json
 
 {
@@ -504,6 +505,24 @@ API는 다음과 같은 HTTP 상태 코드를 사용합니다:
   "data": null
 }
 ```
+
+## 프론트엔드 라우팅
+
+### 인증 관련 페이지
+- **로그인/회원가입**: `/auth/login`
+- **루트 페이지**: `/` (역할별 자동 리다이렉트)
+
+### 사용자 페이지
+- **프로그램 목록**: `/programs`
+- **프로그램 상세**: `/programs/[id]`
+- **프로그램 신청**: `/programs/[id]/apply`
+- **내 신청 목록**: `/applications`
+- **신청 상세**: `/applications/[id]`
+
+### 관리자 페이지
+- **관리자 대시보드**: `/admin`
+- **프로그램 관리**: `/admin/programs`
+- **신청자 관리**: `/admin/programs/[id]/applications`
 
 ## Swagger 문서
 

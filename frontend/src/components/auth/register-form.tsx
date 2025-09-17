@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +24,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { register: registerUser } = useAuth();
+  const router = useRouter();
 
   const {
     register,
@@ -37,6 +39,9 @@ export function RegisterForm() {
     try {
       await registerUser(data);
       toast.success('회원가입에 성공했습니다');
+      
+      // 회원가입 후 로그인 페이지로 리다이렉트
+      router.push('/auth/login');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : '회원가입에 실패했습니다');
     } finally {

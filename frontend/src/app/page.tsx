@@ -1,12 +1,28 @@
 'use client';
 
 import { useAuth } from '@/hooks/use-auth';
-import { LoginForm } from '@/components/auth/login-form';
-import { RegisterForm } from '@/components/auth/register-form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        // 로그인된 사용자는 역할별 페이지로 리다이렉트
+        if (user.role === 'admin' || user.role === 'operator') {
+          router.push('/admin');
+        } else {
+          router.push('/programs');
+        }
+      } else {
+        // 로그인되지 않은 사용자는 로그인 페이지로 리다이렉트
+        router.push('/auth/login');
+      }
+    }
+  }, [user, loading, router]);
 
   if (loading) {
     return (
@@ -19,43 +35,15 @@ export default function HomePage() {
     );
   }
 
-  if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Intu ERP에 오신 것을 환영합니다
-          </h1>
-          <p className="text-gray-600">
-            이미 로그인되어 있습니다. 대시보드로 이동하세요.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Intu ERP</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            신청자, 수혜자, 프로그램, 후속 활동을 관리하는 ERP 시스템
-          </p>
-        </div>
-        
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">로그인</TabsTrigger>
-            <TabsTrigger value="register">회원가입</TabsTrigger>
-          </TabsList>
-          <TabsContent value="login">
-            <LoginForm />
-          </TabsContent>
-          <TabsContent value="register">
-            <RegisterForm />
-          </TabsContent>
-        </Tabs>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          Intu ERP에 오신 것을 환영합니다
+        </h1>
+        <p className="text-gray-600">
+          페이지를 이동하고 있습니다...
+        </p>
       </div>
     </div>
   );

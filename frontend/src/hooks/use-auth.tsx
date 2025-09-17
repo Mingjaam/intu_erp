@@ -81,6 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
       
       apiClient.setToken(data.accessToken);
       setUser(data.user);
+      
+      // 사용자 정보를 localStorage에 저장 (리다이렉트용)
+      localStorage.setItem('user', JSON.stringify(data.user));
     } catch (error) {
       console.error('로그인 실패:', error);
       throw error;
@@ -105,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
   const logout = () => {
     apiClient.clearToken();
     setUser(null);
+    localStorage.removeItem('user');
   };
 
   return (
