@@ -2,6 +2,7 @@
 
 // import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -12,11 +13,17 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Settings, Search, Bell, FileText } from 'lucide-react';
+import { LogOut, User, Settings, Search, Bell, FileText, Shield } from 'lucide-react';
 
 export function Header() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/programs');
+  };
 
   if (!user) {
     return (
@@ -30,7 +37,7 @@ export function Header() {
               <Link href="/auth/login">
                 <Button variant="outline">로그인</Button>
               </Link>
-              <Link href="/auth/register">
+              <Link href="/auth/login">
                 <Button>회원가입</Button>
               </Link>
             </div>
@@ -111,20 +118,35 @@ export function Header() {
                     프로필
                   </Link>
                 </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/applications" className="flex items-center">
-            <FileText className="mr-2 h-4 w-4" />
-            내 신청 목록
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex items-center">
-            <Settings className="mr-2 h-4 w-4" />
-            설정
-          </Link>
-        </DropdownMenuItem>
+                
+                {/* 관리자 이상일 경우에만 관리자 페이지 메뉴 표시 */}
+                {(user.role === 'admin' || user.role === 'operator') && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-center">
+                      <Shield className="mr-2 h-4 w-4" />
+                      관리자 페이지
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                
+                {/* 일반 사용자일 경우에만 내 신청 목록 표시 */}
+                {user.role === 'applicant' && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/applications" className="flex items-center">
+                      <FileText className="mr-2 h-4 w-4" />
+                      내 신청 목록
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    설정
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="text-red-600">
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   로그아웃
                 </DropdownMenuItem>
