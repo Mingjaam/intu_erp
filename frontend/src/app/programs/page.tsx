@@ -94,7 +94,7 @@ export default function ProgramsPage() {
       <Header />
       <div className="flex">
         <UserSidebar />
-        <div className="flex-1">
+        <div className="flex-1 pb-16 md:pb-0">
           <div className="container mx-auto px-6 py-8">
             {/* 히어로 섹션 */}
             <div className="text-center mb-12">
@@ -139,10 +139,17 @@ export default function ProgramsPage() {
               )}
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between mb-3">
-                  <CardTitle className="text-xl text-gray-800 group-hover:text-blue-600 transition-colors">
-                    {program.title}
-                  </CardTitle>
-                  <Badge className={`${statusColors[program.status]} px-3 py-1 rounded-full text-xs font-medium`}>
+                  <div className="flex-1">
+                    <CardTitle className="text-xl text-gray-800 group-hover:text-blue-600 transition-colors">
+                      {program.title}
+                    </CardTitle>
+                    {program.summary && (
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                        {program.summary}
+                      </p>
+                    )}
+                  </div>
+                  <Badge className={`${statusColors[program.status]} px-3 py-1 rounded-full text-xs font-medium ml-3`}>
                     {statusLabels[program.status]}
                   </Badge>
                 </div>
@@ -164,6 +171,37 @@ export default function ProgramsPage() {
                     <Clock className="h-4 w-4 mr-3 text-purple-500" />
                     <span className="font-medium">{isApplicationOpen(program) ? '신청 가능' : '신청 마감'}</span>
                   </div>
+                  {program.programStart && (
+                    <div className="flex items-center text-sm text-gray-600 bg-blue-50 rounded-lg p-3">
+                      <Calendar className="h-4 w-4 mr-3 text-blue-600" />
+                      <div className="flex-1">
+                        <div className="font-medium text-blue-800">활동 기간</div>
+                        <div className="text-xs text-blue-600">
+                          {formatDate(program.programStart)} ~ {formatDate(program.programEnd)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {program.location && (
+                    <div className="flex items-center text-sm text-gray-600 bg-green-50 rounded-lg p-3">
+                      <MapPin className="h-4 w-4 mr-3 text-green-600" />
+                      <div className="flex-1">
+                        <div className="font-medium text-green-800">장소</div>
+                        <div className="text-xs text-green-600">{program.location}</div>
+                      </div>
+                    </div>
+                  )}
+                  {program.fee !== undefined && (
+                    <div className="flex items-center text-sm text-gray-600 bg-yellow-50 rounded-lg p-3">
+                      <Users className="h-4 w-4 mr-3 text-yellow-600" />
+                      <div className="flex-1">
+                        <div className="font-medium text-yellow-800">참가비</div>
+                        <div className="text-xs text-yellow-600">
+                          {program.fee > 0 ? `${program.fee.toLocaleString()}원` : '무료'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1 border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all duration-300" asChild>

@@ -98,7 +98,7 @@ export default function ProgramDetailPage() {
       <Header />
       <div className="flex">
         <UserSidebar />
-        <div className="flex-1">
+        <div className="flex-1 pb-16 md:pb-0">
           <div className="container mx-auto px-6 py-8">
             {/* 히어로 섹션 */}
             <div className="text-center mb-12">
@@ -118,6 +118,11 @@ export default function ProgramDetailPage() {
               <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-4">
                 {program.title}
               </h1>
+              {program.summary && (
+                <p className="text-xl text-gray-500 mb-6 max-w-3xl mx-auto">
+                  {program.summary}
+                </p>
+              )}
               <div className="flex justify-center items-center gap-4 mb-6">
                 <Badge className={`${statusColors[program.status]} px-6 py-3 rounded-full text-lg font-medium`}>
                   {statusLabels[program.status]}
@@ -155,6 +160,48 @@ export default function ProgramDetailPage() {
                   <p className="text-gray-600 whitespace-pre-wrap">{program.description}</p>
                 </div>
               )}
+
+              {/* 활동일정 정보 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">활동 시작일</h3>
+                  <p className="text-gray-600">
+                    {program.programStart ? new Date(program.programStart).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      weekday: 'long'
+                    }) : '미정'}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">활동 종료일</h3>
+                  <p className="text-gray-600">
+                    {program.programEnd ? new Date(program.programEnd).toLocaleDateString('ko-KR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      weekday: 'long'
+                    }) : '미정'}
+                  </p>
+                </div>
+              </div>
+
+              {/* 추가 정보 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">장소</h3>
+                  <p className="text-gray-600">{program.location || '미정'}</p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">참가비</h3>
+                  <p className="text-gray-600">{program.fee ? `${program.fee.toLocaleString()}원` : '무료'}</p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-2">최대 참가자</h3>
+                  <p className="text-gray-600">{program.maxParticipants}명</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
