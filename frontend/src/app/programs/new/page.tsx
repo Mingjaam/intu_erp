@@ -21,11 +21,17 @@ export default function NewProgramPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<CreateProgramData>({
     title: '',
+    summary: '',
     description: '',
     organizerId: '',
     status: 'draft',
     applyStart: '',
     applyEnd: '',
+    programStart: '',
+    programEnd: '',
+    location: '',
+    fee: 0,
+    maxParticipants: 20,
     applicationForm: {},
     metadata: {},
   });
