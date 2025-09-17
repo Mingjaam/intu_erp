@@ -66,6 +66,12 @@ class ApiClient {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({}));
+      console.error('API 오류 상세:', {
+        status: response.status,
+        statusText: response.statusText,
+        url: url,
+        error: error
+      });
       throw new Error(error.message || `HTTP error! status: ${response.status}`);
     }
 

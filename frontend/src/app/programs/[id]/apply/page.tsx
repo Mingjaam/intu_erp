@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -15,11 +15,15 @@ import { ArrowLeft, Calendar, MapPin, Users } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Program } from '@/types/program';
+import { Application } from '@/types/application';
+import { Header } from '@/components/layout/header';
+import { UserSidebar } from '@/components/layout/user-sidebar';
 
 interface FormField {
   name: string;
   type: 'text' | 'number' | 'email' | 'tel' | 'textarea' | 'select' | 'radio' | 'checkbox';
   label: string;
+  description?: string;
   required: boolean;
   options?: string[];
   placeholder?: string;
@@ -28,13 +32,17 @@ interface FormField {
 export default function ApplyPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const [program, setProgram] = useState<Program | null>(null);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [existingApplication, setExistingApplication] = useState<Application | null>(null);
 
   const programId = params.id as string;
+  const editApplicationId = searchParams.get('edit');
 
   useEffect(() => {
     const fetchProgram = async () => {
@@ -61,10 +69,28 @@ export default function ApplyPage() {
       }
     };
 
-    if (programId) {
-      fetchProgram();
-    }
-  }, [programId, user, router]);
+      const fetchExistingApplication = async () => {
+        if (editApplicationId) {
+          try {
+            const response = await apiClient.get<Application>(API_ENDPOINTS.APPLICATIONS.DETAIL(editApplicationId));
+            const data = response.data || response;
+            setExistingApplication(data);
+            setFormData(data.payload);
+            setIsEditing(true);
+          } catch (error) {
+            console.error('기존 신청서 조회 오류:', error);
+            toast.error('기존 신청서를 불러오는데 실패했습니다.');
+          }
+        }
+      };
+
+      if (programId) {
+        fetchProgram();
+        if (editApplicationId) {
+          fetchExistingApplication();
+        }
+      }
+    }, [programId, user, router, editApplicationId]);
 
   const handleInputChange = (fieldName: string, value: unknown) => {
     setFormData(prev => ({
@@ -85,26 +111,44 @@ export default function ApplyPage() {
     try {
       setIsSubmitting(true);
       
-      const applicationData = {
-        programId,
-        payload: formData,
-      };
+      if (isEditing && existingApplication) {
+        // 기존 신청서 수정
+        const applicationData = {
+          payload: formData,
+          status: 'submitted', // 수정 시 다시 제출 상태로 변경
+        };
 
-      await apiClient.post(API_ENDPOINTS.APPLICATIONS.CREATE, applicationData);
-      
-      toast.success('신청이 완료되었습니다.');
-      router.push(`/programs/${programId}`);
+        await apiClient.patch(API_ENDPOINTS.APPLICATIONS.UPDATE(existingApplication.id), applicationData);
+        toast.success('신청서가 수정되었습니다.');
+        router.push(`/applications/${existingApplication.id}`);
+      } else {
+        // 새 신청서 제출
+        const applicationData = {
+          programId,
+          payload: formData,
+        };
+
+        await apiClient.post(API_ENDPOINTS.APPLICATIONS.CREATE, applicationData);
+        toast.success('신청이 완료되었습니다.');
+        router.push(`/programs/${programId}`);
+      }
     } catch (error) {
       console.error('신청 제출 오류:', error);
-      toast.error('신청 제출에 실패했습니다.');
+      toast.error(isEditing ? '신청서 수정에 실패했습니다.' : '신청 제출에 실패했습니다.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const renderFormField = (field: FormField) => {
-    const { name, type, label, required, options, placeholder } = field;
+    const { name, type, label, description, required, options, placeholder } = field;
     const value = formData[name] || '';
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && type !== 'textarea') {
+        e.preventDefault();
+      }
+    };
 
     switch (type) {
       case 'text':
@@ -115,14 +159,18 @@ export default function ApplyPage() {
             <Label htmlFor={name}>
               {label} {required && <span className="text-red-500">*</span>}
             </Label>
+            {description && (
+              <p className="text-sm text-gray-600">{description}</p>
+            )}
             <Input
               id={name}
               type={type}
               value={value as string}
               onChange={(e) => handleInputChange(name, e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
-                    disabled={!!(user && ['name', 'email', 'phone'].includes(name))}
+              disabled={!!(user && ['name', 'email', 'phone'].includes(name))}
             />
           </div>
         );
@@ -133,11 +181,15 @@ export default function ApplyPage() {
             <Label htmlFor={name}>
               {label} {required && <span className="text-red-500">*</span>}
             </Label>
+            {description && (
+              <p className="text-sm text-gray-600">{description}</p>
+            )}
             <Input
               id={name}
               type="number"
               value={value as string}
               onChange={(e) => handleInputChange(name, parseInt(e.target.value) || '')}
+              onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
             />
@@ -150,6 +202,9 @@ export default function ApplyPage() {
             <Label htmlFor={name}>
               {label} {required && <span className="text-red-500">*</span>}
             </Label>
+            {description && (
+              <p className="text-sm text-gray-600">{description}</p>
+            )}
             <Textarea
               id={name}
               value={value as string}
@@ -167,6 +222,9 @@ export default function ApplyPage() {
             <Label htmlFor={name}>
               {label} {required && <span className="text-red-500">*</span>}
             </Label>
+            {description && (
+              <p className="text-sm text-gray-600">{description}</p>
+            )}
             <select
               id={name}
               value={value as string}
@@ -190,6 +248,9 @@ export default function ApplyPage() {
             <Label>
               {label} {required && <span className="text-red-500">*</span>}
             </Label>
+            {description && (
+              <p className="text-sm text-gray-600">{description}</p>
+            )}
             <div className="space-y-2">
               {options?.map((option) => (
                 <div key={option} className="flex items-center space-x-2">
@@ -216,6 +277,9 @@ export default function ApplyPage() {
             <Label>
               {label} {required && <span className="text-red-500">*</span>}
             </Label>
+            {description && (
+              <p className="text-sm text-gray-600">{description}</p>
+            )}
             <div className="space-y-2">
               {options?.map((option) => (
                 <div key={option} className="flex items-center space-x-2">
@@ -270,27 +334,42 @@ export default function ApplyPage() {
   const fields = applicationForm?.fields || [];
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button variant="outline" asChild className="mb-4">
-          <Link href={`/programs/${program.id}`}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            프로그램 상세로 돌아가기
-          </Link>
-        </Button>
-        
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{program.title} 신청</h1>
-        <p className="text-gray-600">{program.description}</p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="flex">
+        <UserSidebar />
+        <div className="flex-1">
+          <div className="container mx-auto px-4 py-8">
+            <div className="mb-6">
+              <Button variant="outline" asChild className="mb-4">
+                <Link href={`/programs/${program.id}`}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  프로그램 상세로 돌아가기
+                </Link>
+              </Button>
+              
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {program.title} {isEditing ? '신청서 수정' : '신청'}
+              </h1>
+              <p className="text-gray-600">{program.description}</p>
+            </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>신청서 작성</CardTitle>
-            </CardHeader>
+            <Card>
+              <CardHeader>
+                <CardTitle>{isEditing ? '신청서 수정' : '신청서 작성'}</CardTitle>
+              </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form 
+                onSubmit={handleSubmit} 
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.target instanceof HTMLInputElement && e.target.type !== 'textarea') {
+                    e.preventDefault();
+                  }
+                }}
+                className="space-y-6"
+              >
                 {fields.map((field) => renderFormField(field))}
                 
                 <div className="pt-6 border-t">
@@ -299,7 +378,10 @@ export default function ApplyPage() {
                     className="w-full" 
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? '제출 중...' : '신청 제출'}
+                    {isSubmitting 
+                      ? (isEditing ? '수정 중...' : '제출 중...') 
+                      : (isEditing ? '신청서 수정' : '신청 제출')
+                    }
                   </Button>
                 </div>
               </form>
@@ -350,7 +432,10 @@ export default function ApplyPage() {
               <p>• 필수 항목은 반드시 입력해주세요.</p>
               <p>• 신청 결과는 이메일로 안내드립니다.</p>
             </CardContent>
-          </Card>
+            </Card>
+          </div>
+        </div>
+          </div>
         </div>
       </div>
     </div>

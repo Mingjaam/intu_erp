@@ -1,9 +1,9 @@
-import { Controller, Get, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { UserRole } from '@/database/entities/user.entity';
+import { UserRole, User } from '@/database/entities/user.entity';
 import { DashboardService } from './dashboard.service';
 import { DashboardQueryDto } from './dto/dashboard.dto';
 
@@ -22,8 +22,8 @@ export class DashboardController {
   @ApiQuery({ name: 'dateRange', required: false, description: '날짜 범위 (today, week, month, quarter, year)' })
   @ApiQuery({ name: 'startDate', required: false, description: '시작 날짜 (YYYY-MM-DD)' })
   @ApiQuery({ name: 'endDate', required: false, description: '종료 날짜 (YYYY-MM-DD)' })
-  async getStats(@Query() query: DashboardQueryDto) {
-    return this.dashboardService.getDashboardStats(query);
+  async getStats(@Query() query: DashboardQueryDto, @Request() req: { user: User }) {
+    return this.dashboardService.getDashboardStats(query, req.user);
   }
 
   @Get('health')

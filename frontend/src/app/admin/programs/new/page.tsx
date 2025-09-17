@@ -36,6 +36,7 @@ interface FormField {
   name: string;
   type: string;
   label: string;
+  description?: string;
   required: boolean;
   options?: string[];
   placeholder?: string;
@@ -102,7 +103,8 @@ export default function NewProgramPage() {
       name: `field_${Date.now()}`,
       type: 'text',
       label: '새 필드',
-      required: false,
+      description: '',
+      required: true, // 기본값을 필수로 변경
       placeholder: '입력해주세요',
     };
     setFormFields([...formFields, newField]);
@@ -352,19 +354,22 @@ export default function NewProgramPage() {
                 <div key={index} className="p-4 border border-gray-200 rounded-lg">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="space-y-2">
-                      <Label>필드명</Label>
-                      <Input
-                        value={field.name}
-                        onChange={(e) => updateFormField(index, { name: e.target.value })}
-                        placeholder="field_name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>라벨</Label>
+                      <Label>필드명 *</Label>
                       <Input
                         value={field.label}
                         onChange={(e) => updateFormField(index, { label: e.target.value })}
-                        placeholder="필드 라벨"
+                        placeholder="필드명을 입력해주세요"
+                      />
+                      <p className="text-xs text-gray-500">
+                        ID: {field.name} (자동 생성)
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>설명</Label>
+                      <Input
+                        value={field.description || ''}
+                        onChange={(e) => updateFormField(index, { description: e.target.value })}
+                        placeholder="필드 설명 (선택사항)"
                       />
                     </div>
                     <div className="space-y-2">
@@ -378,12 +383,7 @@ export default function NewProgramPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="text">텍스트</SelectItem>
-                          <SelectItem value="email">이메일</SelectItem>
-                          <SelectItem value="number">숫자</SelectItem>
                           <SelectItem value="textarea">긴 텍스트</SelectItem>
-                          <SelectItem value="select">선택</SelectItem>
-                          <SelectItem value="radio">라디오</SelectItem>
-                          <SelectItem value="checkbox">체크박스</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>

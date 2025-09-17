@@ -7,10 +7,12 @@ import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Calendar, MapPin, Users, BarChart3 } from 'lucide-react';
+import { Calendar, MapPin, BarChart3, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Program, ProgramStats } from '@/types/program';
+import { Header } from '@/components/layout/header';
+import { UserSidebar } from '@/components/layout/user-sidebar';
 
 const statusLabels: Record<string, string> = {
   draft: '임시저장',
@@ -89,26 +91,36 @@ export default function ProgramDetailPage() {
     );
   }
 
-  const isAdmin = user?.role === 'admin' || user?.role === 'operator';
-  const canApply = user && program.status === 'open'; // admin도 신청 가능하도록 수정 (테스트용)
+  const canApply = user && program.status === 'open';
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/programs">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            목록으로
-          </Link>
-        </Button>
-        <h1 className="text-3xl font-bold text-gray-900">{program.title}</h1>
-        <Badge className={statusColors[program.status]}>
-          {statusLabels[program.status]}
-        </Badge>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
+      <Header />
+      <div className="flex">
+        <UserSidebar />
+        <div className="flex-1">
+          <div className="container mx-auto px-6 py-8">
+            {/* 히어로 섹션 */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl mb-6 shadow-lg">
+                <FolderOpen className="h-10 w-10 text-white" />
+              </div>
+              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-4">
+                {program.title}
+              </h1>
+              <div className="flex justify-center items-center gap-4 mb-6">
+                <Badge className={`${statusColors[program.status]} px-6 py-3 rounded-full text-lg font-medium`}>
+                  {statusLabels[program.status]}
+                </Badge>
+                <div className="bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg">
+                  <span className="text-sm font-medium text-gray-700">주최: {program.organizer.name}</span>
+                </div>
+              </div>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">{program.description}</p>
+            </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>프로그램 정보</CardTitle>
@@ -136,29 +148,6 @@ export default function ProgramDetailPage() {
             </CardContent>
           </Card>
 
-          {isAdmin && (
-            <Card>
-              <CardHeader>
-                <CardTitle>관리자 기능</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-3">
-                  <Button asChild>
-                    <Link href={`/admin/programs/${program.id}/edit`}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      수정
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link href={`/admin/programs/${program.id}/applications`}>
-                      <Users className="h-4 w-4 mr-2" />
-                      신청자 목록
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         <div className="space-y-6">
@@ -201,7 +190,10 @@ export default function ProgramDetailPage() {
                 </Button>
               </CardContent>
             </Card>
-          )}
+              )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

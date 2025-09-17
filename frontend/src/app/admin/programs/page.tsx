@@ -37,6 +37,8 @@ interface Program {
     name: string;
   };
   applicationCount?: number;
+  selectedCount?: number;
+  revenue?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,14 +71,17 @@ export default function ProgramsPage() {
   const fetchPrograms = async () => {
     try {
       setIsLoading(true);
+      console.log('프로그램 목록 조회 시작...');
       const response = await apiClient.get<{ programs: Program[]; total: number }>(
         API_ENDPOINTS.PROGRAMS.LIST
       );
+      console.log('API 응답:', response);
       const data = response.data || response;
       setPrograms(data.programs || []);
     } catch (error) {
       console.error('프로그램 목록 조회 오류:', error);
-      toast.error('프로그램 목록을 불러오는데 실패했습니다.');
+      console.error('오류 상세:', error);
+      toast.error(`프로그램 목록을 불러오는데 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
     } finally {
       setIsLoading(false);
     }
@@ -194,7 +199,7 @@ export default function ProgramsPage() {
                     </div>
                     <p className="text-gray-600 mb-4 line-clamp-2">{program.description}</p>
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm text-gray-600">
                       <div>
                         <span className="font-medium">최대 참여자:</span> {program.maxParticipants}명
                       </div>
@@ -202,7 +207,13 @@ export default function ProgramsPage() {
                         <span className="font-medium">현재 신청자:</span> {program.applicationCount || 0}명
                       </div>
                       <div>
+                        <span className="font-medium">선정된 참여자:</span> {program.selectedCount || 0}명
+                      </div>
+                      <div>
                         <span className="font-medium">참가비:</span> ₩{program.fee.toLocaleString()}
+                      </div>
+                      <div>
+                        <span className="font-medium">매출:</span> ₩{(program.revenue || 0).toLocaleString()}
                       </div>
                       <div>
                         <span className="font-medium">장소:</span> {program.location}

@@ -28,6 +28,7 @@ interface DashboardStats {
     totalSelections: number;
     totalVisits: number;
     totalOrganizations: number;
+    totalRevenue: number;
   };
   recent: {
     applications: Record<string, unknown>[];
@@ -197,7 +198,7 @@ export default function AdminDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">총 매출</p>
-                <p className="text-2xl font-bold text-gray-900">₩{((stats?.overview.totalApplications || 0) * 150000).toLocaleString()}</p>
+                <p className="text-2xl font-bold text-gray-900">₩{(stats?.overview.totalRevenue || 0).toLocaleString()}</p>
               </div>
             </div>
           </CardContent>
@@ -265,11 +266,11 @@ export default function AdminDashboard() {
                     </Badge>
                     <div className="text-right">
                       <p className="text-sm text-gray-600">참여자</p>
-                      <p className="font-medium">{(program.applicationCount as number) || 0}/{(program.maxParticipants as number) || 0}</p>
+                      <p className="font-medium">{(program.selectedCount as number) || 0}/{(program.maxParticipants as number) || 0}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-600">매출</p>
-                      <p className="font-medium">₩{(((program.applicationCount as number) || 0) * 150000).toLocaleString()}</p>
+                      <p className="font-medium">₩{((program.revenue as number) || 0).toLocaleString()}</p>
                     </div>
                     <Link href={`/programs/${program.id as string}`}>
                       <Button size="sm" variant="outline">

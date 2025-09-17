@@ -78,6 +78,7 @@ export class ApplicationsService {
     const queryBuilder = this.applicationRepository
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.program', 'program')
+      .leftJoinAndSelect('program.organizer', 'organizer')
       .leftJoinAndSelect('application.applicant', 'applicant')
       .leftJoinAndSelect('applicant.organization', 'organization')
       .leftJoinAndSelect('application.selection', 'selection');
@@ -85,6 +86,11 @@ export class ApplicationsService {
     // 일반 사용자는 자신의 신청서만 조회 가능
     if (user.role === UserRole.APPLICANT) {
       queryBuilder.andWhere('application.applicantId = :applicantId', { applicantId: user.id });
+    }
+
+    // 관리자/운영자는 자신의 기관 프로그램 신청서만 조회 가능
+    if ((user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR) && user.organizationId) {
+      queryBuilder.andWhere('program.organizerId = :organizationId', { organizationId: user.organizationId });
     }
 
     if (programId) {

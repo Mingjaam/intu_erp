@@ -46,11 +46,18 @@ export class ProgramsService {
     const queryBuilder = this.programRepository
       .createQueryBuilder('program')
       .leftJoinAndSelect('program.organizer', 'organizer')
+      .leftJoinAndSelect('program.applications', 'applications')
+      .leftJoinAndSelect('applications.selection', 'selection')
       .where('program.isActive = :isActive', { isActive: true });
 
     // 일반 사용자는 공개된 프로그램만 조회 가능
     if (user && user.role === UserRole.APPLICANT) {
       queryBuilder.andWhere('program.status = :status', { status: 'open' });
+    }
+
+    // 관리자/운영자는 자신의 기관 프로그램만 조회
+    if (user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR) && user.organizationId) {
+      queryBuilder.andWhere('program.organizerId = :userOrganizationId', { userOrganizationId: user.organizationId });
     }
 
     if (status) {
@@ -67,7 +74,21 @@ export class ProgramsService {
       .take(limit)
       .getManyAndCount();
 
-    return { programs, total };
+    // 각 프로그램에 대한 통계 정보 추가
+    const programsWithStats = programs.map(program => {
+      const selectedCount = program.applications.filter(app => 
+        app.selection && app.selection.selected
+      ).length;
+      
+      return {
+        ...program,
+        applicationCount: program.applications.length,
+        selectedCount,
+        revenue: selectedCount * program.fee,
+      };
+    });
+
+    return { programs: programsWithStats, total };
   }
 
   async findOne(id: string, user: User | null): Promise<Program> {
@@ -83,6 +104,13 @@ export class ProgramsService {
     // 일반 사용자는 공개된 프로그램만 조회 가능
     if (user && user.role === UserRole.APPLICANT && program.status !== 'open') {
       throw new ForbiddenException('접근 권한이 없습니다.');
+    }
+
+    // 관리자/운영자는 자신의 기관 프로그램만 조회 가능
+    if (user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR) && user.organizationId) {
+      if (program.organizerId !== user.organizationId) {
+        throw new ForbiddenException('이 프로그램에 접근할 권한이 없습니다.');
+      }
     }
 
     return program;

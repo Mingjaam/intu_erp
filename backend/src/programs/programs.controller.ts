@@ -42,12 +42,26 @@ export class ProgramsController {
     return this.programsService.findAll(query, null);
   }
 
+  @Get('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @ApiOperation({ summary: '관리자용 프로그램 목록 조회' })
+  @ApiResponse({ status: 200, description: '관리자용 프로그램 목록을 성공적으로 조회했습니다.' })
+  @ApiResponse({ status: 403, description: '권한이 없습니다.' })
+  @ApiBearerAuth()
+  findAllForAdmin(@Query() query: ProgramQueryDto, @Request() req) {
+    return this.programsService.findAll(query, req.user);
+  }
+
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '프로그램 상세 조회' })
   @ApiResponse({ status: 200, description: '프로그램 상세 정보를 성공적으로 조회했습니다.' })
   @ApiResponse({ status: 404, description: '프로그램을 찾을 수 없습니다.' })
-  findOne(@Param('id') id: string) {
-    return this.programsService.findOne(id, null);
+  @ApiResponse({ status: 403, description: '접근 권한이 없습니다.' })
+  @ApiBearerAuth()
+  findOne(@Param('id') id: string, @Request() req) {
+    return this.programsService.findOne(id, req.user);
   }
 
   @Get(':id/stats')

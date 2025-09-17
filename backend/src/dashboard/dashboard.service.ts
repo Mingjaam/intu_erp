@@ -26,8 +26,10 @@ export class DashboardService {
     private organizationRepository: Repository<Organization>,
   ) {}
 
-  async getDashboardStats(query?: DashboardQueryDto) {
+  async getDashboardStats(query?: DashboardQueryDto, user?: User) {
     const dateFilter = this.getDateFilter(query);
+    const organizationId = user?.organizationId;
+    
     const [
       totalUsers,
       totalPrograms,
@@ -45,22 +47,25 @@ export class DashboardService {
       applicationTrends,
       programStatusStats,
     ] = await Promise.all([
-      this.userRepository.count(),
-      this.programRepository.count(),
-      this.applicationRepository.count(),
-      this.selectionRepository.count(),
-      this.visitRepository.count(),
+      this.getUserCount(organizationId),
+      this.getProgramCount(organizationId),
+      this.getApplicationCount(organizationId),
+      this.getSelectionCount(organizationId),
+      this.getVisitCount(organizationId),
       this.organizationRepository.count(),
-      this.getRecentApplications(),
-      this.getRecentPrograms(),
-      this.getRecentVisits(),
-      this.getProgramStats(),
-      this.getUserRoleStats(),
+      this.getRecentApplications(5, organizationId),
+      this.getRecentPrograms(5, organizationId),
+      this.getRecentVisits(5, organizationId),
+      this.getProgramStats(organizationId),
+      this.getUserRoleStats(organizationId),
       this.getOrganizationTypeStats(),
-      this.getMonthlyStats(dateFilter),
-      this.getApplicationTrends(dateFilter),
-      this.getProgramStatusStats(),
+      this.getMonthlyStats(dateFilter, organizationId),
+      this.getApplicationTrends(dateFilter, organizationId),
+      this.getProgramStatusStats(organizationId),
     ]);
+
+    // 매출 계산 (선정된 신청자 * 프로그램 수수료)
+    const totalRevenue = await this.calculateTotalRevenue(organizationId);
 
     return {
       overview: {
@@ -70,6 +75,7 @@ export class DashboardService {
         totalSelections,
         totalVisits,
         totalOrganizations,
+        totalRevenue,
       },
       recent: {
         applications: recentApplications,
@@ -87,51 +93,148 @@ export class DashboardService {
     };
   }
 
-  private async getRecentApplications(limit = 5) {
-    return this.applicationRepository.find({
-      relations: ['program', 'applicant'],
-      order: { createdAt: 'DESC' },
-      take: limit,
-    });
+  private async getUserCount(organizationId?: string) {
+    if (!organizationId) return this.userRepository.count();
+    return this.userRepository.count({ where: { organizationId } });
   }
 
-  private async getRecentPrograms(limit = 5) {
+  private async getProgramCount(organizationId?: string) {
+    if (!organizationId) return this.programRepository.count();
+    return this.programRepository.count({ where: { organizerId: organizationId } });
+  }
+
+  private async getApplicationCount(organizationId?: string) {
+    if (!organizationId) return this.applicationRepository.count();
+    
+    return this.applicationRepository
+      .createQueryBuilder('application')
+      .leftJoin('application.program', 'program')
+      .where('program.organizerId = :organizationId', { organizationId })
+      .getCount();
+  }
+
+  private async getSelectionCount(organizationId?: string) {
+    if (!organizationId) return this.selectionRepository.count();
+    
+    return this.selectionRepository
+      .createQueryBuilder('selection')
+      .leftJoin('selection.application', 'application')
+      .leftJoin('application.program', 'program')
+      .where('program.organizerId = :organizationId', { organizationId })
+      .getCount();
+  }
+
+  private async getVisitCount(organizationId?: string) {
+    if (!organizationId) return this.visitRepository.count();
+    
+    return this.visitRepository
+      .createQueryBuilder('visit')
+      .leftJoin('visit.program', 'program')
+      .where('program.organizerId = :organizationId', { organizationId })
+      .getCount();
+  }
+
+  private async getRecentApplications(limit = 5, organizationId?: string) {
+    if (!organizationId) {
+      return this.applicationRepository.find({
+        relations: ['program', 'applicant'],
+        order: { createdAt: 'DESC' },
+        take: limit,
+      });
+    }
+
+    return this.applicationRepository
+      .createQueryBuilder('application')
+      .leftJoinAndSelect('application.program', 'program')
+      .leftJoinAndSelect('application.applicant', 'applicant')
+      .where('program.organizerId = :organizationId', { organizationId })
+      .orderBy('application.createdAt', 'DESC')
+      .take(limit)
+      .getMany();
+  }
+
+  private async getRecentPrograms(limit = 5, organizationId?: string) {
+    if (!organizationId) {
+      return this.programRepository.find({
+        relations: ['organizer'],
+        order: { createdAt: 'DESC' },
+        take: limit,
+      });
+    }
+
     return this.programRepository.find({
+      where: { organizerId: organizationId },
       relations: ['organizer'],
       order: { createdAt: 'DESC' },
       take: limit,
     });
   }
 
-  private async getRecentVisits(limit = 5) {
-    return this.visitRepository.find({
-      relations: ['program', 'organization', 'visitor'],
-      order: { createdAt: 'DESC' },
-      take: limit,
+  private async getRecentVisits(limit = 5, organizationId?: string) {
+    if (!organizationId) {
+      return this.visitRepository.find({
+        relations: ['program', 'organization', 'visitor'],
+        order: { createdAt: 'DESC' },
+        take: limit,
+      });
+    }
+
+    return this.visitRepository
+      .createQueryBuilder('visit')
+      .leftJoinAndSelect('visit.program', 'program')
+      .leftJoinAndSelect('visit.organization', 'organization')
+      .leftJoinAndSelect('visit.visitor', 'visitor')
+      .where('program.organizerId = :organizationId', { organizationId })
+      .orderBy('visit.createdAt', 'DESC')
+      .take(limit)
+      .getMany();
+  }
+
+  private async getProgramStats(organizationId?: string) {
+    let programs;
+    
+    if (organizationId) {
+      programs = await this.programRepository.find({
+        where: { organizerId: organizationId },
+        relations: ['applications', 'applications.selection'],
+      });
+    } else {
+      programs = await this.programRepository.find({
+        relations: ['applications', 'applications.selection'],
+      });
+    }
+
+    return programs.map(program => {
+      const selectedCount = program.applications.filter(app => 
+        app.selection && app.selection.selected
+      ).length;
+      
+      return {
+        id: program.id,
+        title: program.title,
+        status: program.status,
+        applicationCount: program.applications.length,
+        selectedCount,
+        fee: program.fee,
+        revenue: selectedCount * program.fee,
+        maxParticipants: program.maxParticipants,
+        createdAt: program.createdAt,
+      };
     });
   }
 
-  private async getProgramStats() {
-    const programs = await this.programRepository.find({
-      relations: ['applications'],
-    });
-
-    return programs.map(program => ({
-      id: program.id,
-      title: program.title,
-      status: program.status,
-      applicationCount: program.applications.length,
-      createdAt: program.createdAt,
-    }));
-  }
-
-  private async getUserRoleStats() {
-    const result = await this.userRepository
+  private async getUserRoleStats(organizationId?: string) {
+    let query = this.userRepository
       .createQueryBuilder('user')
       .select('user.role', 'role')
       .addSelect('COUNT(*)', 'count')
-      .groupBy('user.role')
-      .getRawMany();
+      .groupBy('user.role');
+
+    if (organizationId) {
+      query = query.where('user.organizationId = :organizationId', { organizationId });
+    }
+
+    const result = await query.getRawMany();
 
     return result.map(item => ({
       role: item.role,
@@ -190,15 +293,27 @@ export class DashboardService {
     return Between(startDate, endDate);
   }
 
-  private async getMonthlyStats(dateFilter: any) {
-    const result = await this.applicationRepository
+  private async getMonthlyStats(dateFilter: any, organizationId?: string) {
+    let query = this.applicationRepository
       .createQueryBuilder('application')
+      .leftJoin('application.program', 'program')
       .select('DATE_TRUNC(\'month\', application.createdAt)', 'month')
       .addSelect('COUNT(*)', 'count')
-      .where(dateFilter ? { createdAt: dateFilter } : {})
       .groupBy('DATE_TRUNC(\'month\', application.createdAt)')
-      .orderBy('month', 'ASC')
-      .getRawMany();
+      .orderBy('month', 'ASC');
+
+    if (organizationId) {
+      query = query.where('program.organizerId = :organizationId', { organizationId });
+    }
+
+    if (dateFilter) {
+      query = query.andWhere('application.createdAt BETWEEN :startDate AND :endDate', {
+        startDate: dateFilter._value1,
+        endDate: dateFilter._value2,
+      });
+    }
+
+    const result = await query.getRawMany();
 
     return result.map(item => ({
       month: item.month,
@@ -206,16 +321,28 @@ export class DashboardService {
     }));
   }
 
-  private async getApplicationTrends(dateFilter: any) {
-    const result = await this.applicationRepository
+  private async getApplicationTrends(dateFilter: any, organizationId?: string) {
+    let query = this.applicationRepository
       .createQueryBuilder('application')
+      .leftJoin('application.program', 'program')
       .select('DATE_TRUNC(\'day\', application.createdAt)', 'day')
       .addSelect('COUNT(*)', 'count')
-      .where(dateFilter ? { createdAt: dateFilter } : {})
       .groupBy('DATE_TRUNC(\'day\', application.createdAt)')
       .orderBy('day', 'ASC')
-      .limit(30)
-      .getRawMany();
+      .limit(30);
+
+    if (organizationId) {
+      query = query.where('program.organizerId = :organizationId', { organizationId });
+    }
+
+    if (dateFilter) {
+      query = query.andWhere('application.createdAt BETWEEN :startDate AND :endDate', {
+        startDate: dateFilter._value1,
+        endDate: dateFilter._value2,
+      });
+    }
+
+    const result = await query.getRawMany();
 
     return result.map(item => ({
       day: item.day,
@@ -223,13 +350,18 @@ export class DashboardService {
     }));
   }
 
-  private async getProgramStatusStats() {
-    const result = await this.programRepository
+  private async getProgramStatusStats(organizationId?: string) {
+    let query = this.programRepository
       .createQueryBuilder('program')
       .select('program.status', 'status')
       .addSelect('COUNT(*)', 'count')
-      .groupBy('program.status')
-      .getRawMany();
+      .groupBy('program.status');
+
+    if (organizationId) {
+      query = query.where('program.organizerId = :organizationId', { organizationId });
+    }
+
+    const result = await query.getRawMany();
 
     return result.map(item => ({
       status: item.status,
@@ -266,6 +398,22 @@ export class DashboardService {
     // 실제 에러 로그가 있다면 여기서 조회
     // 현재는 빈 배열 반환
     return [];
+  }
+
+  private async calculateTotalRevenue(organizationId?: string): Promise<number> {
+    let query = this.selectionRepository
+      .createQueryBuilder('selection')
+      .leftJoin('selection.application', 'application')
+      .leftJoin('application.program', 'program')
+      .where('selection.selected = :selected', { selected: true })
+      .select('SUM(program.fee)', 'totalRevenue');
+
+    if (organizationId) {
+      query = query.andWhere('program.organizerId = :organizationId', { organizationId });
+    }
+
+    const result = await query.getRawOne();
+    return parseInt(result.totalRevenue) || 0;
   }
 
   private calculateHealthScore(users: number, programs: number, applications: number, activePrograms: number) {

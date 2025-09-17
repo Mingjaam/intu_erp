@@ -41,24 +41,34 @@ export function Header() {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
+          {/* 로고 및 브랜딩 */}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-blue-700 font-bold text-lg">M</span>
+              </div>
+              <h1 className="text-xl font-bold">마을 프로그램</h1>
+            </div>
+          </div>
+
           {/* 검색창 */}
-          <div className="flex-1 max-w-lg mx-4">
+          <div className="flex-1 max-w-md mx-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="색..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="프로그램 검색..."
+                className="w-full pl-10 pr-4 py-2 border-0 rounded-full focus:ring-2 focus:ring-white/30 focus:outline-none bg-white/90 backdrop-blur-sm"
               />
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {/* 알림 */}
-            <Button variant="ghost" size="sm" className="relative">
+            <Button variant="ghost" size="sm" className="relative text-white hover:bg-white/20">
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                 3
@@ -68,13 +78,17 @@ export function Header() {
             {/* 사용자 프로필 */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                <Button variant="ghost" className="flex items-center space-x-3 text-white hover:bg-white/20 rounded-full px-3 py-2">
+                  <Avatar className="h-8 w-8 ring-2 ring-white/30">
+                    <AvatarFallback className="bg-white text-blue-700 font-semibold">
+                      {user.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium">{user.name}</p>
-                    <p className="text-xs text-gray-500">대표관리자</p>
+                    <p className="text-sm font-medium">{user.name}님</p>
+                    <p className="text-xs text-white/80">
+                      {user.role === 'admin' ? '관리자' : user.role === 'operator' ? '운영자' : '신청자'}
+                    </p>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
@@ -85,6 +99,9 @@ export function Header() {
                     <p className="w-[200px] text-sm text-muted-foreground">
                       {user.email}
                     </p>
+                    <p className="text-xs text-blue-600 font-medium">
+                      {user.role === 'admin' ? '관리자' : user.role === 'operator' ? '운영자' : '신청자'}
+                    </p>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
@@ -94,18 +111,18 @@ export function Header() {
                     프로필
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/applications" className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" />
-                    내 신청 목록
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="flex items-center">
-                    <Settings className="mr-2 h-4 w-4" />
-                    설정
-                  </Link>
-                </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/applications" className="flex items-center">
+            <FileText className="mr-2 h-4 w-4" />
+            내 신청 목록
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            설정
+          </Link>
+        </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
