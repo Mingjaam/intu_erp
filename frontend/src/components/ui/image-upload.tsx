@@ -41,13 +41,20 @@ export function ImageUpload({ value, onChange, disabled, className }: ImageUploa
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await apiClient.post('/upload/image', formData, {
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
         },
+        body: formData,
       });
 
-      const { url } = response.data || response;
+      if (!response.ok) {
+        throw new Error('이미지 업로드에 실패했습니다.');
+      }
+      
+      const data = await response.json();
+      const { url } = data;
       setPreview(url);
       onChange(url);
       toast.success('이미지가 업로드되었습니다.');
