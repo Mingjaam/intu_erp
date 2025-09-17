@@ -19,6 +19,7 @@ import { ImageUpload } from '@/components/ui/image-upload';
 
 const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
+  summary: z.string().min(1, '한줄 설명을 입력해주세요'),
   description: z.string().min(1, '프로그램 설명을 입력해주세요'),
   status: z.enum(['draft', 'open', 'closed', 'archived']),
   maxParticipants: z.number().min(1, '최대 참여자 수를 입력해주세요'),
@@ -182,6 +183,18 @@ export default function NewProgramPage() {
                 />
                 {errors.title && (
                   <p className="text-sm text-red-600">{errors.title.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="summary">한줄 설명 *</Label>
+                <Input
+                  id="summary"
+                  {...register('summary')}
+                  placeholder="프로그램을 한줄로 설명해주세요"
+                />
+                {errors.summary && (
+                  <p className="text-sm text-red-600">{errors.summary.message}</p>
                 )}
               </div>
 
