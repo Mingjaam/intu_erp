@@ -32,6 +32,7 @@ export interface Application {
     email: string;
     phone?: string;
     organizationId?: string;
+    reportCount?: number;
     organization?: {
       id: string;
       name: string;
