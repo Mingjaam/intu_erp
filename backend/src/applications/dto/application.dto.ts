@@ -45,6 +45,11 @@ export class ApplicationQueryDto {
   @IsOptional()
   applicantId?: string;
 
+  @ApiProperty({ example: 'organizer-uuid', required: false })
+  @IsUUID()
+  @IsOptional()
+  organizerId?: string;
+
   @ApiProperty({ example: 'submitted', enum: ApplicationStatus, required: false })
   @IsEnum(ApplicationStatus)
   @IsOptional()

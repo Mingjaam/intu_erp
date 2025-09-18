@@ -64,14 +64,24 @@ export class UsersService {
       .skip((page - 1) * limit)
       .take(limit);
 
-    const [users, total] = await queryBuilder.getManyAndCount();
+    const { entities: users, raw } = await queryBuilder.getRawAndEntities();
+    
+    // 총 개수를 별도로 조회
+    const totalQuery = this.userRepository.createQueryBuilder('user');
+    if (search) {
+      totalQuery.where(
+        '(user.name ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+    const totalCount = await totalQuery.getCount();
 
     return {
-      users: users.map(user => this.toResponseDtoWithReportCount(user)),
-      total,
+      users: users.map((user, index) => this.toResponseDtoWithReportCount(user, raw[index])),
+      total: totalCount,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(totalCount / limit),
     };
   }
 
@@ -160,7 +170,7 @@ export class UsersService {
     };
   }
 
-  private toResponseDtoWithReportCount(user: any): UserResponseDto {
+  private toResponseDtoWithReportCount(user: any, rawData?: any): UserResponseDto {
     return {
       id: user.id,
       email: user.email,
@@ -169,7 +179,7 @@ export class UsersService {
       organizationId: user.organizationId,
       phone: user.phone,
       isActive: user.isActive,
-      reportCount: parseInt(user.reportCount) || 0,
+      reportCount: rawData ? parseInt(rawData.reportCount) || 0 : 0,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

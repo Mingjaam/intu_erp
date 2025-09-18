@@ -72,7 +72,7 @@ export class ApplicationsService {
   }
 
   async findAll(query: ApplicationQueryDto, user: User): Promise<{ applications: Application[]; total: number }> {
-    const { programId, applicantId, status, page = 1, limit = 10 } = query;
+    const { programId, applicantId, status, organizerId, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.applicationRepository
@@ -108,17 +108,45 @@ export class ApplicationsService {
       queryBuilder.andWhere('application.status = :status', { status });
     }
 
-    const [applications, total] = await queryBuilder
+    const { entities: applications, raw: rawData } = await queryBuilder
       .orderBy('application.createdAt', 'DESC')
       .skip(skip)
       .take(limit)
-      .getManyAndCount();
+      .getRawAndEntities();
+
+    // 총 개수를 별도로 조회
+    const totalQuery = this.applicationRepository
+      .createQueryBuilder('application')
+      .leftJoin('application.program', 'program')
+      .leftJoin('application.applicant', 'applicant');
+
+    if (user.role === UserRole.APPLICANT) {
+      totalQuery.andWhere('application.applicantId = :applicantId', { applicantId: user.id });
+    }
+
+    if (organizerId) {
+      totalQuery.andWhere('program.organizerId = :organizerId', { organizerId });
+    }
+
+    if (programId) {
+      totalQuery.andWhere('application.programId = :programId', { programId });
+    }
+
+    if (applicantId) {
+      totalQuery.andWhere('application.applicantId = :applicantId', { applicantId });
+    }
+
+    if (status) {
+      totalQuery.andWhere('application.status = :status', { status });
+    }
+
+    const total = await totalQuery.getCount();
 
     // 신고 횟수를 포함한 응답 생성
-    const applicationsWithReportCount = applications.map(app => {
+    const applicationsWithReportCount = applications.map((app, index) => {
       const appWithCount = app as any;
-      if (appWithCount.applicant && appWithCount.applicantReportCount) {
-        appWithCount.applicant.reportCount = parseInt(appWithCount.applicantReportCount) || 0;
+      if (appWithCount.applicant && rawData[index] && rawData[index].applicantReportCount) {
+        appWithCount.applicant.reportCount = parseInt(rawData[index].applicantReportCount) || 0;
       }
       return appWithCount;
     });
