@@ -85,6 +85,9 @@ export class UserResponseDto {
   isActive: boolean;
 
   @ApiProperty({ required: false })
+  reportCount?: number;
+
+  @ApiProperty({ required: false })
   lastLoginAt?: Date;
 
   @ApiProperty()

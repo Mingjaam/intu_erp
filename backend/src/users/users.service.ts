@@ -47,7 +47,10 @@ export class UsersService {
     const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'DESC' } = pagination;
 
     const queryBuilder = this.userRepository.createQueryBuilder('user')
-      .leftJoinAndSelect('user.organization', 'organization');
+      .leftJoinAndSelect('user.organization', 'organization')
+      .leftJoin('user_reports', 'report', 'report.reportedUserId = user.id')
+      .addSelect('COUNT(report.id)', 'reportCount')
+      .groupBy('user.id, organization.id');
 
     if (search) {
       queryBuilder.where(
@@ -64,7 +67,7 @@ export class UsersService {
     const [users, total] = await queryBuilder.getManyAndCount();
 
     return {
-      users: users.map(user => this.toResponseDto(user)),
+      users: users.map(user => this.toResponseDtoWithReportCount(user)),
       total,
       page,
       limit,
@@ -131,6 +134,16 @@ export class UsersService {
     return users.map(user => this.toResponseDto(user));
   }
 
+  async getUserReportCount(userId: string): Promise<number> {
+    const count = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoin('user_reports', 'report', 'report.reportedUserId = user.id')
+      .where('user.id = :userId', { userId })
+      .getCount();
+
+    return count;
+  }
+
 
   private toResponseDto(user: User): UserResponseDto {
     return {
@@ -141,6 +154,22 @@ export class UsersService {
       organizationId: user.organizationId,
       phone: user.phone,
       isActive: user.isActive,
+      lastLoginAt: user.lastLoginAt,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
+  private toResponseDtoWithReportCount(user: any): UserResponseDto {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      organizationId: user.organizationId,
+      phone: user.phone,
+      isActive: user.isActive,
+      reportCount: parseInt(user.reportCount) || 0,
       lastLoginAt: user.lastLoginAt,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,

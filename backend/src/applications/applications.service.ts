@@ -81,7 +81,10 @@ export class ApplicationsService {
       .leftJoinAndSelect('program.organizer', 'organizer')
       .leftJoinAndSelect('application.applicant', 'applicant')
       .leftJoinAndSelect('applicant.organization', 'organization')
-      .leftJoinAndSelect('application.selection', 'selection');
+      .leftJoinAndSelect('application.selection', 'selection')
+      .leftJoin('user_reports', 'report', 'report.reportedUserId = applicant.id')
+      .addSelect('COUNT(report.id)', 'applicantReportCount')
+      .groupBy('application.id, program.id, organizer.id, applicant.id, organization.id, selection.id');
 
     // 일반 사용자는 자신의 신청서만 조회 가능
     if (user.role === UserRole.APPLICANT) {
@@ -111,7 +114,16 @@ export class ApplicationsService {
       .take(limit)
       .getManyAndCount();
 
-    return { applications, total };
+    // 신고 횟수를 포함한 응답 생성
+    const applicationsWithReportCount = applications.map(app => {
+      const appWithCount = app as any;
+      if (appWithCount.applicant && appWithCount.applicantReportCount) {
+        appWithCount.applicant.reportCount = parseInt(appWithCount.applicantReportCount) || 0;
+      }
+      return appWithCount;
+    });
+
+    return { applications: applicationsWithReportCount, total };
   }
 
   async findOne(id: string, user: User): Promise<Application> {
