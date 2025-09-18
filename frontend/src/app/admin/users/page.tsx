@@ -226,11 +226,11 @@ export default function UsersPage() {
                         {!user.isActive && (
                           <Badge className="bg-red-100 text-red-800">비활성</Badge>
                         )}
-                        {user.reportCount && user.reportCount > 0 && (
+                        {user.reportCount && user.reportCount > 0 ? (
                           <Badge className="bg-orange-100 text-orange-800">
                             신고 {user.reportCount}건
                           </Badge>
-                        )}
+                        ) : null}
                       </div>
                       <div className="flex items-center gap-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">

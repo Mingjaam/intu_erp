@@ -51,7 +51,7 @@ export default function ApplyPage() {
         const data = response.data || response;
         setProgram(data);
         
-        // 로그인된 사용자 정보로 기본값 설정
+        // 로그인된 사용자 정보로 기본값 설정 (기본 필드들)
         if (user) {
           const initialData: Record<string, unknown> = {
             name: user.name || '',
@@ -171,7 +171,11 @@ export default function ApplyPage() {
               placeholder={placeholder}
               required={required}
               disabled={!!(user && ['name', 'email', 'phone'].includes(name))}
+              className={user && ['name', 'email', 'phone'].includes(name) ? 'bg-gray-50' : ''}
             />
+            {user && ['name', 'email', 'phone'].includes(name) && (
+              <p className="text-xs text-gray-500">로그인된 사용자 정보 (수정 불가)</p>
+            )}
           </div>
         );
 

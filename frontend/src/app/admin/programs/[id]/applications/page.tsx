@@ -249,11 +249,11 @@ export default function ProgramApplicationsPage() {
                       <Badge className={statusColors[application.status]}>
                         {statusLabels[application.status]}
                       </Badge>
-                      {application.applicant.reportCount && application.applicant.reportCount > 0 && (
+                      {application.applicant.reportCount && application.applicant.reportCount > 0 ? (
                         <Badge className="bg-orange-100 text-orange-800">
                           신고 {application.applicant.reportCount}건
                         </Badge>
-                      )}
+                      ) : null}
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
