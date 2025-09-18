@@ -112,15 +112,6 @@ export class UsersService {
     return this.toResponseDto(updatedUser);
   }
 
-  async remove(id: string): Promise<void> {
-    const user = await this.userRepository.findOne({ where: { id } });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    await this.userRepository.softDelete(id);
-  }
 
   async findByRole(role: UserRole): Promise<UserResponseDto[]> {
     const users = await this.userRepository.find({
@@ -139,6 +130,7 @@ export class UsersService {
 
     return users.map(user => this.toResponseDto(user));
   }
+
 
   private toResponseDto(user: User): UserResponseDto {
     return {

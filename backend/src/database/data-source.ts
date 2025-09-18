@@ -1,12 +1,13 @@
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
-import { User } from '@/database/entities/user.entity';
-import { Organization } from '@/database/entities/organization.entity';
-import { Program } from '@/database/entities/program.entity';
-import { Application } from '@/database/entities/application.entity';
-import { Selection } from '@/database/entities/selection.entity';
-import { Visit } from '@/database/entities/visit.entity';
-import { AuditLog } from '@/database/entities/audit-log.entity';
+import { User } from './entities/user.entity';
+import { Organization } from './entities/organization.entity';
+import { Program } from './entities/program.entity';
+import { Application } from './entities/application.entity';
+import { Selection } from './entities/selection.entity';
+import { Visit } from './entities/visit.entity';
+import { AuditLog } from './entities/audit-log.entity';
+import { UserReport } from './entities/user-report.entity';
 
 config();
 
@@ -25,6 +26,7 @@ export const AppDataSource = new DataSource({
     Selection,
     Visit,
     AuditLog,
+    UserReport,
   ],
   migrations: ['src/database/migrations/*.ts'],
   synchronize: process.env.NODE_ENV === 'development',

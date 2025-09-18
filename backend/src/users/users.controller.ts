@@ -49,12 +49,15 @@ export class UsersController {
   })
   async findAll(@Query() pagination: PaginationDto): Promise<ApiResponseDto<any>> {
     const result = await this.usersService.findAll(pagination);
-    return new ApiResponseDto(result.users, true, '사용자 목록을 조회했습니다.', {
-      page: result.page,
-      limit: result.limit,
-      total: result.total,
-      totalPages: result.totalPages,
-    });
+    return new ApiResponseDto({
+      users: result.users,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      }
+    }, true, '사용자 목록을 조회했습니다.');
   }
 
   @Get('profile')
@@ -122,15 +125,4 @@ export class UsersController {
     return new ApiResponseDto(user, true, '사용자 정보가 수정되었습니다.');
   }
 
-  @Delete(':id')
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: '사용자 삭제' })
-  @ApiResponse({
-    status: 200,
-    description: '사용자 삭제 성공',
-  })
-  async remove(@Param('id') id: string): Promise<ApiResponseDto<void>> {
-    await this.usersService.remove(id);
-    return new ApiResponseDto(null, true, '사용자가 삭제되었습니다.');
-  }
 }
