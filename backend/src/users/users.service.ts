@@ -49,8 +49,8 @@ export class UsersService {
     const queryBuilder = this.userRepository.createQueryBuilder('user')
       .leftJoinAndSelect('user.organization', 'organization')
       .leftJoin('user_reports', 'report', 'report.reportedUserId = user.id')
-      .addSelect('COUNT(report.id)', 'reportCount')
-      .groupBy('user.id, organization.id');
+      .addSelect('COUNT(DISTINCT report.id)', 'reportCount')
+      .groupBy('user.id, organization.id, organization.name, organization.type, organization.address, organization.contact, organization.description, organization.isActive, organization.createdAt, organization.updatedAt');
 
     if (search) {
       queryBuilder.where(
