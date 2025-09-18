@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Settings, Search, Bell, FileText, Shield } from 'lucide-react';
+import { LogOut, User, Settings, Search, Bell, FileText, Shield, Calendar } from 'lucide-react';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -121,12 +121,20 @@ export function Header() {
                 
                 {/* 관리자 이상일 경우에만 관리자 페이지 메뉴 표시 */}
                 {(user.role === 'admin' || user.role === 'operator') && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin" className="flex items-center">
-                      <Shield className="mr-2 h-4 w-4" />
-                      관리자 페이지
-                    </Link>
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="flex items-center">
+                        <Shield className="mr-2 h-4 w-4" />
+                        관리자 페이지
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin/programs" className="flex items-center">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        프로그램 관리
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
                 )}
                 
                 {/* 일반 사용자일 경우에만 내 신청 목록 표시 */}
