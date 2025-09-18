@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-// import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,23 +57,24 @@ const statusLabels = {
   archived: '보관',
 };
 
-export default function ProgramsPage() {
-  // const router = useRouter();
+function ProgramsPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  useEffect(() => {
-    fetchPrograms();
-  }, []);
-
-  const fetchPrograms = async () => {
+  const fetchPrograms = useCallback(async () => {
     try {
       setIsLoading(true);
       console.log('프로그램 목록 조회 시작...');
+      
+      // 상태 필터가 있으면 API에 전달
+      const params = statusFilter !== 'all' ? { status: statusFilter } : {};
       const response = await apiClient.get<{ programs: Program[]; total: number }>(
-        API_ENDPOINTS.PROGRAMS.LIST
+        API_ENDPOINTS.PROGRAMS.LIST,
+        params
       );
       console.log('API 응답:', response);
       const data = response.data || response;
@@ -85,7 +86,16 @@ export default function ProgramsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    // URL 파라미터에서 상태 필터 가져오기
+    const status = searchParams.get('status');
+    if (status) {
+      setStatusFilter(status);
+    }
+    fetchPrograms();
+  }, [searchParams, statusFilter, fetchPrograms]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말로 이 프로그램을 삭제하시겠습니까?')) {
@@ -135,9 +145,32 @@ export default function ProgramsPage() {
           </Link>
         </div>
         <p className="text-gray-600">프로그램을 생성, 수정, 삭제하고 관리하세요.</p>
+        
+        {/* 상태별 설명 */}
+        {statusFilter === 'draft' && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>기획중인 프로그램:</strong> 아직 모집이 시작되지 않은 프로그램입니다.
+            </p>
+          </div>
+        )}
+        {statusFilter === 'open' && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="text-sm text-green-800">
+              <strong>진행중인 프로그램:</strong> 모집시작부터 활동 완료까지의 프로그램입니다.
+            </p>
+          </div>
+        )}
+        {statusFilter === 'closed' && (
+          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className="text-sm text-gray-800">
+              <strong>완료된 프로그램:</strong> 활동이 완료된 프로그램입니다.
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* 검색 및 필터 */}
+      {/* 검색 */}
       <Card className="mb-6">
         <CardContent className="p-6">
           <div className="flex gap-4">
@@ -152,22 +185,59 @@ export default function ProgramsPage() {
                 />
               </div>
             </div>
-            <div className="w-48">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-              >
-                <option value="all">전체 상태</option>
-                <option value="draft">기획중</option>
-                <option value="open">모집중</option>
-                <option value="closed">종료</option>
-                <option value="archived">보관</option>
-              </select>
-            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* 상태별 필터 버튼 */}
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={statusFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setStatusFilter('all');
+              router.push('/admin/programs');
+            }}
+            className="px-4 py-2"
+          >
+            전체 프로그램
+          </Button>
+          <Button
+            variant={statusFilter === 'draft' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setStatusFilter('draft');
+              router.push('/admin/programs?status=draft');
+            }}
+            className="px-4 py-2"
+          >
+            기획중인 프로그램
+          </Button>
+          <Button
+            variant={statusFilter === 'open' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setStatusFilter('open');
+              router.push('/admin/programs?status=open');
+            }}
+            className="px-4 py-2"
+          >
+            진행중인 프로그램
+          </Button>
+          <Button
+            variant={statusFilter === 'closed' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              setStatusFilter('closed');
+              router.push('/admin/programs?status=closed');
+            }}
+            className="px-4 py-2"
+          >
+            완료된 프로그램
+          </Button>
+        </div>
+      </div>
 
       {/* 프로그램 목록 */}
       <div className="space-y-4">
@@ -175,14 +245,26 @@ export default function ProgramsPage() {
           <Card>
             <CardContent className="p-8 text-center">
               <FolderOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">프로그램이 없습니다</h3>
-              <p className="text-gray-600 mb-4">아직 등록된 프로그램이 없습니다.</p>
-              <Link href="/admin/programs/new">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  첫 번째 프로그램 만들기
-                </Button>
-              </Link>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {statusFilter === 'all' && '프로그램이 없습니다'}
+                {statusFilter === 'draft' && '기획중인 프로그램이 없어요'}
+                {statusFilter === 'open' && '진행중인 프로그램이 없어요'}
+                {statusFilter === 'closed' && '완료된 프로그램이 없어요'}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {statusFilter === 'all' && '아직 등록된 프로그램이 없습니다.'}
+                {statusFilter === 'draft' && '기획중인 프로그램이 없습니다.'}
+                {statusFilter === 'open' && '진행중인 프로그램이 없습니다.'}
+                {statusFilter === 'closed' && '완료된 프로그램이 없습니다.'}
+              </p>
+              {statusFilter === 'all' && (
+                <Link href="/admin/programs/new">
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    첫 번째 프로그램 만들기
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
         ) : (
@@ -285,5 +367,13 @@ export default function ProgramsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ProgramsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProgramsPageContent />
+    </Suspense>
   );
 }

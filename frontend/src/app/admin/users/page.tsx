@@ -14,13 +14,14 @@ import {
   Plus,
   Eye,
   Edit,
-  Trash2,
   Mail,
   Phone,
-  Calendar
+  Calendar,
+  Flag
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { UserReportDialog } from '@/components/user-report-dialog';
 
 interface User {
   id: string;
@@ -57,14 +58,23 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [reportDialog, setReportDialog] = useState<{
+    isOpen: boolean;
+    userId: string;
+    userName: string;
+  }>({
+    isOpen: false,
+    userId: '',
+    userName: '',
+  });
 
   const fetchUsers = async (page = 1, search = '') => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get(`/users?page=${page}&limit=20&search=${search}`);
+      const response = await apiClient.get(`/users?page=${page}&limit=20&search=${search}&sortBy=createdAt&sortOrder=DESC`);
       
       
-      // API 응답이 성공적이고 데이터가 배열인지 확인
+      // API 응답이 성공적이고 데이터가 있는지 확인
       if (response.success && response.data && typeof response.data === 'object' && response.data !== null) {
         const data = response.data as { users?: User[]; pagination?: { totalPages?: number; total?: number } };
         if (Array.isArray(data.users)) {
@@ -109,19 +119,17 @@ export default function UsersPage() {
     fetchUsers(currentPage, searchTerm);
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('정말로 이 회원을 삭제하시겠습니까?')) {
-      return;
-    }
 
-    try {
-      await apiClient.delete(`/users/${userId}`);
-      toast.success('회원이 삭제되었습니다.');
-      fetchUsers(currentPage, searchTerm);
-    } catch (error) {
-      console.error('회원 삭제 오류:', error);
-      toast.error('회원 삭제에 실패했습니다.');
-    }
+  const handleReportUser = (userId: string, userName: string) => {
+    setReportDialog({
+      isOpen: true,
+      userId,
+      userName,
+    });
+  };
+
+  const handleReportSuccess = () => {
+    fetchUsers(currentPage, searchTerm);
   };
 
   if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
@@ -251,10 +259,11 @@ export default function UsersPage() {
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="text-red-600 hover:text-red-700"
+                      onClick={() => handleReportUser(user.id, user.name)}
+                      className="text-orange-600 hover:text-orange-700"
+                      title="회원 신고"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Flag className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -288,6 +297,15 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* 회원 신고 다이얼로그 */}
+      <UserReportDialog
+        isOpen={reportDialog.isOpen}
+        onClose={() => setReportDialog({ isOpen: false, userId: '', userName: '' })}
+        reportedUserId={reportDialog.userId}
+        reportedUserName={reportDialog.userName}
+        onSuccess={handleReportSuccess}
+      />
     </div>
   );
 }

@@ -134,7 +134,6 @@ export const API_ENDPOINTS = {
     LIST: '/users',
     DETAIL: (id: string) => `/users/${id}`,
     UPDATE: (id: string) => `/users/${id}`,
-    DELETE: (id: string) => `/users/${id}`,
   },
   
   // 프로그램
@@ -196,5 +195,14 @@ export const API_ENDPOINTS = {
           STATS: '/dashboard/stats',
           HEALTH: '/dashboard/health',
           EXPORT: '/dashboard/export',
+        },
+
+        // 회원 신고
+        USER_REPORTS: {
+          LIST: '/user-reports',
+          CREATE: '/user-reports',
+          DETAIL: (id: string) => `/user-reports/${id}`,
+          UPDATE: (id: string) => `/user-reports/${id}`,
+          DELETE: (id: string) => `/user-reports/${id}`,
         },
 } as const;

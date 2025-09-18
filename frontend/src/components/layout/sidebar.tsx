@@ -29,7 +29,7 @@ const navigation = [
     children: [
       { name: '전체 프로그램', href: '/admin/programs' },
       { name: '프로그램 등록', href: '/admin/programs/new' },
-      { name: '프로그램 관리', href: '/admin/programs/manage' },
+      { name: '프로그램 관리 ✗', href: '/admin/programs/manage' },
     ]
   },
   { 
@@ -37,8 +37,8 @@ const navigation = [
     href: '/admin/applications', 
     icon: FileText,
     children: [
-      { name: '전체 신청서', href: '/admin/applications' },
-      { name: '신청서 관리', href: '/admin/applications/manage' },
+      { name: '전체 신청서 ✗', href: '/admin/applications' },
+      { name: '신청서 관리 ✗', href: '/admin/applications/manage' },
     ]
   },
   { 
@@ -47,8 +47,9 @@ const navigation = [
     icon: Users,
     children: [
       { name: '전체 회원', href: '/admin/users' },
-      { name: '회원 등록', href: '/admin/users/new' },
-      { name: '회원 관리', href: '/admin/users/manage' },
+      { name: '회원 등록 ✗', href: '/admin/users/new' },
+      { name: '회원 관리 ✗', href: '/admin/users/manage' },
+      { name: '불량회원 관리', href: '/admin/users/reports' },
     ]
   },
   { 
@@ -56,9 +57,9 @@ const navigation = [
     href: '/admin/calendar', 
     icon: Calendar,
     children: [
-      { name: '전체 일정', href: '/admin/calendar' },
-      { name: '일정 등록', href: '/admin/calendar/new' },
-      { name: '일정 관리', href: '/admin/calendar/manage' },
+      { name: '전체 일정 ✗', href: '/admin/calendar' },
+      { name: '일정 등록 ✗', href: '/admin/calendar/new' },
+      { name: '일정 관리 ✗', href: '/admin/calendar/manage' },
     ]
   },
   { 
@@ -66,9 +67,9 @@ const navigation = [
     href: '/admin/settings', 
     icon: Settings,
     children: [
-      { name: '시스템 설정', href: '/admin/settings' },
+      { name: '시스템 설정 ✗', href: '/admin/settings' },
       { name: '사용자 관리', href: '/admin/users' },
-      { name: '권한 관리', href: '/admin/permissions' },
+      { name: '권한 관리 ✗', href: '/admin/permissions' },
     ]
   },
 ];
