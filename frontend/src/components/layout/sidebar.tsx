@@ -42,13 +42,13 @@ const navigation = [
     ]
   },
   { 
-    name: '참여자', 
-    href: '/admin/participants', 
+    name: '회원', 
+    href: '/admin/users', 
     icon: Users,
     children: [
-      { name: '전체 참여자', href: '/admin/participants' },
-      { name: '참여자 등록', href: '/admin/participants/new' },
-      { name: '참여자 관리', href: '/admin/participants/manage' },
+      { name: '전체 회원', href: '/admin/users' },
+      { name: '회원 등록', href: '/admin/users/new' },
+      { name: '회원 관리', href: '/admin/users/manage' },
     ]
   },
   { 
