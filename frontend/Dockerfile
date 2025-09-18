@@ -13,7 +13,7 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application
+# Build the application (without turbopack for production)
 RUN npm run build
 
 # Expose port

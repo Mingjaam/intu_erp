@@ -297,7 +297,7 @@ export class DashboardService {
     let query = this.applicationRepository
       .createQueryBuilder('application')
       .leftJoin('application.program', 'program')
-      .select('DATE_TRUNC(\'month\', application.createdAt)', 'month')
+       .select('DATE_TRUNC(\'month\', application.createdAt)', 'month')
       .addSelect('COUNT(*)', 'count')
       .groupBy('DATE_TRUNC(\'month\', application.createdAt)')
       .orderBy('month', 'ASC');

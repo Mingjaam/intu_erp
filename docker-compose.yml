@@ -36,6 +36,11 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://postgres:password@postgres:5432/intu_erp
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_NAME: intu_erp
       REDIS_URL: redis://redis:6379
       JWT_SECRET: your-super-secret-jwt-key
       JWT_EXPIRES_IN: 7d
