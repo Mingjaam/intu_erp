@@ -129,9 +129,9 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/admin/programs" className="flex items-center">
+                      <Link href="/programs" className="flex items-center">
                         <Calendar className="mr-2 h-4 w-4" />
-                        프로그램 관리
+                        프로그램 보기
                       </Link>
                     </DropdownMenuItem>
                   </>
