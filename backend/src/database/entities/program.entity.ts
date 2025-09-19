@@ -78,6 +78,9 @@ export class Program {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ type: 'int', default: 0 })
+  revenue: number;
+
   @CreateDateColumn()
   createdAt: Date;
 
