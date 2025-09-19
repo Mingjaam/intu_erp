@@ -83,4 +83,27 @@ export class ApplicationsController {
   withdraw(@Param('id') id: string, @Request() req) {
     return this.applicationsService.withdraw(id, req.user);
   }
+
+  @Patch(':id/review')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @ApiOperation({ summary: '신청서 심사' })
+  @ApiResponse({ status: 200, description: '신청서가 성공적으로 심사되었습니다.' })
+  @ApiResponse({ status: 403, description: '권한이 없습니다.' })
+  @ApiResponse({ status: 404, description: '신청서를 찾을 수 없습니다.' })
+  @ApiResponse({ status: 409, description: '이미 처리된 신청서입니다.' })
+  review(@Param('id') id: string, @Body() body: { decision: 'selected' | 'rejected' }, @Request() req) {
+    return this.applicationsService.reviewApplication(id, body.decision, req.user);
+  }
+
+  @Patch(':id/payment')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @ApiOperation({ summary: '입금 상태 업데이트' })
+  @ApiResponse({ status: 200, description: '입금 상태가 성공적으로 업데이트되었습니다.' })
+  @ApiResponse({ status: 403, description: '권한이 없습니다.' })
+  @ApiResponse({ status: 404, description: '신청서를 찾을 수 없습니다.' })
+  updatePaymentStatus(@Param('id') id: string, @Body() body: { isPaymentReceived: boolean }, @Request() req) {
+    return this.applicationsService.updatePaymentStatus(id, body.isPaymentReceived, req.user);
+  }
 }
