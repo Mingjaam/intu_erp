@@ -8,7 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Calendar, MapPin, Users, Eye, Search, Download } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, Calendar, MapPin, Users, Eye, Search, Download, CheckCircle, XCircle, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Application, Program } from '@/types/application';
@@ -37,6 +39,15 @@ export default function ProgramApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [reviewDialog, setReviewDialog] = useState<{
+    isOpen: boolean;
+    applicationId: string;
+    applicantName: string;
+  }>({
+    isOpen: false,
+    applicationId: '',
+    applicantName: '',
+  });
 
   const programId = params.id as string;
 
@@ -123,6 +134,47 @@ export default function ProgramApplicationsPage() {
 
   const statusCounts = getStatusCounts();
 
+  const handleReview = async (applicationId: string, decision: 'selected' | 'rejected') => {
+    try {
+      await apiClient.patch(API_ENDPOINTS.APPLICATIONS.REVIEW(applicationId), { decision });
+      toast.success(`신청서가 ${decision === 'selected' ? '합격' : '불합격'} 처리되었습니다.`);
+      
+      // 데이터 새로고침
+      const applicationsResponse = await apiClient.get<{ applications: Application[]; total: number }>(
+        API_ENDPOINTS.APPLICATIONS.BY_PROGRAM(programId)
+      );
+      const applicationsData = applicationsResponse.data || applicationsResponse;
+      setApplications(applicationsData.applications || []);
+      
+      setReviewDialog({ isOpen: false, applicationId: '', applicantName: '' });
+    } catch (error) {
+      console.error('심사 처리 오류:', error);
+      toast.error('심사 처리에 실패했습니다.');
+    }
+  };
+
+  const handlePaymentStatusChange = async (applicationId: string, isPaymentReceived: boolean) => {
+    try {
+      await apiClient.patch(API_ENDPOINTS.APPLICATIONS.PAYMENT(applicationId), { isPaymentReceived });
+      toast.success(`입금 상태가 ${isPaymentReceived ? '확인' : '취소'}되었습니다.`);
+      
+      // 데이터 새로고침
+      const applicationsResponse = await apiClient.get<{ applications: Application[]; total: number }>(
+        API_ENDPOINTS.APPLICATIONS.BY_PROGRAM(programId)
+      );
+      const applicationsData = applicationsResponse.data || applicationsResponse;
+      setApplications(applicationsData.applications || []);
+      
+      // 프로그램 정보도 새로고침 (매출 업데이트)
+      const programResponse = await apiClient.get<Program>(API_ENDPOINTS.PROGRAMS.DETAIL(programId));
+      const programData = programResponse.data || programResponse;
+      setProgram(programData);
+    } catch (error) {
+      console.error('입금 상태 변경 오류:', error);
+      toast.error('입금 상태 변경에 실패했습니다.');
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -159,6 +211,14 @@ export default function ProgramApplicationsPage() {
             <div className="flex items-center text-sm text-gray-600">
               <Users className="h-4 w-4 mr-2" />
               <span>최대 참여자: {program.maxParticipants}명</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <DollarSign className="h-4 w-4 mr-2" />
+              <span>참가비: ₩{program.fee.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <DollarSign className="h-4 w-4 mr-2" />
+              <span>현재 매출: ₩{(program.revenue || 0).toLocaleString()}</span>
             </div>
           </div>
         </CardContent>
@@ -271,6 +331,30 @@ export default function ProgramApplicationsPage() {
                     <div className="text-sm text-gray-500 mt-2">
                       신청일: {new Date(application.createdAt).toLocaleDateString()}
                     </div>
+                    
+                    {/* 입금 상태 표시 (합격된 경우에만) */}
+                    {application.status === 'selected' && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <Checkbox
+                          id={`payment-${application.id}`}
+                          checked={application.isPaymentReceived || false}
+                          onCheckedChange={(checked) => 
+                            handlePaymentStatusChange(application.id, checked as boolean)
+                          }
+                        />
+                        <label 
+                          htmlFor={`payment-${application.id}`}
+                          className="text-sm font-medium text-gray-700 cursor-pointer"
+                        >
+                          입금 확인 (₩{program.fee.toLocaleString()})
+                        </label>
+                        {application.paymentReceivedAt && (
+                          <span className="text-xs text-green-600">
+                            ({new Date(application.paymentReceivedAt).toLocaleDateString()})
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex gap-2">
@@ -280,9 +364,57 @@ export default function ProgramApplicationsPage() {
                         상세보기
                       </Link>
                     </Button>
-                    <Button variant="outline" size="sm">
-                      심사하기
-                    </Button>
+                    
+                    {/* 심사하기 버튼 (제출됨, 심사중, 철회됨 상태일 때) */}
+                    {(application.status === 'submitted' || application.status === 'under_review' || application.status === 'withdrawn') && (
+                      <Dialog 
+                        open={reviewDialog.isOpen && reviewDialog.applicationId === application.id}
+                        onOpenChange={(open) => setReviewDialog({
+                          isOpen: open,
+                          applicationId: open ? application.id : '',
+                          applicantName: open ? application.applicant.name : '',
+                        })}
+                      >
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            심사하기
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>
+                              {application.applicant.name}님 신청서 심사
+                            </DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <p className="text-sm text-gray-600">
+                              이 신청서를 합격 또는 불합격 처리하시겠습니까?
+                            </p>
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                onClick={() => setReviewDialog({ isOpen: false, applicationId: '', applicantName: '' })}
+                              >
+                                취소
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                onClick={() => handleReview(application.id, 'rejected')}
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                불합격
+                              </Button>
+                              <Button
+                                onClick={() => handleReview(application.id, 'selected')}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                합격
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </div>
                 </div>
               </CardContent>
