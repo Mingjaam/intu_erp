@@ -258,4 +258,68 @@ export class ApplicationsService {
       ...stats,
     };
   }
+
+  async reviewApplication(id: string, decision: 'selected' | 'rejected', user: User): Promise<Application> {
+    const application = await this.findOne(id, user);
+
+    // 권한 확인: 관리자/운영자만 심사 가능
+    if (user.role === UserRole.APPLICANT) {
+      throw new ForbiddenException('심사 권한이 없습니다.');
+    }
+
+    // 이미 처리된 신청서는 재심사 불가
+    if (application.status === ApplicationStatus.SELECTED || application.status === ApplicationStatus.REJECTED) {
+      throw new ConflictException('이미 처리된 신청서입니다.');
+    }
+
+    // 심사 상태 업데이트
+    application.status = decision === 'selected' ? ApplicationStatus.SELECTED : ApplicationStatus.REJECTED;
+    
+    return await this.applicationRepository.save(application);
+  }
+
+  async updatePaymentStatus(id: string, isPaymentReceived: boolean, user: User): Promise<Application> {
+    const application = await this.findOne(id, user);
+
+    // 권한 확인: 관리자/운영자만 입금 상태 변경 가능
+    if (user.role === UserRole.APPLICANT) {
+      throw new ForbiddenException('입금 상태 변경 권한이 없습니다.');
+    }
+
+    // 합격된 신청서만 입금 처리 가능
+    if (application.status !== ApplicationStatus.SELECTED) {
+      throw new ForbiddenException('합격된 신청서만 입금 처리가 가능합니다.');
+    }
+
+    const previousPaymentStatus = application.isPaymentReceived;
+    application.isPaymentReceived = isPaymentReceived;
+    
+    if (isPaymentReceived && !previousPaymentStatus) {
+      application.paymentReceivedAt = new Date();
+      
+      // 프로그램 매출 업데이트
+      const program = await this.programRepository.findOne({
+        where: { id: application.programId },
+      });
+      
+      if (program) {
+        program.revenue += program.fee;
+        await this.programRepository.save(program);
+      }
+    } else if (!isPaymentReceived && previousPaymentStatus) {
+      // 입금 취소 시 매출에서 차감
+      const program = await this.programRepository.findOne({
+        where: { id: application.programId },
+      });
+      
+      if (program) {
+        program.revenue = Math.max(0, program.revenue - program.fee);
+        await this.programRepository.save(program);
+      }
+      
+      application.paymentReceivedAt = null;
+    }
+
+    return await this.applicationRepository.save(application);
+  }
 }
