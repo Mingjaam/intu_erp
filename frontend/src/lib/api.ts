@@ -153,6 +153,8 @@ export const API_ENDPOINTS = {
     DETAIL: (id: string) => `/applications/${id}`,
     UPDATE: (id: string) => `/applications/${id}`,
     WITHDRAW: (id: string) => `/applications/${id}/withdraw`,
+    REVIEW: (id: string) => `/applications/${id}/review`,
+    PAYMENT: (id: string) => `/applications/${id}/payment`,
     BY_PROGRAM: (programId: string) => `/applications/programs/${programId}`,
     STATS: (programId: string) => `/applications/programs/${programId}/stats`,
   },
