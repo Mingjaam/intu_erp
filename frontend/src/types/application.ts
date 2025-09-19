@@ -17,6 +17,7 @@ export interface Program {
   };
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
+  revenue?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,6 +43,8 @@ export interface Application {
   status: 'submitted' | 'under_review' | 'selected' | 'rejected' | 'withdrawn';
   score?: number;
   notes?: string;
+  isPaymentReceived?: boolean;
+  paymentReceivedAt?: string;
   createdAt: string;
   updatedAt: string;
   selection?: {
