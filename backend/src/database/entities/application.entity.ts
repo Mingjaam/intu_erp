@@ -54,6 +54,12 @@ export class Application {
   @Column('text', { nullable: true })
   notes: string;
 
+  @Column({ default: false })
+  isPaymentReceived: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  paymentReceivedAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 
