@@ -376,7 +376,7 @@ export default function ProgramApplicationsPage() {
                         })}
                       >
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" type="button">
                             심사하기
                           </Button>
                         </DialogTrigger>
