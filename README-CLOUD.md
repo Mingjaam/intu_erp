@@ -121,14 +121,24 @@ newgrp docker
 docker ps
 ```
 
-### 포트 충돌
+### 포트 충돌 (가장 흔한 문제)
 ```bash
+# 1. 자동 해결 (권장)
+./fix-port-conflict.sh
+
+# 2. 수동 해결
 # 사용 중인 포트 확인
 sudo netstat -tulpn | grep :3000
 sudo netstat -tulpn | grep :3001
+sudo netstat -tulpn | grep :5432
+sudo netstat -tulpn | grep :6379
 
 # 프로세스 종료
 sudo kill -9 PID
+
+# 3. Docker 컨테이너 정리
+docker-compose down
+docker container prune -f
 ```
 
 ### Docker 문제

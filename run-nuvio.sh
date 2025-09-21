@@ -30,7 +30,22 @@ else
     echo "✅ .env 파일이 이미 존재합니다."
 fi
 
-# 3. 기존 서비스 중지
+# 3. 포트 충돌 확인 및 해결
+echo "🔍 포트 충돌 확인 중..."
+if lsof -i :3000 >/dev/null 2>&1 || lsof -i :3001 >/dev/null 2>&1 || lsof -i :5432 >/dev/null 2>&1 || lsof -i :6379 >/dev/null 2>&1; then
+    echo "⚠️  포트 충돌이 감지되었습니다."
+    echo "🔧 포트 충돌을 해결하겠습니다..."
+    
+    # 포트 사용 중인 프로세스 종료
+    sudo kill -9 $(lsof -ti :3000) 2>/dev/null || true
+    sudo kill -9 $(lsof -ti :3001) 2>/dev/null || true
+    sudo kill -9 $(lsof -ti :5432) 2>/dev/null || true
+    sudo kill -9 $(lsof -ti :6379) 2>/dev/null || true
+    
+    echo "✅ 포트 충돌 해결 완료."
+fi
+
+# 4. 기존 서비스 중지
 echo "🛑 기존 서비스 중지 중..."
 docker-compose down 2>/dev/null || true
 
