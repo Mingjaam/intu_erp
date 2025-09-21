@@ -68,6 +68,16 @@ sudo ufw allow from YOUR_IP to any port 3001
 ```
 
 ### nuvio.kr 도메인 사용시
+
+#### 도메인이 이미 연결된 경우 (권장)
+```bash
+# 1. 간단 실행 (도메인 연결됨)
+./run-nuvio.sh
+
+# 2. 브라우저에서 https://nuvio.kr 접속
+```
+
+#### 도메인 설정이 필요한 경우
 ```bash
 # 1. 도메인 설정 스크립트 실행
 ./setup-nuvio-domain.sh
