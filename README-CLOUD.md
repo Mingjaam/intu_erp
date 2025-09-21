@@ -122,8 +122,19 @@ docker ps
 ```
 
 ### 포트 충돌 (가장 흔한 문제)
+
+#### 강력한 해결 (권장)
 ```bash
-# 1. 자동 해결 (권장)
+# 1. 강력한 포트 충돌 해결
+./force-fix-ports.sh
+
+# 2. 다시 실행
+./run-nuvio.sh
+```
+
+#### 일반적인 해결
+```bash
+# 1. 자동 해결
 ./fix-port-conflict.sh
 
 # 2. 수동 해결
@@ -139,6 +150,20 @@ sudo kill -9 PID
 # 3. Docker 컨테이너 정리
 docker-compose down
 docker container prune -f
+```
+
+#### 포트 6379 특별 해결
+```bash
+# Redis 서비스 중지
+sudo systemctl stop redis
+sudo systemctl disable redis
+
+# 포트 6379 강제 해제
+sudo kill -9 $(sudo lsof -ti :6379)
+
+# Docker 완전 정리
+docker-compose down
+docker system prune -f
 ```
 
 ### Docker 문제
