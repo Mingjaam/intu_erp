@@ -76,6 +76,24 @@ FRONTEND_URL=https://your-domain.com
 
 ## 🔍 문제 해결
 
+### Docker 권한 문제 (가장 흔한 문제)
+```bash
+# 1. 자동 해결 (권장)
+./fix-docker-permissions.sh
+
+# 2. 수동 해결
+sudo usermod -aG docker $USER
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo chmod 666 /var/run/docker.sock
+
+# 3. 새 터미널 세션 시작 또는 그룹 적용
+newgrp docker
+
+# 4. Docker 테스트
+docker ps
+```
+
 ### 포트 충돌
 ```bash
 # 사용 중인 포트 확인

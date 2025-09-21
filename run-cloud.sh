@@ -5,6 +5,24 @@
 
 echo "🚀 클라우딩 컴퓨터용 ERP 시스템 시작..."
 
+# 0. Docker 권한 확인
+echo "🔍 Docker 권한 확인 중..."
+if ! docker ps >/dev/null 2>&1; then
+    echo "❌ Docker 권한 문제가 감지되었습니다."
+    echo "🔧 Docker 권한 문제를 해결하겠습니다..."
+    
+    # Docker 권한 해결
+    sudo usermod -aG docker $USER
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    sudo chmod 666 /var/run/docker.sock
+    
+    echo "⚠️  Docker 권한이 수정되었습니다."
+    echo "   새 터미널 세션을 시작하거나 'newgrp docker' 명령어를 실행하세요."
+    echo "   그 후 다시 ./run-cloud.sh를 실행하세요."
+    exit 1
+fi
+
 # 1. 환경 변수 파일 설정
 if [ ! -f .env ]; then
     echo "📝 환경 변수 파일 생성 중..."
