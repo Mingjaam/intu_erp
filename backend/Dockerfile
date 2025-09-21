@@ -16,8 +16,11 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Verify build output
+RUN ls -la dist/
+
 # Expose port
 EXPOSE 3001
 
 # Start the application
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]
