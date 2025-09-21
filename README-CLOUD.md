@@ -67,7 +67,24 @@ sudo ufw allow from YOUR_IP to any port 3000
 sudo ufw allow from YOUR_IP to any port 3001
 ```
 
-### 도메인 사용시
+### nuvio.kr 도메인 사용시
+```bash
+# 1. 도메인 설정 스크립트 실행
+./setup-nuvio-domain.sh
+
+# 2. SSL 인증서 설치
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d nuvio.kr -d www.nuvio.kr
+
+# 3. 환경 변수 업데이트
+cp env.cloud .env
+# .env 파일에서 CORS_ORIGIN과 FRONTEND_URL이 https://nuvio.kr로 설정됨
+
+# 4. ERP 시스템 실행
+./run-cloud.sh
+```
+
+### 다른 도메인 사용시
 ```bash
 # .env 파일에서 CORS_ORIGIN 수정
 CORS_ORIGIN=https://your-domain.com
