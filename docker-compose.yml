@@ -36,7 +36,7 @@ services:
     container_name: intu_erp_backend
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:cloud_password123@postgres:5432/intu_erp?sslmode=disable
+      DATABASE_URL: postgresql://postgres:cloud_password123@postgres:5432/intu_erp?sslmode=require
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USERNAME: postgres
