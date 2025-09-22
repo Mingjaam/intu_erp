@@ -144,6 +144,7 @@ start_services() {
     
     # 기존 서비스 중지
     echo -e "${BLUE}🛑 기존 서비스 중지 중...${NC}"
+    
     docker-compose down 2>/dev/null || true
     
     # Docker 이미지 빌드 및 실행
