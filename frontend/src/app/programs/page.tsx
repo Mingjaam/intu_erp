@@ -1,22 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
-import { toast } from 'sonner';
 import { 
   Calendar, 
-  MapPin, 
-  Users, 
-  Clock, 
   FolderOpen,
   ImageIcon
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Program {
   id: string;
@@ -80,13 +76,6 @@ export default function ProgramsPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   const isApplicationOpen = (program: Program) => {
     const now = new Date();
@@ -168,10 +157,11 @@ export default function ProgramsPage() {
                 {/* 이미지 영역 */}
                 <div className="relative h-48 overflow-hidden">
                   {program.imageUrl ? (
-                    <img
+                    <Image
                       src={program.imageUrl.startsWith('http') ? program.imageUrl : `https://nuvio.kr${program.imageUrl}`}
                       alt={program.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
