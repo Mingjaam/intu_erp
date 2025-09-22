@@ -35,11 +35,11 @@ services:
     container_name: intu_erp_backend
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:password@postgres:5432/intu_erp
+      DATABASE_URL: postgresql://postgres:cloud_password123@postgres:5432/intu_erp
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USERNAME: postgres
-      DB_PASSWORD: ${DB_PASSWORD:-password}
+      DB_PASSWORD: ${DB_PASSWORD:-cloud_password123}
       DB_NAME: intu_erp
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
