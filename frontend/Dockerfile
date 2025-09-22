@@ -7,14 +7,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install all dependencies
 RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the application (without turbopack for production)
+# Build the application
 RUN npm run build
+
+# Verify build output
+RUN ls -la .next/
 
 # Expose port
 EXPOSE 3000
