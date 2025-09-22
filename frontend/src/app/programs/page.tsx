@@ -131,7 +131,7 @@ export default function ProgramsPage() {
               {program.imageUrl && (
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={program.imageUrl}
+                    src={program.imageUrl.startsWith('http') ? program.imageUrl : `https://nuvio.kr${program.imageUrl}`}
                     alt={program.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
