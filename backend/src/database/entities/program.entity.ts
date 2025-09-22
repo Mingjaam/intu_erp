@@ -75,6 +75,9 @@ export class Program {
   @Column({ nullable: true })
   imageUrl: string;
 
+  @Column('text', { array: true, nullable: true })
+  imageUrls: string[];
+
   @Column({ default: true })
   isActive: boolean;
 

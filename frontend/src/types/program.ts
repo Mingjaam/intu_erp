@@ -20,6 +20,7 @@ export interface Program {
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
   imageUrl?: string;
+  imageUrls?: string[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -41,6 +42,7 @@ export interface CreateProgramData {
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
   imageUrl?: string;
+  imageUrls?: string[];
 }
 
 export interface UpdateProgramData {
@@ -58,6 +60,7 @@ export interface UpdateProgramData {
   applicationForm?: Record<string, unknown>;
   metadata?: Record<string, unknown>;
   imageUrl?: string;
+  imageUrls?: string[];
   isActive?: boolean;
 }
 

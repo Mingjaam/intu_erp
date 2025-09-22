@@ -15,7 +15,7 @@ import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
-import { ImageUpload } from '@/components/ui/image-upload';
+import { MultiImageUpload } from '@/components/ui/multi-image-upload';
 
 const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
@@ -31,6 +31,7 @@ const programSchema = z.object({
   fee: z.number().min(0, '참가비는 0 이상이어야 합니다'),
   organizerId: z.string().min(1, '주최 기관을 선택해주세요'),
   imageUrl: z.string().optional(),
+  imageUrls: z.array(z.string()).optional(),
 });
 
 type ProgramFormData = z.infer<typeof programSchema>;
@@ -314,12 +315,13 @@ export default function NewProgramPage() {
 
               <div className="space-y-2">
                 <Label>프로그램 이미지</Label>
-                <ImageUpload
-                  value={watch('imageUrl')}
-                  onChange={(url) => setValue('imageUrl', url)}
+                <MultiImageUpload
+                  value={watch('imageUrls') || []}
+                  onChange={(urls) => setValue('imageUrls', urls)}
+                  maxImages={2}
                 />
                 <p className="text-xs text-gray-500">
-                  프로그램을 대표하는 이미지를 업로드하세요 (선택사항)
+                  프로그램을 대표하는 이미지를 최대 2장까지 업로드하세요 (선택사항)
                 </p>
               </div>
             </div>

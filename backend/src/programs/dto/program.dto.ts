@@ -67,6 +67,12 @@ export class CreateProgramDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @ApiProperty({ example: ['/uploads/images/program-image1.jpg', '/uploads/images/program-image2.jpg'], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  imageUrls?: string[];
 }
 
 export class UpdateProgramDto {
@@ -141,6 +147,12 @@ export class UpdateProgramDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @ApiProperty({ example: ['/uploads/images/program-image1.jpg', '/uploads/images/program-image2.jpg'], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  imageUrls?: string[];
 
   @ApiProperty({ example: true, required: false })
   @IsBoolean()

@@ -1,31 +1,59 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Users, Clock } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
+import { useAuth } from '@/hooks/use-auth';
+import { toast } from 'sonner';
+import { 
+  Calendar, 
+  MapPin, 
+  Users, 
+  Clock, 
+  FolderOpen,
+  ImageIcon
+} from 'lucide-react';
 import Link from 'next/link';
-import { Program } from '@/types/program';
-import { Header } from '@/components/layout/header';
-import { UserSidebar } from '@/components/layout/user-sidebar';
 
-// Program interface는 이미 types/program.ts에서 import하므로 제거
-
-const statusLabels = {
-  draft: '임시저장',
-  open: '모집중',
-  closed: '종료',
-  archived: '보관',
-};
+interface Program {
+  id: string;
+  title: string;
+  description: string;
+  summary?: string;
+  status: 'draft' | 'open' | 'closed' | 'archived';
+  maxParticipants: number;
+  applyStart: string;
+  applyEnd: string;
+  programStart: string;
+  programEnd: string;
+  location: string;
+  fee: number;
+  organizerId: string;
+  organizer?: {
+    id: string;
+    name: string;
+  };
+  imageUrl?: string;
+  imageUrls?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 const statusColors = {
   draft: 'bg-gray-100 text-gray-800',
   open: 'bg-green-100 text-green-800',
   closed: 'bg-red-100 text-red-800',
   archived: 'bg-yellow-100 text-yellow-800',
+};
+
+const statusLabels = {
+  draft: '기획중',
+  open: '모집중',
+  closed: '종료',
+  archived: '보관',
 };
 
 export default function ProgramsPage() {
@@ -42,7 +70,6 @@ export default function ProgramsPage() {
     try {
       setLoading(true);
       const response = await apiClient.get<{ programs: Program[]; total: number }>(API_ENDPOINTS.PROGRAMS.LIST);
-      // 백엔드가 ApiResponse 래퍼 없이 직접 데이터를 반환하므로 response.data가 아닌 response를 사용
       const data = response.data || response;
       setPrograms(data.programs || []);
     } catch (err) {
@@ -90,147 +117,128 @@ export default function ProgramsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <Header />
-      <div className="flex">
-        <UserSidebar />
-        <div className="flex-1 pb-16 md:pb-0">
-          <div className="container mx-auto px-6 py-8">
-            {/* 히어로 섹션 */}
-            <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-4">
-                마을 프로그램
-              </h1>
-              <p className="text-xl text-gray-600 mb-6">함께 성장하는 마을을 위한 다양한 프로그램을 만나보세요</p>
-              <div className="flex justify-center space-x-4">
-                <div className="bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg">
-                  <span className="text-sm font-medium text-gray-700">총 {programs.length}개의 프로그램</span>
-                </div>
-                <div className="bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg">
-                  <span className="text-sm font-medium text-gray-700">지금 신청 가능</span>
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* 헤더 */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            프로그램 목록
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            다양한 프로그램에 참여하여 새로운 경험을 쌓아보세요
+          </p>
+        </div>
+
+        {/* 신청 가능한 프로그램 알림 */}
+        {programs.some(isApplicationOpen) && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-8">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Calendar className="h-5 w-5 text-green-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-green-800">
+                  지금 신청 가능한 프로그램이 있습니다!
+                </p>
+                <p className="text-sm text-green-700">
+                  아래에서 신청 가능한 프로그램을 확인하고 참여해보세요.
+                </p>
               </div>
             </div>
+          </div>
+        )}
 
-
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {programs && programs.length > 0 ? programs.map((program, index) => {
-          const gradientColors = [
-            'from-blue-500 to-blue-600',
-            'from-blue-600 to-blue-700',
-            'from-blue-700 to-blue-800',
-            'from-blue-500 to-blue-800',
-            'from-blue-600 to-blue-800',
-            'from-blue-500 to-blue-700'
-          ];
-          const gradientColor = gradientColors[index % gradientColors.length];
-          
-          return (
-            <Card key={program.id} className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white/90 backdrop-blur-sm border-0 overflow-hidden">
-              <div className={`h-2 bg-gradient-to-r ${gradientColor}`}></div>
-              {program.imageUrl && (
+        {/* 프로그램 그리드 */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {programs && programs.length > 0 ? programs.map((program, index) => {
+            const gradientColors = [
+              'from-blue-500 to-blue-600',
+              'from-green-500 to-green-600',
+              'from-purple-500 to-purple-600',
+              'from-pink-500 to-pink-600',
+              'from-orange-500 to-orange-600',
+              'from-teal-500 to-teal-600'
+            ];
+            const gradientColor = gradientColors[index % gradientColors.length];
+            
+            return (
+              <Card key={program.id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 overflow-hidden">
+                <div className={`h-1 bg-gradient-to-r ${gradientColor}`}></div>
+                
+                {/* 이미지 영역 */}
                 <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={program.imageUrl.startsWith('http') ? program.imageUrl : `https://nuvio.kr${program.imageUrl}`}
-                    alt={program.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              )}
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl text-gray-800 group-hover:text-blue-600 transition-colors">
-                      {program.title}
-                    </CardTitle>
-                    {program.summary && (
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {program.summary}
-                      </p>
-                    )}
-                  </div>
-                  <Badge className={`${statusColors[program.status]} px-3 py-1 rounded-full text-xs font-medium ml-3`}>
-                    {statusLabels[program.status]}
-                  </Badge>
-                </div>
-                <CardDescription className="text-gray-600 leading-relaxed line-clamp-3">
-                  {program.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                    <MapPin className="h-4 w-4 mr-3 text-blue-500" />
-                    <span className="font-medium">{program.organizer.name}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                    <Calendar className="h-4 w-4 mr-3 text-green-500" />
-                    <span className="font-medium">{formatDate(program.applyStart)} ~ {formatDate(program.applyEnd)}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                    <Clock className="h-4 w-4 mr-3 text-purple-500" />
-                    <span className="font-medium">{isApplicationOpen(program) ? '신청 가능' : '신청 마감'}</span>
-                  </div>
-                  {program.programStart && (
-                    <div className="flex items-center text-sm text-gray-600 bg-blue-50 rounded-lg p-3">
-                      <Calendar className="h-4 w-4 mr-3 text-blue-600" />
-                      <div className="flex-1">
-                        <div className="font-medium text-blue-800">활동 기간</div>
-                        <div className="text-xs text-blue-600">
-                          {formatDate(program.programStart)} ~ {formatDate(program.programEnd)}
-                        </div>
-                      </div>
+                  {program.imageUrl ? (
+                    <img
+                      src={program.imageUrl.startsWith('http') ? program.imageUrl : `https://nuvio.kr${program.imageUrl}`}
+                      alt={program.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <ImageIcon className="h-12 w-12 text-gray-400" />
                     </div>
                   )}
-                  {program.location && (
-                    <div className="flex items-center text-sm text-gray-600 bg-green-50 rounded-lg p-3">
-                      <MapPin className="h-4 w-4 mr-3 text-green-600" />
-                      <div className="flex-1">
-                        <div className="font-medium text-green-800">장소</div>
-                        <div className="text-xs text-green-600">{program.location}</div>
-                      </div>
-                    </div>
-                  )}
-                  {program.fee !== undefined && (
-                    <div className="flex items-center text-sm text-gray-600 bg-yellow-50 rounded-lg p-3">
-                      <Users className="h-4 w-4 mr-3 text-yellow-600" />
-                      <div className="flex-1">
-                        <div className="font-medium text-yellow-800">참가비</div>
-                        <div className="text-xs text-yellow-600">
-                          {program.fee > 0 ? `${program.fee.toLocaleString()}원` : '무료'}
-                        </div>
-                      </div>
+                  
+                  {/* 상태 배지 */}
+                  <div className="absolute top-3 left-3">
+                    <Badge className={`${statusColors[program.status]} text-xs shadow-sm`}>
+                      {statusLabels[program.status]}
+                    </Badge>
+                  </div>
+                  
+                  {/* 신청 가능 배지 */}
+                  {isApplicationOpen(program) && (
+                    <div className="absolute top-3 right-3">
+                      <Badge className="bg-green-500 text-white text-xs shadow-sm">
+                        신청 가능
+                      </Badge>
                     </div>
                   )}
                 </div>
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1 border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all duration-300" asChild>
-                    <Link href={`/programs/${program.id}`}>
-                      상세보기
-                    </Link>
-                  </Button>
-                  {isApplicationOpen(program) && user?.role === 'applicant' && (
-                    <Button className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300" asChild>
-                      <Link href={`/programs/${program.id}/apply`}>
-                        신청하기
+                
+                {/* 콘텐츠 영역 */}
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors mb-2 line-clamp-2">
+                    {program.title}
+                  </h3>
+                  
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-2">
+                    {program.summary || program.description}
+                  </p>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      asChild 
+                      size="sm"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Link href={`/programs/${program.id}`}>
+                        자세히 보기
                       </Link>
                     </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        }) : null}
-      </div>
-
-            {programs && programs.length === 0 && (
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">등록된 프로그램이 없습니다</h3>
-                <p className="text-gray-600">새로운 프로그램이 등록되면 알려드리겠습니다.</p>
-              </div>
-            )}
-          </div>
+                    {isApplicationOpen(program) && user && (
+                      <Button 
+                        asChild 
+                        size="sm"
+                        variant="outline" 
+                        className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
+                      >
+                        <Link href={`/programs/${program.id}/apply`}>
+                          신청하기
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          }) : (
+            <div className="col-span-full text-center py-12">
+              <FolderOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">프로그램이 없습니다</h3>
+              <p className="text-gray-500">아직 등록된 프로그램이 없습니다.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
