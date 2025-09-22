@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsDateString, IsObject, IsBoolean, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString, IsObject, IsBoolean, IsNumber, IsArray } from 'class-validator';
 import { ProgramStatus } from '@/database/entities/program.entity';
 
 export class CreateProgramDto {
