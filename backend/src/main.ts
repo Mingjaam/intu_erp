@@ -25,9 +25,17 @@ async function bootstrap() {
   );
 
   // CORS 설정
+  const corsOrigins = [
+    'http://localhost:3000',
+    'https://nuvio.kr',
+    'https://www.nuvio.kr'
+  ];
+  
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN', 'http://localhost:3000'),
+    origin: corsOrigins,
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   // Global prefix

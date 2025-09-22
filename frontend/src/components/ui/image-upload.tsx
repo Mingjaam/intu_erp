@@ -41,7 +41,7 @@ export function ImageUpload({ value, onChange, disabled, className }: ImageUploa
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('/api/upload/image', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://nuvio.kr/api'}/upload/image`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -55,8 +55,10 @@ export function ImageUpload({ value, onChange, disabled, className }: ImageUploa
       
       const data = await response.json();
       const { url } = data;
-      setPreview(url);
-      onChange(url);
+      // 클라우드 환경에서 전체 URL로 변환
+      const fullUrl = url.startsWith('http') ? url : `https://nuvio.kr${url}`;
+      setPreview(fullUrl);
+      onChange(fullUrl);
       toast.success('이미지가 업로드되었습니다.');
     } catch (error) {
       console.error('이미지 업로드 오류:', error);

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsDateString, IsObject, IsBoolean, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString, IsObject, IsBoolean, IsNumber, IsArray } from 'class-validator';
 import { ProgramStatus } from '@/database/entities/program.entity';
 
 export class CreateProgramDto {
@@ -67,6 +67,12 @@ export class CreateProgramDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @ApiProperty({ example: ['/uploads/images/program-image1.jpg', '/uploads/images/program-image2.jpg'], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  imageUrls?: string[];
 }
 
 export class UpdateProgramDto {
@@ -141,6 +147,12 @@ export class UpdateProgramDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @ApiProperty({ example: ['/uploads/images/program-image1.jpg', '/uploads/images/program-image2.jpg'], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  imageUrls?: string[];
 
   @ApiProperty({ example: true, required: false })
   @IsBoolean()
