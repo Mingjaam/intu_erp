@@ -24,26 +24,26 @@ echo ""
 
 # 2. 백엔드 컨테이너 로그 확인
 echo "2. 백엔드 컨테이너 상세 로그:"
-docker logs intu_erp_backend --tail=50
+docker logs backend --tail=50
 echo ""
 
 # 3. 백엔드 컨테이너 내부 상태 확인
 echo "3. 백엔드 컨테이너 내부 상태:"
 echo "실행 중인 프로세스:"
-docker exec intu_erp_backend ps aux
+docker exec backend ps aux
 echo ""
 
 echo "포트 리스닝 상태:"
-docker exec intu_erp_backend netstat -tulpn
+docker exec backend netstat -tulpn
 echo ""
 
 echo "환경 변수 확인:"
-docker exec intu_erp_backend env | grep -E "(PORT|NODE_ENV|CORS)"
+docker exec backend env | grep -E "(PORT|NODE_ENV|CORS)"
 echo ""
 
 # 4. 백엔드 컨테이너 재시작
 echo "4. 백엔드 컨테이너 재시작:"
-docker-compose restart intu_erp_backend
+docker-compose restart backend
 echo ""
 
 # 5. 재시작 후 상태 확인
@@ -51,7 +51,7 @@ echo "5. 재시작 후 상태 확인 (10초 대기):"
 sleep 10
 
 echo "백엔드 상태:"
-docker-compose ps intu_erp_backend
+docker-compose ps backend
 echo ""
 
 echo "API 테스트:"

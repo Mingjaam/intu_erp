@@ -6,17 +6,17 @@ echo ""
 
 # 1. 백엔드 컨테이너 중지
 echo "1. 백엔드 컨테이너 중지 중..."
-docker-compose stop intu_erp_backend
+docker-compose stop backend
 echo ""
 
 # 2. 백엔드 이미지 재빌드
 echo "2. 백엔드 이미지 재빌드 중..."
-docker-compose build intu_erp_backend
+docker-compose build backend
 echo ""
 
 # 3. 백엔드 컨테이너 시작
 echo "3. 백엔드 컨테이너 시작 중..."
-docker-compose up -d intu_erp_backend
+docker-compose up -d backend
 echo ""
 
 # 4. 서비스 상태 확인
@@ -24,7 +24,7 @@ echo "4. 서비스 상태 확인 (10초 대기)..."
 sleep 10
 
 echo "백엔드 컨테이너 상태:"
-docker-compose ps intu_erp_backend
+docker-compose ps backend
 echo ""
 
 # 5. CORS 테스트
