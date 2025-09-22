@@ -34,7 +34,7 @@ services:
       dockerfile: Dockerfile
     container_name: intu_erp_backend
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       DATABASE_URL: postgresql://postgres:password@postgres:5432/intu_erp
       DB_HOST: postgres
       DB_PORT: 5432
@@ -45,7 +45,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}
       JWT_EXPIRES_IN: 7d
       PORT: 3001
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://nuvio.kr}
     ports:
       - "3001:3001"
     depends_on:
