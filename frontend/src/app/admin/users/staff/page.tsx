@@ -7,15 +7,18 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Users, 
-  Search, 
   RefreshCw, 
   Mail,
   Phone,
   Calendar,
   Building,
-  UserCog
+  UserCog,
+  Edit3,
+  Save,
+  X
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -34,6 +37,7 @@ interface User {
   isActive: boolean;
   reportCount?: number;
   lastLoginAt?: string;
+  memo?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -58,15 +62,16 @@ export default function StaffManagementPage() {
   const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [editingMemo, setEditingMemo] = useState<string | null>(null);
+  const [memoText, setMemoText] = useState('');
 
-  const fetchUsers = async (page = 1, search = '') => {
+  const fetchUsers = async (page = 1) => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get(`${API_ENDPOINTS.USERS.STAFF}?page=${page}&limit=20&search=${search}&sortBy=createdAt&sortOrder=DESC`);
+      const response = await apiClient.get(`${API_ENDPOINTS.USERS.STAFF}?page=${page}&limit=20&sortBy=createdAt&sortOrder=DESC`);
       
       console.log('직원 관리 API 응답:', response);
       
@@ -100,18 +105,42 @@ export default function StaffManagementPage() {
 
   useEffect(() => {
     if (user?.role === 'admin' || user?.role === 'operator') {
-      fetchUsers(currentPage, searchTerm);
+      fetchUsers(currentPage);
     }
-  }, [user, currentPage, searchTerm]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    fetchUsers(1, searchTerm);
-  };
+  }, [user, currentPage]);
 
   const handleRefresh = () => {
-    fetchUsers(currentPage, searchTerm);
+    fetchUsers(currentPage);
+  };
+
+  const handleEditMemo = (userId: string, currentMemo: string = '') => {
+    setEditingMemo(userId);
+    setMemoText(currentMemo);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMemo(null);
+    setMemoText('');
+  };
+
+  const handleSaveMemo = async (userId: string) => {
+    try {
+      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE_MEMO(userId), { memo: memoText });
+      toast.success('메모가 저장되었습니다.');
+      
+      // 사용자 목록 업데이트
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId ? { ...user, memo: memoText } : user
+        )
+      );
+      
+      setEditingMemo(null);
+      setMemoText('');
+    } catch (error) {
+      console.error('메모 저장 오류:', error);
+      toast.error('메모 저장에 실패했습니다.');
+    }
   };
 
   if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
@@ -143,26 +172,6 @@ export default function StaffManagementPage() {
         </div>
       </div>
 
-      {/* 검색 및 필터 */}
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          <form onSubmit={handleSearch} className="flex gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="이름 또는 이메일로 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button type="submit" disabled={isLoading}>
-              검색
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
 
       {/* 직원 목록 */}
       <Card>
@@ -231,10 +240,56 @@ export default function StaffManagementPage() {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* 메모 영역 */}
+                  <div className="mt-3">
+                    {editingMemo === user.id ? (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">역할 메모</label>
+                        <Textarea
+                          value={memoText}
+                          onChange={(e) => setMemoText(e.target.value)}
+                          placeholder="마을 내에서의 역할이나 특이사항을 입력하세요..."
+                          className="min-h-[80px]"
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-700">역할 메모</label>
+                        <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md min-h-[60px]">
+                          {user.memo || '메모가 없습니다. 편집 버튼을 클릭하여 메모를 추가하세요.'}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
-                      <UserCog className="h-4 w-4" />
-                    </Button>
+                    {editingMemo === user.id ? (
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleSaveMemo(user.id)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <Save className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleEditMemo(user.id, user.memo)}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

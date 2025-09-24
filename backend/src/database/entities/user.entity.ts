@@ -54,6 +54,9 @@ export class User {
   @Column({ nullable: true })
   lastLoginAt: Date;
 
+  @Column({ nullable: true, type: 'text' })
+  memo: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

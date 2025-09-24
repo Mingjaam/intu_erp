@@ -56,6 +56,11 @@ export class UpdateUserDto {
   @IsString()
   organizationId?: string;
 
+  @ApiProperty({ example: '마을 내 역할 메모', required: false })
+  @IsOptional()
+  @IsString()
+  memo?: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
@@ -96,6 +101,9 @@ export class UserResponseDto {
 
   @ApiProperty({ required: false })
   lastLoginAt?: Date;
+
+  @ApiProperty({ required: false })
+  memo?: string;
 
   @ApiProperty()
   createdAt: Date;

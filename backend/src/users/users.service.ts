@@ -341,12 +341,38 @@ export class UsersService {
       name: user.name,
       role: user.role,
       organizationId: user.organizationId,
+      organization: user.organization ? {
+        id: user.organization.id,
+        name: user.organization.name,
+        type: user.organization.type,
+      } : undefined,
       phone: user.phone,
       isActive: user.isActive,
       lastLoginAt: user.lastLoginAt,
+      memo: user.memo,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  async updateMemo(userId: string, memo: string, currentUser: any): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['organization'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 권한 검증: 같은 조직의 사용자만 메모 수정 가능
+    if (currentUser.role !== 'admin' && currentUser.organizationId !== user.organizationId) {
+      throw new ConflictException('같은 조직의 사용자만 메모를 수정할 수 있습니다.');
+    }
+
+    user.memo = memo;
+    const updatedUser = await this.userRepository.save(user);
+    return this.toResponseDto(updatedUser);
   }
 
   private toResponseDtoWithReportCount(user: any, rawData?: any): UserResponseDto {
@@ -365,6 +391,7 @@ export class UsersService {
       isActive: user.isActive,
       reportCount: rawData ? parseInt(rawData.reportCount) || 0 : 0,
       lastLoginAt: user.lastLoginAt,
+      memo: user.memo,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

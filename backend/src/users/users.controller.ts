@@ -181,4 +181,21 @@ export class UsersController {
     return new ApiResponseDto(user, true, '사용자 역할이 변경되었습니다.');
   }
 
+  @Patch(':id/memo')
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @ApiOperation({ summary: '사용자 메모 수정' })
+  @ApiResponse({
+    status: 200,
+    description: '사용자 메모 수정 성공',
+    type: UserResponseDto,
+  })
+  async updateMemo(
+    @Param('id') id: string,
+    @Body() body: { memo: string },
+    @Request() req,
+  ): Promise<ApiResponseDto<UserResponseDto>> {
+    const user = await this.usersService.updateMemo(id, body.memo, req.user);
+    return new ApiResponseDto(user, true, '사용자 메모가 수정되었습니다.');
+  }
+
 }
