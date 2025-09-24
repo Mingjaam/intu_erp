@@ -15,6 +15,10 @@ export interface User {
     name: string;
     type: string;
   };
+  isActive: boolean;
+  lastLoginAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface AuthContextType {
@@ -29,6 +33,7 @@ interface AuthContextType {
   }) => Promise<void>;
   logout: () => void;
   refreshUserProfile: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   loading: boolean;
 }
 
@@ -46,13 +51,19 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     } catch (error) {
       console.error('사용자 정보 조회 실패:', error);
       // 토큰이 유효하지 않으면 로그아웃
-      logout();
+      apiClient.clearToken();
+      setUser(null);
+      localStorage.removeItem('user');
     } finally {
       setLoading(false);
     }
   }, []);
 
   const refreshUserProfile = useCallback(async () => {
+    await fetchUserProfile();
+  }, [fetchUserProfile]);
+
+  const refreshUser = useCallback(async () => {
     await fetchUserProfile();
   }, [fetchUserProfile]);
 
@@ -108,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, refreshUserProfile, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, refreshUserProfile, refreshUser, loading }}>
       {children}
     </AuthContext.Provider>
   );
