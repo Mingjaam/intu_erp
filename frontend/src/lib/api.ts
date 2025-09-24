@@ -132,8 +132,11 @@ export const API_ENDPOINTS = {
   // 사용자
   USERS: {
     LIST: '/users',
+    MANAGEABLE: '/users/manageable',
+    STAFF: '/users/staff',
     DETAIL: (id: string) => `/users/${id}`,
     UPDATE: (id: string) => `/users/${id}`,
+    CHANGE_ROLE: (id: string) => `/users/${id}/role`,
   },
   
   // 프로그램

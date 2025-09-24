@@ -1,7 +1,7 @@
 export enum UserRole {
   ADMIN = 'admin',
   OPERATOR = 'operator',
-  REVIEWER = 'reviewer',
+  STAFF = 'staff',
   APPLICANT = 'applicant',
 }
 

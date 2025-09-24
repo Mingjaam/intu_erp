@@ -8,7 +8,7 @@ export interface User {
   email: string;
   name: string;
   phone?: string;
-  role: 'admin' | 'operator' | 'reviewer' | 'applicant';
+  role: 'admin' | 'operator' | 'staff' | 'applicant';
   organizationId?: string;
   organization?: {
     id: string;
@@ -40,13 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
 
   const fetchUserProfile = useCallback(async () => {
     try {
-      console.log('=== fetchUserProfile 시작 ===');
       const response = await apiClient.get<User>(API_ENDPOINTS.AUTH.PROFILE);
-      console.log('API 응답:', response);
       const data = response.data || response;
-      console.log('설정할 사용자 데이터:', data);
       setUser(data);
-      console.log('=== fetchUserProfile 완료 ===');
     } catch (error) {
       console.error('사용자 정보 조회 실패:', error);
       // 토큰이 유효하지 않으면 로그아웃
