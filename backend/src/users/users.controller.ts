@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto, UserResponseDto, ChangeUserRoleDto } from './dto/user.dto';
 import { PaginationDto } from '../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -41,10 +41,10 @@ export class UsersController {
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.OPERATOR)
-  @ApiOperation({ summary: '사용자 목록 조회' })
+  @ApiOperation({ summary: '전체 사용자 목록 조회' })
   @ApiResponse({
     status: 200,
-    description: '사용자 목록 조회 성공',
+    description: '전체 사용자 목록 조회 성공',
   })
   async findAll(@Query() pagination: PaginationDto): Promise<ApiResponseDto<any>> {
     const result = await this.usersService.findAll(pagination);
@@ -56,7 +56,47 @@ export class UsersController {
         total: result.total,
         totalPages: result.totalPages,
       }
-    }, true, '사용자 목록을 조회했습니다.');
+    }, true, '전체 사용자 목록을 조회했습니다.');
+  }
+
+  @Get('manageable')
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @ApiOperation({ summary: '관리 가능한 사용자 목록 조회 (역할 변경 가능)' })
+  @ApiResponse({
+    status: 200,
+    description: '관리 가능한 사용자 목록 조회 성공',
+  })
+  async findManageable(@Query() pagination: PaginationDto, @Request() req): Promise<ApiResponseDto<any>> {
+    const result = await this.usersService.findManageable(pagination, req.user);
+    return new ApiResponseDto({
+      users: result.users,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      }
+    }, true, '관리 가능한 사용자 목록을 조회했습니다.');
+  }
+
+  @Get('staff')
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @ApiOperation({ summary: '직원 관리 목록 조회 (같은 조직의 운영자, 직원)' })
+  @ApiResponse({
+    status: 200,
+    description: '직원 관리 목록 조회 성공',
+  })
+  async findStaff(@Query() pagination: PaginationDto, @Request() req): Promise<ApiResponseDto<any>> {
+    const result = await this.usersService.findStaff(pagination, req.user);
+    return new ApiResponseDto({
+      users: result.users,
+      pagination: {
+        page: result.page,
+        limit: result.limit,
+        total: result.total,
+        totalPages: result.totalPages,
+      }
+    }, true, '직원 관리 목록을 조회했습니다.');
   }
 
   @Get('profile')
@@ -122,6 +162,23 @@ export class UsersController {
   ): Promise<ApiResponseDto<UserResponseDto>> {
     const user = await this.usersService.update(id, updateUserDto);
     return new ApiResponseDto(user, true, '사용자 정보가 수정되었습니다.');
+  }
+
+  @Patch(':id/role')
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @ApiOperation({ summary: '사용자 역할 변경' })
+  @ApiResponse({
+    status: 200,
+    description: '사용자 역할 변경 성공',
+    type: UserResponseDto,
+  })
+  async changeRole(
+    @Param('id') id: string,
+    @Body() changeUserRoleDto: ChangeUserRoleDto,
+    @Request() req,
+  ): Promise<ApiResponseDto<UserResponseDto>> {
+    const user = await this.usersService.changeRole(id, changeUserRoleDto, req.user);
+    return new ApiResponseDto(user, true, '사용자 역할이 변경되었습니다.');
   }
 
 }

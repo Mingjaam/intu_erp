@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from '../database/entities/user.entity';
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto, UserResponseDto, ChangeUserRoleDto } from './dto/user.dto';
 import { PaginationDto } from '../common/dto/api-response.dto';
 import * as bcrypt from 'bcryptjs';
 
@@ -70,6 +70,128 @@ export class UsersService {
     const totalQuery = this.userRepository.createQueryBuilder('user');
     if (search) {
       totalQuery.where(
+        '(user.name ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+    const totalCount = await totalQuery.getCount();
+
+    return {
+      users: users.map((user, index) => this.toResponseDtoWithReportCount(user, raw[index])),
+      total: totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+    };
+  }
+
+  async findManageable(pagination: PaginationDto, currentUser: User): Promise<{
+    users: UserResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'DESC' } = pagination;
+
+    const queryBuilder = this.userRepository.createQueryBuilder('user')
+      .leftJoinAndSelect('user.organization', 'organization')
+      .leftJoin('user_reports', 'report', 'report.reportedUserId = user.id')
+      .addSelect('COUNT(DISTINCT report.id)', 'reportCount')
+      .groupBy('user.id, organization.id, organization.name, organization.type, organization.address, organization.contact, organization.description, organization.isActive, organization.createdAt, organization.updatedAt');
+
+    // 관리자는 모든 사용자, 운영자는 같은 조직의 사용자만
+    if (currentUser.role === UserRole.OPERATOR) {
+      queryBuilder.andWhere('user.organizationId = :organizationId', { 
+        organizationId: currentUser.organizationId 
+      });
+    }
+
+    if (search) {
+      queryBuilder.andWhere(
+        '(user.name ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+
+    queryBuilder
+      .orderBy(`user.${sortBy}`, sortOrder)
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const { entities: users, raw } = await queryBuilder.getRawAndEntities();
+    
+    // 총 개수를 별도로 조회
+    const totalQuery = this.userRepository.createQueryBuilder('user');
+    if (currentUser.role === UserRole.OPERATOR) {
+      totalQuery.andWhere('user.organizationId = :organizationId', { 
+        organizationId: currentUser.organizationId 
+      });
+    }
+    if (search) {
+      totalQuery.andWhere(
+        '(user.name ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+    const totalCount = await totalQuery.getCount();
+
+    return {
+      users: users.map((user, index) => this.toResponseDtoWithReportCount(user, raw[index])),
+      total: totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+    };
+  }
+
+  async findStaff(pagination: PaginationDto, currentUser: User): Promise<{
+    users: UserResponseDto[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const { page = 1, limit = 10, search, sortBy = 'createdAt', sortOrder = 'DESC' } = pagination;
+
+    const queryBuilder = this.userRepository.createQueryBuilder('user')
+      .leftJoinAndSelect('user.organization', 'organization')
+      .leftJoin('user_reports', 'report', 'report.reportedUserId = user.id')
+      .addSelect('COUNT(DISTINCT report.id)', 'reportCount')
+      .groupBy('user.id, organization.id, organization.name, organization.type, organization.address, organization.contact, organization.description, organization.isActive, organization.createdAt, organization.updatedAt');
+
+    // 같은 조직의 운영자와 직원만 조회
+    queryBuilder.andWhere('user.organizationId = :organizationId', { 
+      organizationId: currentUser.organizationId 
+    });
+    queryBuilder.andWhere('user.role IN (:...roles)', { 
+      roles: [UserRole.OPERATOR, UserRole.STAFF] 
+    });
+
+    if (search) {
+      queryBuilder.andWhere(
+        '(user.name ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+
+    queryBuilder
+      .orderBy(`user.${sortBy}`, sortOrder)
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const { entities: users, raw } = await queryBuilder.getRawAndEntities();
+    
+    // 총 개수를 별도로 조회
+    const totalQuery = this.userRepository.createQueryBuilder('user');
+    totalQuery.andWhere('user.organizationId = :organizationId', { 
+      organizationId: currentUser.organizationId 
+    });
+    totalQuery.andWhere('user.role IN (:...roles)', { 
+      roles: [UserRole.OPERATOR, UserRole.STAFF] 
+    });
+    if (search) {
+      totalQuery.andWhere(
         '(user.name ILIKE :search OR user.email ILIKE :search)',
         { search: `%${search}%` }
       );
@@ -154,6 +276,63 @@ export class UsersService {
     return count;
   }
 
+  async changeRole(id: string, changeUserRoleDto: ChangeUserRoleDto, currentUser: User): Promise<UserResponseDto> {
+    const targetUser = await this.userRepository.findOne({ 
+      where: { id },
+      relations: ['organization']
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    // 권한 체크
+    if (currentUser.role === UserRole.OPERATOR) {
+      // 운영자는 운영자, 직원, 신청자만 부여 가능
+      if (changeUserRoleDto.role === UserRole.ADMIN) {
+        throw new ConflictException('운영자는 관리자 역할을 부여할 수 없습니다.');
+      }
+      // 같은 조직 내에서만 가능
+      if (targetUser.organizationId !== currentUser.organizationId) {
+        throw new ConflictException('같은 조직의 사용자만 역할을 변경할 수 있습니다.');
+      }
+    } else if (currentUser.role === UserRole.STAFF) {
+      // 직원은 역할 변경 불가
+      throw new ConflictException('직원은 다른 사용자의 역할을 변경할 수 없습니다.');
+    }
+    
+    // 관리자 역할은 아무도 변경할 수 없음
+    if (targetUser.role === UserRole.ADMIN) {
+      throw new ConflictException('관리자 역할은 변경할 수 없습니다.');
+    }
+    
+    // 관리자는 운영자, 직원, 신청자만 부여 가능 (자기 자신 제외)
+    if (currentUser.role === UserRole.ADMIN && changeUserRoleDto.role === UserRole.ADMIN && targetUser.id !== currentUser.id) {
+      throw new ConflictException('관리자 역할은 다른 사용자에게 부여할 수 없습니다.');
+    }
+
+    // 역할 변경 시 조직 이동 로직
+    const updateData: any = { role: changeUserRoleDto.role };
+    
+    // 직원(staff) 역할로 변경하는 경우, 부여한 사람의 조직으로 이동
+    if (changeUserRoleDto.role === UserRole.STAFF && currentUser.organizationId) {
+      updateData.organizationId = currentUser.organizationId;
+    }
+    
+    // 신청자(applicant) 역할로 변경하는 경우, 조직에서 제거
+    if (changeUserRoleDto.role === UserRole.APPLICANT) {
+      updateData.organizationId = null;
+    }
+
+    await this.userRepository.update(id, updateData);
+    const updatedUser = await this.userRepository.findOne({
+      where: { id },
+      relations: ['organization'],
+    });
+
+    return this.toResponseDto(updatedUser);
+  }
+
 
   private toResponseDto(user: User): UserResponseDto {
     return {
@@ -177,6 +356,11 @@ export class UsersService {
       name: user.name,
       role: user.role,
       organizationId: user.organizationId,
+      organization: user.organization ? {
+        id: user.organization.id,
+        name: user.organization.name,
+        type: user.organization.type,
+      } : undefined,
       phone: user.phone,
       isActive: user.isActive,
       reportCount: rawData ? parseInt(rawData.reportCount) || 0 : 0,
