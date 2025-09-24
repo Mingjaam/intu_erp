@@ -67,7 +67,6 @@ const navigation = [
     icon: Settings,
     children: [
       { name: '회원 관리', href: '/admin/users/manage' },
-      { name: '직원 관리', href: '/admin/users/staff' },
       { name: '시스템 설정 ✗', href: '/admin/settings' },
       { name: '사용자 관리', href: '/admin/users' },
       { name: '권한 관리 ✗', href: '/admin/permissions' },
