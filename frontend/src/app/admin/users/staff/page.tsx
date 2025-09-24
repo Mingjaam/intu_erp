@@ -13,8 +13,6 @@ import {
   RefreshCw, 
   Mail,
   Phone,
-  Calendar,
-  Building,
   UserCog,
   Edit3,
   Save,
@@ -225,16 +223,6 @@ export default function StaffManagementPage() {
                           <div className="flex items-center gap-1">
                             <Phone className="h-4 w-4" />
                             {user.phone}
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(user.createdAt).toLocaleDateString('ko-KR')}
-                        </div>
-                        {user.organization && (
-                          <div className="flex items-center gap-1">
-                            <Building className="h-4 w-4" />
-                            {user.organization.name}
                           </div>
                         )}
                       </div>
