@@ -79,6 +79,13 @@ export class UserResponseDto {
   organizationId?: string;
 
   @ApiProperty({ required: false })
+  organization?: {
+    id: string;
+    name: string;
+    type: string;
+  };
+
+  @ApiProperty({ required: false })
   phone?: string;
 
   @ApiProperty()
@@ -95,4 +102,10 @@ export class UserResponseDto {
 
   @ApiProperty()
   updatedAt: Date;
+}
+
+export class ChangeUserRoleDto {
+  @ApiProperty({ enum: UserRole, example: UserRole.STAFF })
+  @IsEnum(UserRole)
+  role: UserRole;
 }

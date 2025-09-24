@@ -13,7 +13,7 @@ import { Organization } from '@/database/entities/organization.entity';
 export enum UserRole {
   ADMIN = 'admin',
   OPERATOR = 'operator',
-  REVIEWER = 'reviewer',
+  STAFF = 'staff',
   APPLICANT = 'applicant',
 }
 
