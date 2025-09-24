@@ -59,7 +59,7 @@ export class ApplicationsController {
 
   @Get('programs/:programId/stats')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.REVIEWER)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '프로그램 신청서 통계 조회' })
   @ApiResponse({ status: 200, description: '신청서 통계를 성공적으로 조회했습니다.' })
   getStats(@Param('programId') programId: string, @Request() req) {

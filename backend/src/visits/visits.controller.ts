@@ -26,7 +26,7 @@ export class VisitsController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.REVIEWER)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '방문 예약' })
   @ApiResponse({ status: 201, description: '방문이 성공적으로 예약되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
@@ -51,7 +51,7 @@ export class VisitsController {
 
   @Get('programs/:programId/stats')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.REVIEWER)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '프로그램 방문 통계 조회' })
   @ApiResponse({ status: 200, description: '방문 통계를 성공적으로 조회했습니다.' })
   getStats(@Param('programId') programId: string, @Request() req) {
@@ -77,7 +77,7 @@ export class VisitsController {
 
   @Patch(':id/complete')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.REVIEWER)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '방문 완료 처리' })
   @ApiResponse({ status: 200, description: '방문이 성공적으로 완료되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })

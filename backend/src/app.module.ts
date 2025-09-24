@@ -65,5 +65,5 @@ import { UserReport } from './database/entities/user-report.entity';
     UploadModule,
     UserReportsModule,
   ],
-      })
-      export class AppModule {}
+})
+export class AppModule {}

@@ -41,7 +41,7 @@ export class SelectionsService {
 
     // 권한 확인: 심사자, 관리자, 운영자만 선정 처리 가능
     if (
-      user.role !== UserRole.REVIEWER &&
+      user.role !== UserRole.STAFF &&
       user.role !== UserRole.ADMIN &&
       user.role !== UserRole.OPERATOR
     ) {
@@ -128,7 +128,7 @@ export class SelectionsService {
 
     // 권한 확인: 심사자, 관리자, 운영자만 수정 가능
     if (
-      user.role !== UserRole.REVIEWER &&
+      user.role !== UserRole.STAFF &&
       user.role !== UserRole.ADMIN &&
       user.role !== UserRole.OPERATOR
     ) {

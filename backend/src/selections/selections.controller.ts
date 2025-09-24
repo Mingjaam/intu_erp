@@ -26,7 +26,7 @@ export class SelectionsController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.REVIEWER)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '선정 처리' })
   @ApiResponse({ status: 201, description: '선정이 성공적으로 처리되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
@@ -52,7 +52,7 @@ export class SelectionsController {
 
   @Get('programs/:programId/stats')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.REVIEWER)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '프로그램 선정 통계 조회' })
   @ApiResponse({ status: 200, description: '선정 통계를 성공적으로 조회했습니다.' })
   getStats(@Param('programId') programId: string, @Request() req) {
@@ -69,7 +69,7 @@ export class SelectionsController {
 
   @Patch(':id')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.REVIEWER)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '선정 수정' })
   @ApiResponse({ status: 200, description: '선정이 성공적으로 수정되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })

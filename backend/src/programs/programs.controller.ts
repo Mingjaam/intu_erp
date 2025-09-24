@@ -31,7 +31,6 @@ export class ProgramsController {
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
   @ApiBearerAuth()
   create(@Body() createProgramDto: CreateProgramDto, @Request() req) {
-    console.log('받은 데이터:', createProgramDto);
     return this.programsService.create(createProgramDto, req.user);
   }
 
@@ -82,7 +81,6 @@ export class ProgramsController {
   @ApiResponse({ status: 404, description: '프로그램을 찾을 수 없습니다.' })
   @ApiBearerAuth()
   update(@Param('id') id: string, @Body() updateProgramDto: UpdateProgramDto, @Request() req) {
-    console.log('프로그램 수정 요청 받음:', id, updateProgramDto);
     return this.programsService.update(id, updateProgramDto, req.user);
   }
 

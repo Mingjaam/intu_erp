@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserReport } from '../database/entities/user-report.entity';
 import { User, UserRole } from '../database/entities/user.entity';
-import { CreateUserReportDto, UpdateUserReportDto, UserReportResponseDto, UserReportQueryDto } from './dto/user-report.dto';
+import { CreateUserReportDto, UserReportResponseDto, UserReportQueryDto } from './dto/user-report.dto';
 
 @Injectable()
 export class UserReportsService {
@@ -54,6 +54,7 @@ export class UserReportsService {
     const queryBuilder = this.userReportRepository
       .createQueryBuilder('report')
       .leftJoinAndSelect('report.reporter', 'reporter')
+      .leftJoinAndSelect('reporter.organization', 'reporterOrg')
       .leftJoinAndSelect('report.reportedUser', 'reportedUser')
       .leftJoinAndSelect('report.reviewer', 'reviewer');
 
@@ -100,7 +101,7 @@ export class UserReportsService {
   async findOne(id: string, user: User): Promise<UserReportResponseDto> {
     const report = await this.userReportRepository.findOne({
       where: { id },
-      relations: ['reporter', 'reportedUser', 'reviewer'],
+      relations: ['reporter', 'reporter.organization', 'reportedUser', 'reviewer'],
     });
 
     if (!report) {
@@ -150,6 +151,10 @@ export class UserReportsService {
         id: report.reporter.id,
         name: report.reporter.name,
         email: report.reporter.email,
+        organization: report.reporter.organization ? {
+          id: report.reporter.organization.id,
+          name: report.reporter.organization.name,
+        } : undefined,
       } : undefined,
       reportedUser: report.reportedUser ? {
         id: report.reportedUser.id,

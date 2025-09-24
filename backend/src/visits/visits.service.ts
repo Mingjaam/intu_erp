@@ -45,7 +45,7 @@ export class VisitsService {
     if (
       user.role !== UserRole.ADMIN &&
       user.role !== UserRole.OPERATOR &&
-      user.role !== UserRole.REVIEWER
+      user.role !== UserRole.STAFF
     ) {
       throw new ForbiddenException('방문 예약 권한이 없습니다.');
     }

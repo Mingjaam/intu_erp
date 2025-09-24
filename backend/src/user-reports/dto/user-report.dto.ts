@@ -75,6 +75,10 @@ export class UserReportResponseDto {
     id: string;
     name: string;
     email: string;
+    organization?: {
+      id: string;
+      name: string;
+    };
   };
 
   @ApiProperty({ required: false })
