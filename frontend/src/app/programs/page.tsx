@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Users, Clock } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Calendar, MapPin, Users, Clock, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import Link from 'next/link';
@@ -33,6 +34,15 @@ export default function ProgramsPage() {
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loginDialog, setLoginDialog] = useState<{
+    isOpen: boolean;
+    programId: string;
+    programTitle: string;
+  }>({
+    isOpen: false,
+    programId: '',
+    programTitle: '',
+  });
 
   useEffect(() => {
     fetchPrograms();
@@ -66,6 +76,24 @@ export default function ProgramsPage() {
     const startDate = new Date(program.applyStart);
     const endDate = new Date(program.applyEnd);
     return now >= startDate && now <= endDate && program.status === 'open';
+  };
+
+  // 로그인 다이얼로그 열기
+  const openLoginDialog = (programId: string, programTitle: string) => {
+    setLoginDialog({
+      isOpen: true,
+      programId,
+      programTitle,
+    });
+  };
+
+  // 로그인 다이얼로그 닫기
+  const closeLoginDialog = () => {
+    setLoginDialog({
+      isOpen: false,
+      programId: '',
+      programTitle: '',
+    });
   };
 
   if (loading) {
@@ -209,12 +237,21 @@ export default function ProgramsPage() {
                       상세보기
                     </Link>
                   </Button>
-                  {isApplicationOpen(program) && user?.role === 'applicant' && (
-                    <Button className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300" asChild>
-                      <Link href={`/programs/${program.id}/apply`}>
+                  {isApplicationOpen(program) && (
+                    user?.role === 'applicant' ? (
+                      <Button className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300" asChild>
+                        <Link href={`/programs/${program.id}/apply`}>
+                          신청하기
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button 
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                        onClick={() => openLoginDialog(program.id, program.title)}
+                      >
                         신청하기
-                      </Link>
-                    </Button>
+                      </Button>
+                    )
                   )}
                 </div>
               </CardContent>
@@ -233,6 +270,71 @@ export default function ProgramsPage() {
           </div>
         </div>
       </div>
+
+      {/* 로그인 다이얼로그 */}
+      <Dialog open={loginDialog.isOpen} onOpenChange={closeLoginDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">
+              로그인이 필요한 서비스입니다
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* 프로그램 정보 */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Calendar className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900">
+                {loginDialog.programTitle}
+              </h3>
+              <p className="text-sm text-gray-600">
+                프로그램에 신청하려면 로그인이 필요합니다.
+              </p>
+            </div>
+
+            {/* 안내 메시지 */}
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-blue-700 text-center">
+                로그인 후 프로그램 신청이 가능합니다.
+              </p>
+            </div>
+
+            {/* 버튼 그룹 */}
+            <div className="space-y-3">
+              <Button
+                asChild
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                size="lg"
+              >
+                <Link href="/auth/login">
+                  <LogIn className="h-5 w-5 mr-2" />
+                  로그인하기
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                <Link href="/auth/register">
+                  <UserPlus className="h-5 w-5 mr-2" />
+                  회원가입하기
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={closeLoginDialog}
+                className="w-full"
+                size="lg"
+              >
+                취소
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

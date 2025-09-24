@@ -9,8 +9,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Calendar, MapPin, Users, Eye, Search, Download, CheckCircle, XCircle, DollarSign } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, Calendar, MapPin, Users, Eye, Search, Download, CheckCircle, XCircle, DollarSign, Edit, Save, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Application, Program } from '@/types/application';
@@ -47,6 +50,14 @@ export default function ProgramApplicationsPage() {
     isOpen: false,
     applicationId: '',
     applicantName: '',
+  });
+
+  // 수정 모달 상태
+  const [editingApplication, setEditingApplication] = useState<Application | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    status: 'submitted' as 'submitted' | 'under_review' | 'selected' | 'rejected' | 'withdrawn',
+    notes: ''
   });
 
   const programId = params.id as string;
@@ -172,6 +183,47 @@ export default function ProgramApplicationsPage() {
     } catch (error) {
       console.error('입금 상태 변경 오류:', error);
       toast.error('입금 상태 변경에 실패했습니다.');
+    }
+  };
+
+  // 수정 모달 열기
+  const openEditModal = (application: Application) => {
+    setEditingApplication(application);
+    setEditFormData({
+      status: application.status as 'submitted' | 'under_review' | 'selected' | 'rejected' | 'withdrawn',
+      notes: application.notes || ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // 수정 모달 닫기
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingApplication(null);
+  };
+
+  // 신청서 정보 수정
+  const handleUpdateApplication = async () => {
+    if (!editingApplication) return;
+
+    try {
+      await apiClient.patch(
+        API_ENDPOINTS.APPLICATIONS.UPDATE(editingApplication.id),
+        editFormData
+      );
+      
+      toast.success('신청서 정보가 수정되었습니다.');
+      closeEditModal();
+      
+      // 데이터 새로고침
+      const applicationsResponse = await apiClient.get<{ applications: Application[]; total: number }>(
+        API_ENDPOINTS.APPLICATIONS.BY_PROGRAM(programId)
+      );
+      const applicationsData = applicationsResponse.data || applicationsResponse;
+      setApplications(applicationsData.applications || []);
+    } catch (error) {
+      console.error('신청서 정보 수정 오류:', error);
+      toast.error('신청서 정보 수정에 실패했습니다.');
     }
   };
 
@@ -365,6 +417,16 @@ export default function ProgramApplicationsPage() {
                       </Link>
                     </Button>
                     
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => openEditModal(application)}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      수정
+                    </Button>
+                    
                     {/* 심사하기 버튼 (제출됨, 심사중, 철회됨 상태일 때) */}
                     {(application.status === 'submitted' || application.status === 'under_review' || application.status === 'withdrawn') && (
                       <Dialog 
@@ -380,35 +442,63 @@ export default function ProgramApplicationsPage() {
                             심사하기
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-w-md">
                           <DialogHeader>
-                            <DialogTitle>
-                              {application.applicant.name}님 신청서 심사
+                            <DialogTitle className="text-center text-lg font-semibold">
+                              신청서 심사
                             </DialogTitle>
                           </DialogHeader>
-                          <div className="space-y-4">
-                            <p className="text-sm text-gray-600">
-                              이 신청서를 합격 또는 불합격 처리하시겠습니까?
-                            </p>
-                            <div className="flex gap-2 justify-end">
+                          <div className="space-y-6">
+                            {/* 신청자 정보 */}
+                            <div className="text-center">
+                              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <Users className="h-8 w-8 text-blue-600" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900">
+                                {application.applicant.name}님
+                              </h3>
+                              <p className="text-sm text-gray-600">
+                                {application.applicant.email}
+                              </p>
+                              {application.applicant.organization?.name && (
+                                <p className="text-sm text-gray-500 mt-1">
+                                  {application.applicant.organization.name}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* 심사 안내 */}
+                            <div className="bg-gray-50 rounded-lg p-4">
+                              <p className="text-sm text-gray-700 text-center">
+                                이 신청서의 심사 결과를 선택해주세요.
+                              </p>
+                            </div>
+
+                            {/* 버튼 그룹 */}
+                            <div className="space-y-3">
                               <Button
-                                variant="outline"
-                                onClick={() => setReviewDialog({ isOpen: false, applicationId: '', applicantName: '' })}
+                                onClick={() => handleReview(application.id, 'selected')}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                                size="lg"
                               >
-                                취소
+                                <CheckCircle className="h-5 w-5 mr-2" />
+                                합격
                               </Button>
                               <Button
-                                variant="destructive"
                                 onClick={() => handleReview(application.id, 'rejected')}
+                                className="w-full bg-gray-600 hover:bg-gray-700 text-white"
+                                size="lg"
                               >
-                                <XCircle className="h-4 w-4 mr-2" />
+                                <XCircle className="h-5 w-5 mr-2" />
                                 불합격
                               </Button>
                               <Button
-                                onClick={() => handleReview(application.id, 'selected')}
+                                variant="outline"
+                                onClick={() => setReviewDialog({ isOpen: false, applicationId: '', applicantName: '' })}
+                                className="w-full"
+                                size="lg"
                               >
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                합격
+                                취소
                               </Button>
                             </div>
                           </div>
@@ -422,6 +512,80 @@ export default function ProgramApplicationsPage() {
           ))}
         </div>
       )}
+
+      {/* 수정 모달 */}
+      <Dialog open={isEditModalOpen} onOpenChange={closeEditModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>신청서 정보 수정</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* 신청자 정보 */}
+            {editingApplication && (
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-2">신청자 정보</h4>
+                <div className="text-sm text-gray-600">
+                  <p><strong>이름:</strong> {editingApplication.applicant.name}</p>
+                  <p><strong>이메일:</strong> {editingApplication.applicant.email}</p>
+                  <p><strong>소속:</strong> {editingApplication.applicant.organization?.name || '미입력'}</p>
+                </div>
+              </div>
+            )}
+
+            {/* 신청서 상태 */}
+            <div className="space-y-2">
+              <Label htmlFor="status" className="text-sm font-medium">
+                신청서 상태
+              </Label>
+              <Select
+                value={editFormData.status}
+                onValueChange={(value: 'submitted' | 'under_review' | 'selected' | 'rejected' | 'withdrawn') => 
+                  setEditFormData(prev => ({ ...prev, status: value }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="상태를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="submitted">제출됨</SelectItem>
+                  <SelectItem value="under_review">심사중</SelectItem>
+                  <SelectItem value="selected">선정됨</SelectItem>
+                  <SelectItem value="rejected">불합격</SelectItem>
+                  <SelectItem value="withdrawn">철회됨</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 관리자 메모 */}
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="text-sm font-medium">
+                관리자 메모
+              </Label>
+              <Textarea
+                id="notes"
+                placeholder="관리자 메모를 입력하세요..."
+                value={editFormData.notes}
+                onChange={(e) => 
+                  setEditFormData(prev => ({ ...prev, notes: e.target.value }))
+                }
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeEditModal}>
+              <X className="h-4 w-4 mr-1" />
+              취소
+            </Button>
+            <Button onClick={handleUpdateApplication}>
+              <Save className="h-4 w-4 mr-1" />
+              저장
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
