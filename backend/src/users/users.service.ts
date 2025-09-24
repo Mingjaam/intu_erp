@@ -247,6 +247,37 @@ export class UsersService {
     return this.toResponseDto(updatedUser);
   }
 
+  async updateProfile(userId: string, updateUserDto: UpdateUserDto): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if email is being changed and if it already exists
+    if (updateUserDto.email && updateUserDto.email !== user.email) {
+      const existingUser = await this.userRepository.findOne({
+        where: { email: updateUserDto.email },
+      });
+
+      if (existingUser) {
+        throw new ConflictException('User with this email already exists');
+      }
+    }
+
+    // 일반 사용자는 역할과 조직 정보를 변경할 수 없음
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { role: _role, organizationId: _organizationId, isActive: _isActive, ...allowedFields } = updateUserDto;
+    
+    await this.userRepository.update(userId, allowedFields);
+    const updatedUser = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['organization'],
+    });
+
+    return this.toResponseDto(updatedUser);
+  }
+
 
   async findByRole(role: UserRole): Promise<UserResponseDto[]> {
     const users = await this.userRepository.find({

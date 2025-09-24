@@ -111,6 +111,21 @@ export class UsersController {
     return new ApiResponseDto(user, true, '프로필을 조회했습니다.');
   }
 
+  @Patch('profile')
+  @ApiOperation({ summary: '내 프로필 수정' })
+  @ApiResponse({
+    status: 200,
+    description: '프로필 수정 성공',
+    type: UserResponseDto,
+  })
+  async updateProfile(
+    @Request() req,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<ApiResponseDto<UserResponseDto>> {
+    const user = await this.usersService.updateProfile(req.user.id, updateUserDto);
+    return new ApiResponseDto(user, true, '프로필이 수정되었습니다.');
+  }
+
   @Get('by-role/:role')
   @Roles(UserRole.ADMIN, UserRole.OPERATOR)
   @ApiOperation({ summary: '역할별 사용자 조회' })

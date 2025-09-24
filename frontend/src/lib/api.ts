@@ -138,6 +138,8 @@ export const API_ENDPOINTS = {
     UPDATE: (id: string) => `/users/${id}`,
     CHANGE_ROLE: (id: string) => `/users/${id}/role`,
     UPDATE_MEMO: (id: string) => `/users/${id}/memo`,
+    PROFILE: '/users/profile',
+    UPDATE_PROFILE: '/users/profile',
   },
   
   // 프로그램
