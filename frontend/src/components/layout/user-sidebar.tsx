@@ -3,10 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 import { 
   FolderOpen,
   FileText,
-  Calendar
+  Calendar,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 
 const userNavigation = [
@@ -30,8 +33,32 @@ const userNavigation = [
   },
 ];
 
+const guestNavigation = [
+  { 
+    name: '프로그램', 
+    href: '/programs', 
+    icon: FolderOpen,
+    color: 'bg-blue-500'
+  },
+  { 
+    name: '로그인', 
+    href: '/auth/login', 
+    icon: LogIn,
+    color: 'bg-green-500'
+  },
+  { 
+    name: '회원가입', 
+    href: '/auth/register', 
+    icon: UserPlus,
+    color: 'bg-purple-500'
+  },
+];
+
 export function UserSidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+  
+  const navigation = user ? userNavigation : guestNavigation;
 
   return (
     <>
@@ -40,7 +67,7 @@ export function UserSidebar() {
         <div className="flex flex-col flex-grow overflow-y-auto">
           <div className="flex-1 flex items-start justify-center p-6 pt-32" style={{ minHeight: '100vh' }}>
             <nav className="space-y-6 w-full">
-              {userNavigation.map((item) => {
+              {navigation.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                 
                 return (
@@ -79,7 +106,7 @@ export function UserSidebar() {
       {/* 모바일 하단 네비게이션 */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg">
         <div className="flex justify-around py-2">
-          {userNavigation.map((item) => {
+          {navigation.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
             
             return (

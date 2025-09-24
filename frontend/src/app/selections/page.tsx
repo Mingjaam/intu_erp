@@ -7,10 +7,15 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, Filter, User, Calendar } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { CheckCircle, Filter, User, Calendar, Edit, Save, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Selection, SelectionQuery } from '@/types/selection';
+
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
@@ -26,6 +31,15 @@ export default function SelectionsPage() {
     limit: 10,
   });
   const [total, setTotal] = useState(0);
+
+  // 수정 모달 상태
+  const [editingSelection, setEditingSelection] = useState<Selection | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    selected: false,
+    reason: '',
+    criteria: {} as Record<string, string | number>
+  });
 
   const fetchSelections = useCallback(async () => {
     try {
@@ -59,6 +73,44 @@ export default function SelectionsPage() {
   const handleSearch = () => {
     // 검색 기능은 백엔드에서 지원하지 않으므로 클라이언트에서 필터링
     // 실제로는 백엔드 API에 search 파라미터를 추가해야 함
+  };
+
+  // 수정 모달 열기
+  const openEditModal = (selection: Selection) => {
+    setEditingSelection(selection);
+    setEditFormData({
+      selected: selection.selected,
+      reason: selection.reason || '',
+      criteria: selection.criteria ? Object.fromEntries(
+        Object.entries(selection.criteria).map(([key, value]) => [key, String(value)])
+      ) : {}
+    });
+    setIsEditModalOpen(true);
+  };
+
+  // 수정 모달 닫기
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingSelection(null);
+  };
+
+  // 심사 정보 수정
+  const handleUpdateSelection = async () => {
+    if (!editingSelection) return;
+
+    try {
+      await apiClient.patch(
+        API_ENDPOINTS.SELECTIONS.UPDATE(editingSelection.id),
+        editFormData
+      );
+      
+      toast.success('심사 정보가 수정되었습니다.');
+      closeEditModal();
+      fetchSelections(); // 목록 새로고침
+    } catch (error) {
+      console.error('심사 정보 수정 오류:', error);
+      toast.error('심사 정보 수정에 실패했습니다.');
+    }
   };
 
   if (isLoading) {
@@ -181,6 +233,15 @@ export default function SelectionsPage() {
                         신청서 보기
                       </Link>
                     </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => openEditModal(selection)}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      수정
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -211,6 +272,87 @@ export default function SelectionsPage() {
           </div>
         )}
       </div>
+
+      {/* 수정 모달 */}
+      <Dialog open={isEditModalOpen} onOpenChange={closeEditModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>심사 정보 수정</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* 선정/탈락 상태 */}
+            <div className="flex items-center space-x-4">
+              <Label htmlFor="selected" className="text-sm font-medium">
+                선정 상태
+              </Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="selected"
+                  checked={editFormData.selected}
+                  onCheckedChange={(checked: boolean) => 
+                    setEditFormData(prev => ({ ...prev, selected: checked }))
+                  }
+                />
+                <Label htmlFor="selected" className="text-sm">
+                  {editFormData.selected ? '선정' : '탈락'}
+                </Label>
+              </div>
+            </div>
+
+            {/* 심사 사유 */}
+            <div className="space-y-2">
+              <Label htmlFor="reason" className="text-sm font-medium">
+                심사 사유
+              </Label>
+              <Textarea
+                id="reason"
+                placeholder="심사 사유를 입력하세요..."
+                value={editFormData.reason}
+                onChange={(e) => 
+                  setEditFormData(prev => ({ ...prev, reason: e.target.value }))
+                }
+                rows={3}
+              />
+            </div>
+
+            {/* 심사 기준 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">
+                심사 기준
+              </Label>
+              <div className="space-y-2">
+                {Object.entries(editFormData.criteria).map(([key, value]) => (
+                  <div key={key} className="flex items-center space-x-2">
+                    <Label className="text-sm w-20">{key}:</Label>
+                    <Input
+                      value={String(value)}
+                      onChange={(e) => 
+                        setEditFormData(prev => ({
+                          ...prev,
+                          criteria: { ...prev.criteria, [key]: e.target.value }
+                        }))
+                      }
+                      className="flex-1"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeEditModal}>
+              <X className="h-4 w-4 mr-1" />
+              취소
+            </Button>
+            <Button onClick={handleUpdateSelection}>
+              <Save className="h-4 w-4 mr-1" />
+              저장
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

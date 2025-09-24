@@ -81,38 +81,25 @@ export default function CalendarPage() {
       
       try {
         setIsLoading(true);
-        console.log('API 요청 시작:', API_ENDPOINTS.PROGRAMS.LIST);
         
         const response = await apiClient.get<Program[]>(API_ENDPOINTS.PROGRAMS.LIST);
-        console.log('전체 응답:', response);
         
         // 응답 구조 확인
         const data = response.data || response;
-        
-        console.log('추출된 데이터:', data);
-        console.log('데이터 타입:', typeof data);
-        console.log('배열인가?', Array.isArray(data));
         
         // API 응답이 배열인지 확인
         let programs: Program[] = [];
         
         if (Array.isArray(data)) {
           programs = data;
-          console.log('데이터가 배열입니다. 길이:', programs.length);
         } else if (data && typeof data === 'object') {
           // 응답이 객체인 경우 programs 속성 확인
-          console.log('데이터 객체의 키들:', Object.keys(data));
           const dataObj = data as Record<string, unknown>;
           programs = (dataObj.programs as Program[]) || (dataObj.data as Program[]) || (dataObj.items as Program[]) || [];
-          console.log('객체에서 추출한 programs:', programs);
         } else {
           console.error('예상치 못한 데이터 타입:', typeof data, data);
           programs = [];
         }
-        
-        console.log('최종 programs:', programs);
-        console.log('programs 타입:', typeof programs);
-        console.log('programs가 배열인가?', Array.isArray(programs));
         
         // programs가 배열인지 다시 한번 확인
         if (!Array.isArray(programs)) {

@@ -18,8 +18,8 @@ export default function HomePage() {
           router.push('/programs');
         }
       } else {
-        // 로그인되지 않은 사용자는 로그인 페이지로 리다이렉트
-        router.push('/auth/login');
+        // 로그인되지 않은 사용자는 programs 페이지로 리다이렉트
+        router.push('/programs');
       }
     }
   }, [user, loading, router]);

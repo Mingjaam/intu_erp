@@ -48,7 +48,6 @@ const navigation = [
     children: [
       { name: '전체 회원', href: '/admin/users' },
       { name: '회원 등록 ✗', href: '/admin/users/new' },
-      { name: '회원 관리 ✗', href: '/admin/users/manage' },
       { name: '불량회원 관리', href: '/admin/users/reports' },
     ]
   },
@@ -63,10 +62,12 @@ const navigation = [
     ]
   },
   { 
-    name: '관리자', 
-    href: '/admin/settings', 
+    name: '관리', 
+    href: '/admin/users/manage', 
     icon: Settings,
     children: [
+      { name: '회원 관리', href: '/admin/users/manage' },
+      { name: '직원 관리', href: '/admin/users/staff' },
       { name: '시스템 설정 ✗', href: '/admin/settings' },
       { name: '사용자 관리', href: '/admin/users' },
       { name: '권한 관리 ✗', href: '/admin/permissions' },

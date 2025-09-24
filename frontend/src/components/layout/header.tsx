@@ -51,13 +51,11 @@ export function Header() {
     <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* 로고 및 브랜딩 */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-blue-700 font-bold text-lg">M</span>
-              </div>
-              <h1 className="text-xl font-bold">마을 프로그램</h1>
+              <h1 className="text-xl font-bold">
+                {user?.organization?.name || '마을 프로그램'}
+              </h1>
             </div>
           </div>
 
@@ -94,7 +92,7 @@ export function Header() {
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-medium">{user.name}님</p>
                     <p className="text-xs text-white/80">
-                      {user.role === 'admin' ? '관리자' : user.role === 'operator' ? '운영자' : '신청자'}
+                      {user.role === 'admin' ? '관리자' : user.role === 'operator' ? '운영자' : user.role === 'staff' ? '직원' : '신청자'}
                     </p>
                   </div>
                 </Button>
@@ -107,7 +105,7 @@ export function Header() {
                       {user.email}
                     </p>
                     <p className="text-xs text-blue-600 font-medium">
-                      {user.role === 'admin' ? '관리자' : user.role === 'operator' ? '운영자' : '신청자'}
+                      {user.role === 'admin' ? '관리자' : user.role === 'operator' ? '운영자' : user.role === 'staff' ? '직원' : '신청자'}
                     </p>
                   </div>
                 </div>
