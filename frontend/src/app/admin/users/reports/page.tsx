@@ -4,14 +4,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Flag, 
   Search, 
-  RefreshCw, 
-  Eye
+  RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,6 +29,10 @@ interface UserReport {
     id: string;
     name: string;
     email: string;
+    organization?: {
+      id: string;
+      name: string;
+    };
   };
   reportedUser?: {
     id: string;
@@ -44,19 +46,6 @@ interface UserReport {
   };
 }
 
-const statusLabels: Record<string, string> = {
-  pending: '대기중',
-  reviewed: '검토중',
-  resolved: '해결됨',
-  dismissed: '기각됨',
-};
-
-const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  reviewed: 'bg-blue-100 text-blue-800',
-  resolved: 'bg-green-100 text-green-800',
-  dismissed: 'bg-red-100 text-red-800',
-};
 
 export default function UserReportsPage() {
   const { user } = useAuth();
@@ -205,6 +194,9 @@ export default function UserReportsPage() {
                     <div className="flex items-center gap-6 text-xs text-gray-600">
                       <div>
                         <strong>신고자:</strong> {report.reporter?.name}
+                        {report.reporter?.organization && (
+                          <span className="text-blue-600 ml-1">({report.reporter.organization.name})</span>
+                        )}
                       </div>
                       <div>
                         <strong>사유:</strong> {report.reason}
@@ -221,11 +213,6 @@ export default function UserReportsPage() {
                     )}
                   </div>
                   
-                  <div className="flex items-center gap-1">
-                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
               ))}
             </div>

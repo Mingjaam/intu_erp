@@ -7,23 +7,17 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { 
   Users, 
   Search, 
   RefreshCw, 
-  Plus,
-  Eye,
-  Edit,
   Mail,
   Phone,
   Calendar,
-  Flag,
-  Building
+  Building,
+  UserCog
 } from 'lucide-react';
-import Link from 'next/link';
 import { toast } from 'sonner';
-import { UserReportDialog } from '@/components/user-report-dialog';
 
 interface User {
   id: string;
@@ -60,7 +54,7 @@ const roleColors: Record<string, string> = {
   participant: 'bg-purple-100 text-purple-800',
 };
 
-export default function UsersPage() {
+export default function StaffManagementPage() {
   const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,26 +62,14 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [reportDialog, setReportDialog] = useState<{
-    isOpen: boolean;
-    userId: string;
-    userName: string;
-  }>({
-    isOpen: false,
-    userId: '',
-    userName: '',
-  });
-
 
   const fetchUsers = async (page = 1, search = '') => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get(`${API_ENDPOINTS.USERS.LIST}?page=${page}&limit=20&search=${search}&sortBy=createdAt&sortOrder=DESC`);
+      const response = await apiClient.get(`${API_ENDPOINTS.USERS.STAFF}?page=${page}&limit=20&search=${search}&sortBy=createdAt&sortOrder=DESC`);
       
-      console.log('API 응답:', response);
-      console.log('사용자 데이터:', response.data);
+      console.log('직원 관리 API 응답:', response);
       
-      // API 응답이 성공적이고 데이터가 있는지 확인
       if (response.success && response.data && typeof response.data === 'object' && response.data !== null) {
         const data = response.data as { users?: User[]; pagination?: { totalPages?: number; total?: number } };
         if (Array.isArray(data.users)) {
@@ -106,8 +88,8 @@ export default function UsersPage() {
         setTotalUsers(0);
       }
     } catch (error) {
-      console.error('회원 목록 조회 오류:', error);
-      toast.error('회원 목록을 불러오는데 실패했습니다.');
+      console.error('직원 목록 조회 오류:', error);
+      toast.error('직원 목록을 불러오는데 실패했습니다.');
       setUsers([]);
       setTotalPages(1);
       setTotalUsers(0);
@@ -132,20 +114,6 @@ export default function UsersPage() {
     fetchUsers(currentPage, searchTerm);
   };
 
-
-  const handleReportUser = (userId: string, userName: string) => {
-    setReportDialog({
-      isOpen: true,
-      userId,
-      userName,
-    });
-  };
-
-  const handleReportSuccess = () => {
-    fetchUsers(currentPage, searchTerm);
-  };
-
-
   if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -163,20 +131,14 @@ export default function UsersPage() {
       <div className="mb-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">회원 관리</h1>
-            <p className="text-gray-600">전체 회원 목록을 확인하고 관리할 수 있습니다.</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">직원 관리</h1>
+            <p className="text-gray-600">같은 마을의 운영자와 직원을 관리할 수 있습니다.</p>
           </div>
           <div className="flex items-center gap-4">
             <Button onClick={handleRefresh} disabled={isLoading} size="sm">
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               새로고침
             </Button>
-            <Link href="/admin/users/new">
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                새 회원 등록
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
@@ -202,12 +164,12 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* 회원 목록 */}
+      {/* 직원 목록 */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <Users className="h-5 w-5 mr-2" />
-            전체 회원 ({totalUsers}명)
+            직원 목록 ({totalUsers}명)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -215,12 +177,12 @@ export default function UsersPage() {
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600">회원 목록을 불러오는 중...</p>
+                <p className="text-gray-600">직원 목록을 불러오는 중...</p>
               </div>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              회원이 없습니다.
+              직원이 없습니다.
             </div>
           ) : (
             <div className="space-y-4">
@@ -228,7 +190,7 @@ export default function UsersPage() {
                 <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Users className="h-5 w-5 text-blue-600" />
+                      <UserCog className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-1">
@@ -260,7 +222,7 @@ export default function UsersPage() {
                           <Calendar className="h-4 w-4" />
                           {new Date(user.createdAt).toLocaleDateString('ko-KR')}
                         </div>
-                        {user.organization && user.organization.name && (
+                        {user.organization && (
                           <div className="flex items-center gap-1">
                             <Building className="h-4 w-4" />
                             {user.organization.name}
@@ -271,19 +233,7 @@ export default function UsersPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => handleReportUser(user.id, user.name)}
-                      className="text-orange-600 hover:text-orange-700"
-                      title="회원 신고"
-                    >
-                      <Flag className="h-4 w-4" />
+                      <UserCog className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -317,16 +267,6 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* 회원 신고 다이얼로그 */}
-      <UserReportDialog
-        isOpen={reportDialog.isOpen}
-        onClose={() => setReportDialog({ isOpen: false, userId: '', userName: '' })}
-        reportedUserId={reportDialog.userId}
-        reportedUserName={reportDialog.userName}
-        onSuccess={handleReportSuccess}
-      />
-
     </div>
   );
 }

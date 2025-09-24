@@ -8,20 +8,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Users, 
   Search, 
   RefreshCw, 
-  Plus,
-  Eye,
-  Edit,
+  UserCog,
   Mail,
   Phone,
   Calendar,
   Flag,
   Building
 } from 'lucide-react';
-import Link from 'next/link';
 import { toast } from 'sonner';
 import { UserReportDialog } from '@/components/user-report-dialog';
 
@@ -60,7 +58,7 @@ const roleColors: Record<string, string> = {
   participant: 'bg-purple-100 text-purple-800',
 };
 
-export default function UsersPage() {
+export default function UserManagePage() {
   const { user } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,16 +76,25 @@ export default function UsersPage() {
     userName: '',
   });
 
+  const [roleChangeDialog, setRoleChangeDialog] = useState<{
+    isOpen: boolean;
+    userId: string;
+    userName: string;
+    currentRole: string;
+  }>({
+    isOpen: false,
+    userId: '',
+    userName: '',
+    currentRole: '',
+  });
+
+  const [newRole, setNewRole] = useState<string>('');
 
   const fetchUsers = async (page = 1, search = '') => {
     try {
       setIsLoading(true);
-      const response = await apiClient.get(`${API_ENDPOINTS.USERS.LIST}?page=${page}&limit=20&search=${search}&sortBy=createdAt&sortOrder=DESC`);
+      const response = await apiClient.get(`${API_ENDPOINTS.USERS.MANAGEABLE}?page=${page}&limit=20&search=${search}&sortBy=createdAt&sortOrder=DESC`);
       
-      console.log('API 응답:', response);
-      console.log('사용자 데이터:', response.data);
-      
-      // API 응답이 성공적이고 데이터가 있는지 확인
       if (response.success && response.data && typeof response.data === 'object' && response.data !== null) {
         const data = response.data as { users?: User[]; pagination?: { totalPages?: number; total?: number } };
         if (Array.isArray(data.users)) {
@@ -132,7 +139,6 @@ export default function UsersPage() {
     fetchUsers(currentPage, searchTerm);
   };
 
-
   const handleReportUser = (userId: string, userName: string) => {
     setReportDialog({
       isOpen: true,
@@ -145,6 +151,73 @@ export default function UsersPage() {
     fetchUsers(currentPage, searchTerm);
   };
 
+  const openRoleChangeDialog = (userId: string, userName: string, currentRole: string) => {
+    setRoleChangeDialog({
+      isOpen: true,
+      userId,
+      userName,
+      currentRole,
+    });
+    setNewRole(currentRole);
+  };
+
+  const closeRoleChangeDialog = () => {
+    setRoleChangeDialog({
+      isOpen: false,
+      userId: '',
+      userName: '',
+      currentRole: '',
+    });
+    setNewRole('');
+  };
+
+  const handleRoleChange = async () => {
+    if (!roleChangeDialog.userId || !newRole) return;
+
+    try {
+      console.log('역할 변경 요청:', {
+        userId: roleChangeDialog.userId,
+        newRole: newRole,
+        url: API_ENDPOINTS.USERS.CHANGE_ROLE(roleChangeDialog.userId)
+      });
+      
+      const response = await apiClient.patch(API_ENDPOINTS.USERS.CHANGE_ROLE(roleChangeDialog.userId), {
+        role: newRole,
+      });
+      
+      console.log('역할 변경 응답:', response);
+      toast.success('사용자 역할이 변경되었습니다.');
+      closeRoleChangeDialog();
+      fetchUsers(currentPage, searchTerm);
+    } catch (error) {
+      console.error('역할 변경 오류:', error);
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      console.error('오류 상세:', {
+        message: errorMessage,
+        error: error
+      });
+      toast.error(`역할 변경에 실패했습니다: ${errorMessage}`);
+    }
+  };
+
+  const getAvailableRoles = (targetUserRole: string) => {
+    if (user?.role === 'admin') {
+      // 관리자는 운영자, 직원, 신청자만 부여 가능 (관리자 제외)
+      return [
+        { value: 'operator', label: '운영자' },
+        { value: 'staff', label: '직원' },
+        { value: 'applicant', label: '신청자' },
+      ];
+    } else if (user?.role === 'operator') {
+      // 운영자는 운영자, 직원, 신청자만 부여 가능
+      return [
+        { value: 'operator', label: '운영자' },
+        { value: 'staff', label: '직원' },
+        { value: 'applicant', label: '신청자' },
+      ];
+    }
+    return [];
+  };
 
   if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
     return (
@@ -163,20 +236,14 @@ export default function UsersPage() {
       <div className="mb-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">회원 관리</h1>
-            <p className="text-gray-600">전체 회원 목록을 확인하고 관리할 수 있습니다.</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">관리</h1>
+            <p className="text-gray-600">역할 변경이 가능한 회원을 관리할 수 있습니다.</p>
           </div>
           <div className="flex items-center gap-4">
             <Button onClick={handleRefresh} disabled={isLoading} size="sm">
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               새로고침
             </Button>
-            <Link href="/admin/users/new">
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                새 회원 등록
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
@@ -207,7 +274,7 @@ export default function UsersPage() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Users className="h-5 w-5 mr-2" />
-            전체 회원 ({totalUsers}명)
+            관리 가능한 회원 ({totalUsers}명)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -220,7 +287,7 @@ export default function UsersPage() {
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              회원이 없습니다.
+              관리 가능한 회원이 없습니다.
             </div>
           ) : (
             <div className="space-y-4">
@@ -260,7 +327,7 @@ export default function UsersPage() {
                           <Calendar className="h-4 w-4" />
                           {new Date(user.createdAt).toLocaleDateString('ko-KR')}
                         </div>
-                        {user.organization && user.organization.name && (
+                        {user.organization && (
                           <div className="flex items-center gap-1">
                             <Building className="h-4 w-4" />
                             {user.organization.name}
@@ -270,12 +337,18 @@ export default function UsersPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    {/* 관리자 역할은 변경 불가 */}
+                    {user.role !== 'admin' && (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => openRoleChangeDialog(user.id, user.name, user.role)}
+                        className="text-blue-600 hover:text-blue-700"
+                        title="역할 변경"
+                      >
+                        <UserCog className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button 
                       size="sm" 
                       variant="outline" 
@@ -327,6 +400,73 @@ export default function UsersPage() {
         onSuccess={handleReportSuccess}
       />
 
+      {/* 역할 변경 다이얼로그 */}
+      <Dialog open={roleChangeDialog.isOpen} onOpenChange={closeRoleChangeDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>사용자 역할 변경</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* 사용자 정보 */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <UserCog className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900">
+                {roleChangeDialog.userName}
+              </h3>
+              <p className="text-sm text-gray-600">
+                현재 역할: {roleLabels[roleChangeDialog.currentRole] || roleChangeDialog.currentRole}
+              </p>
+            </div>
+
+            {/* 역할 선택 */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                새로운 역할
+              </label>
+              <Select value={newRole} onValueChange={setNewRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="역할을 선택하세요" />
+                </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableRoles(roleChangeDialog.currentRole).map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+              </Select>
+            </div>
+
+            {/* 안내 메시지 */}
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-blue-700">
+                {user?.role === 'admin' 
+                  ? '관리자는 모든 사용자의 역할을 변경할 수 있습니다.'
+                  : '운영자는 같은 조직의 사용자만 직원으로 변경할 수 있습니다.'
+                }
+              </p>
+              <p className="text-sm text-blue-600 mt-2">
+                💡 직원으로 변경하면 부여한 사람의 조직으로 이동됩니다.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={closeRoleChangeDialog}>
+              취소
+            </Button>
+            <Button 
+              onClick={handleRoleChange}
+              disabled={!newRole || newRole === roleChangeDialog.currentRole}
+            >
+              역할 변경
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
