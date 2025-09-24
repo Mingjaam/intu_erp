@@ -319,9 +319,10 @@ export class UsersService {
       updateData.organizationId = currentUser.organizationId;
     }
     
-    // 신청자(applicant) 역할로 변경하는 경우, 조직에서 제거
+    // 신청자(applicant) 역할로 변경하는 경우, 조직에서 제거하고 메모 삭제
     if (changeUserRoleDto.role === UserRole.APPLICANT) {
       updateData.organizationId = null;
+      updateData.memo = null;
     }
 
     await this.userRepository.update(id, updateData);
