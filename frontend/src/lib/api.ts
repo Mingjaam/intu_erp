@@ -140,6 +140,7 @@ export const API_ENDPOINTS = {
     UPDATE_MEMO: (id: string) => `/users/${id}/memo`,
     PROFILE: '/users/profile',
     UPDATE_PROFILE: '/users/profile',
+    CHANGE_PASSWORD: '/users/password',
   },
   
   // 프로그램

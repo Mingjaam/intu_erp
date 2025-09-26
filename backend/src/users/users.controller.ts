@@ -8,10 +8,11 @@ import {
   Query,
   UseGuards,
   Request,
+  SetMetadata,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, UserResponseDto, ChangeUserRoleDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto, UserResponseDto, ChangeUserRoleDto, ChangePasswordDto } from './dto/user.dto';
 import { PaginationDto } from '../common/dto/api-response.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -211,6 +212,21 @@ export class UsersController {
   ): Promise<ApiResponseDto<UserResponseDto>> {
     const user = await this.usersService.updateMemo(id, body.memo, req.user);
     return new ApiResponseDto(user, true, '사용자 메모가 수정되었습니다.');
+  }
+
+  @Patch('password')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '비밀번호 변경' })
+  @ApiResponse({
+    status: 200,
+    description: '비밀번호 변경 성공',
+  })
+  async changePassword(
+    @Request() req,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ): Promise<ApiResponseDto<null>> {
+    await this.usersService.changePassword(req.user.id, changePasswordDto);
+    return new ApiResponseDto(null, true, '비밀번호가 변경되었습니다.');
   }
 
 }

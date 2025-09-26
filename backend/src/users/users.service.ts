@@ -2,11 +2,12 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from '../database/entities/user.entity';
-import { CreateUserDto, UpdateUserDto, UserResponseDto, ChangeUserRoleDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto, UserResponseDto, ChangeUserRoleDto, ChangePasswordDto } from './dto/user.dto';
 import { PaginationDto } from '../common/dto/api-response.dto';
 import * as bcrypt from 'bcryptjs';
 
@@ -427,5 +428,42 @@ export class UsersService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<void> {
+    const { currentPassword, newPassword } = changePasswordDto;
+
+    // 입력값 검증
+    if (!currentPassword || !newPassword) {
+      throw new BadRequestException('현재 비밀번호와 새 비밀번호를 모두 입력해주세요.');
+    }
+
+    if (currentPassword === newPassword) {
+      throw new BadRequestException('새 비밀번호는 현재 비밀번호와 달라야 합니다.');
+    }
+
+    // 사용자 조회
+    const user = await this.userRepository.findOne({
+      where: { id: userId, isActive: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 현재 비밀번호 확인
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException('현재 비밀번호가 올바르지 않습니다.');
+    }
+
+    // 새 비밀번호 해시화
+    const saltRounds = 10;
+    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+
+    // 비밀번호 업데이트
+    await this.userRepository.update(userId, {
+      passwordHash: newPasswordHash,
+    });
   }
 }

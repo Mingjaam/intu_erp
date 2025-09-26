@@ -101,7 +101,12 @@ export class ProgramsService {
       throw new NotFoundException('프로그램을 찾을 수 없습니다.');
     }
 
-    // 일반 사용자는 공개된 프로그램만 조회 가능
+    // 로그인되지 않은 사용자는 공개된 프로그램만 조회 가능
+    if (!user && program.status !== 'open') {
+      throw new ForbiddenException('접근 권한이 없습니다.');
+    }
+
+    // 일반 사용자(신청자)는 공개된 프로그램만 조회 가능
     if (user && user.role === UserRole.APPLICANT && program.status !== 'open') {
       throw new ForbiddenException('접근 권한이 없습니다.');
     }

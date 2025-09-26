@@ -7,9 +7,9 @@ INSERT INTO organizations (id, name, type, address, contact, description, "isAct
 
 -- 사용자 데이터 삽입 (비밀번호: password123)
 INSERT INTO users (id, email, "passwordHash", name, role, "organizationId", phone, "isActive", "createdAt", "updatedAt") VALUES
-('admin-uuid-1', 'admin@intu.com', '$2b$10$rQZ8K9vL2nF3mP4qR5sT6uV7wX8yZ9aB0cD1eF2gH3iJ4kL5mN6oP7qR8sT9uV', '관리자', 'admin', '256221f1-50bc-4758-9054-3087940e2076', NULL, true, NOW(), NOW()),
-('operator-uuid-1', 'operator@intu.com', '$2b$10$rQZ8K9vL2nF3mP4qR5sT6uV7wX8yZ9aB0cD1eF2gH3iJ4kL5mN6oP7qR8sT9uV', '운영자', 'operator', '256221f1-50bc-4758-9054-3087940e2076', NULL, true, NOW(), NOW()),
-('user-uuid-1', 'user@example.com', '$2b$10$rQZ8K9vL2nF3mP4qR5sT6uV7wX8yZ9aB0cD1eF2gH3iJ4kL5mN6oP7qR8sT9uV', '홍길동', 'applicant', NULL, '010-1234-5678', true, NOW(), NOW());
+('550e8400-e29b-41d4-a716-446655440001', 'admin@intu.com', '$2b$10$rQZ8K9vL2nF3mP4qR5sT6uV7wX8yZ9aB0cD1eF2gH3iJ4kL5mN6oP7qR8sT9uV', '관리자', 'admin', '256221f1-50bc-4758-9054-3087940e2076', NULL, true, NOW(), NOW()),
+('550e8400-e29b-41d4-a716-446655440002', 'operator@intu.com', '$2b$10$rQZ8K9vL2nF3mP4qR5sT6uV7wX8yZ9aB0cD1eF2gH3iJ4kL5mN6oP7qR8sT9uV', '운영자', 'operator', '256221f1-50bc-4758-9054-3087940e2076', NULL, true, NOW(), NOW()),
+('550e8400-e29b-41d4-a716-446655440003', 'user@example.com', '$2b$10$rQZ8K9vL2nF3mP4qR5sT6uV7wX8yZ9aB0cD1eF2gH3iJ4kL5mN6oP7qR8sT9uV', '홍길동', 'applicant', NULL, '010-1234-5678', true, NOW(), NOW());
 
 -- 프로그램 데이터 삽입
 INSERT INTO programs (id, title, description, "organizerId", status, "maxParticipants", "applyStart", "applyEnd", "programStart", "programEnd", location, fee, "applicationForm", metadata, "isActive", "createdAt", "updatedAt") VALUES

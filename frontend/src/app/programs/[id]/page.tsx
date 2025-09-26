@@ -47,20 +47,21 @@ export default function ProgramDetailPage() {
   useEffect(() => {
     const fetchProgram = async () => {
       try {
-        const [programResponse, statsResponse] = await Promise.all([
-          apiClient.get<Program>(API_ENDPOINTS.PROGRAMS.DETAIL(programId)),
-          user?.role !== 'applicant' 
-            ? apiClient.get<ProgramStats>(API_ENDPOINTS.PROGRAMS.STATS(programId))
-            : Promise.resolve({ data: null })
-        ]);
-
-        // 백엔드가 ApiResponse 래퍼 없이 직접 데이터를 반환하므로 response.data가 아닌 response를 사용
+        // 프로그램 정보는 로그인 없이도 조회 가능
+        const programResponse = await apiClient.get<Program>(API_ENDPOINTS.PROGRAMS.DETAIL(programId));
         const programData = programResponse.data || programResponse;
         setProgram(programData);
         
-        if (statsResponse.data) {
-          const statsData = statsResponse.data || statsResponse;
-          setStats(statsData);
+        // 통계 정보는 로그인된 사용자만 조회
+        if (user && user.role !== 'applicant') {
+          try {
+            const statsResponse = await apiClient.get<ProgramStats>(API_ENDPOINTS.PROGRAMS.STATS(programId));
+            const statsData = statsResponse.data || statsResponse;
+            setStats(statsData);
+          } catch (statsError) {
+            console.log('통계 정보 조회 실패 (권한 없음):', statsError);
+            // 통계 조회 실패는 무시하고 프로그램 정보만 표시
+          }
         }
       } catch (error) {
         console.error('프로그램 조회 오류:', error);
@@ -253,25 +254,40 @@ export default function ProgramDetailPage() {
           )}
 
           {program.status === 'open' && (
-            user?.role === 'applicant' ? (
-              <Card>
-                <CardContent className="pt-6">
-                  <Button className="w-full" asChild>
-                    <Link href={`/programs/${program.id}/apply`}>
-                      신청하기
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+            user ? (
+              user.role === 'applicant' ? (
+                <Card>
+                  <CardContent className="pt-6">
+                    <Button className="w-full" asChild>
+                      <Link href={`/programs/${program.id}/apply`}>
+                        신청하기
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center text-gray-600">
+                      <p className="mb-2">신청은 신청자(applicant) 역할의 사용자만 가능합니다.</p>
+                      <p className="text-sm">현재 역할: {user.role}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
             ) : (
               <Card>
                 <CardContent className="pt-6">
-                  <Button 
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={openLoginDialog}
-                  >
-                    신청하기
-                  </Button>
+                  <div className="text-center space-y-3">
+                    <p className="text-gray-600">신청하려면 로그인이 필요합니다.</p>
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      onClick={openLoginDialog}
+                    >
+                      <LogIn className="h-4 w-4 mr-2" />
+                      로그인 후 신청하기
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )
