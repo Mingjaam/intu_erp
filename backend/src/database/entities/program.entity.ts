@@ -14,6 +14,8 @@ export enum ProgramStatus {
   DRAFT = 'draft',
   OPEN = 'open',
   CLOSED = 'closed',
+  ONGOING = 'ongoing',
+  COMPLETED = 'completed',
   ARCHIVED = 'archived',
 }
 

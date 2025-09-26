@@ -47,57 +47,81 @@ export class ProgramsService {
     const programStart = program.programStart ? new Date(program.programStart) : null;
     const programEnd = program.programEnd ? new Date(program.programEnd) : null;
 
+    console.log(`프로그램 상태 계산: ${program.title}`);
+    console.log(`현재 시간: ${now.toISOString()}`);
+    console.log(`신청 시작: ${applyStart.toISOString()}`);
+    console.log(`신청 종료: ${applyEnd.toISOString()}`);
+    console.log(`활동 시작: ${programStart?.toISOString() || 'null'}`);
+    console.log(`활동 종료: ${programEnd?.toISOString() || 'null'}`);
+    console.log(`현재 상태: ${program.status}`);
+
     // 수동으로 설정된 상태가 'draft' 또는 'archived'인 경우 그대로 유지
     if (program.status === 'draft' || program.status === 'archived') {
+      console.log(`수동 설정 상태 유지: ${program.status}`);
       return program.status;
     }
 
     // 신청 기간 전
     if (now < applyStart) {
+      console.log('상태: 신청 전 (draft)');
       return 'draft'; // 신청 시작 전
     }
     
     // 신청 기간 중
     if (now >= applyStart && now <= applyEnd) {
+      console.log('상태: 모집중 (open)');
       return 'open'; // 모집 중
     }
     
     // 신청 기간 종료 후, 활동 시작 전
     if (now > applyEnd && programStart && now < programStart) {
+      console.log('상태: 신청마감 (closed)');
       return 'closed'; // 신청 마감, 활동 시작 전
     }
     
     // 활동 기간 중
     if (programStart && programEnd && now >= programStart && now <= programEnd) {
+      console.log('상태: 진행중 (ongoing)');
       return 'ongoing'; // 진행 중
     }
     
     // 활동 종료 후
     if (programEnd && now > programEnd) {
+      console.log('상태: 완료 (completed)');
       return 'completed'; // 완료
     }
     
     // 활동 기간이 설정되지 않은 경우
     if (!programStart && !programEnd) {
+      console.log('상태: 신청마감 (closed) - 활동 기간 미설정');
       return 'closed'; // 신청 마감
     }
     
+    console.log('상태: 신청마감 (closed) - 기본값');
     return 'closed';
   }
 
   // 프로그램 상태를 업데이트하는 메서드
   private async updateProgramStatus(program: Program): Promise<Program> {
+    console.log(`=== 상태 업데이트 시작: ${program.title} ===`);
     const calculatedStatus = this.calculateProgramStatus(program);
+    console.log(`계산된 상태: ${calculatedStatus}, 현재 상태: ${program.status}`);
     
     if (calculatedStatus !== program.status) {
+      console.log(`상태 변경: ${program.status} -> ${calculatedStatus}`);
       program.status = calculatedStatus as any;
-      return await this.programRepository.save(program);
+      const savedProgram = await this.programRepository.save(program);
+      console.log(`상태 업데이트 완료: ${savedProgram.status}`);
+      return savedProgram;
+    } else {
+      console.log(`상태 변경 없음: ${program.status}`);
     }
     
     return program;
   }
 
   async findAll(query: ProgramQueryDto, user: User | null): Promise<{ programs: Program[]; total: number }> {
+    console.log('=== findAll 메서드 호출됨 ===');
     const { status, organizerId, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
@@ -133,25 +157,50 @@ export class ProgramsService {
       .getManyAndCount();
 
     // 각 프로그램의 상태를 자동으로 업데이트
+    console.log(`프로그램 개수: ${programs.length}`);
     const updatedPrograms = await Promise.all(
-      programs.map(program => this.updateProgramStatus(program))
+      programs.map(async (program) => {
+        console.log(`프로그램 처리 시작: ${program.title}`);
+        return await this.updateProgramStatus(program);
+      })
     );
 
-    // 각 프로그램에 대한 통계 정보 추가
+    // 각 프로그램에 대한 통계 정보 및 모집 마감까지 남은 일수 계산
     const programsWithStats = updatedPrograms.map(program => {
       const selectedCount = program.applications.filter(app => 
         app.selection && app.selection.selected
       ).length;
+      
+      // 모집 마감까지 남은 일수 계산
+      const now = new Date();
+      const applyEnd = new Date(program.applyEnd);
+      const daysUntilDeadline = Math.ceil((applyEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      
+      console.log(`프로그램: ${program.title}, 마감일: ${applyEnd.toISOString()}, 남은 일수: ${daysUntilDeadline}`);
       
       return {
         ...program,
         applicationCount: program.applications.length,
         selectedCount,
         revenue: selectedCount * program.fee,
+        daysUntilDeadline, // 모집 마감까지 남은 일수
       };
     });
 
-    return { programs: programsWithStats, total };
+    // 모집 마감까지 남은 일수 기준으로 정렬 (마감 임박한 것이 위에)
+    const sortedPrograms = programsWithStats.sort((a, b) => {
+      // 모집 중인 프로그램만 마감일 기준으로 정렬
+      if (a.status === 'open' && b.status === 'open') {
+        return a.daysUntilDeadline - b.daysUntilDeadline;
+      }
+      // 모집 중인 프로그램이 우선
+      if (a.status === 'open' && b.status !== 'open') return -1;
+      if (a.status !== 'open' && b.status === 'open') return 1;
+      // 같은 상태면 생성일 기준 내림차순
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    return { programs: sortedPrograms, total };
   }
 
   async findOne(id: string, user: User | null): Promise<Program> {
