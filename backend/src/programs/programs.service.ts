@@ -39,6 +39,64 @@ export class ProgramsService {
     return await this.programRepository.save(program);
   }
 
+  // 프로그램 상태를 자동으로 계산하는 메서드
+  private calculateProgramStatus(program: Program): string {
+    const now = new Date();
+    const applyStart = new Date(program.applyStart);
+    const applyEnd = new Date(program.applyEnd);
+    const programStart = program.programStart ? new Date(program.programStart) : null;
+    const programEnd = program.programEnd ? new Date(program.programEnd) : null;
+
+    // 수동으로 설정된 상태가 'draft' 또는 'archived'인 경우 그대로 유지
+    if (program.status === 'draft' || program.status === 'archived') {
+      return program.status;
+    }
+
+    // 신청 기간 전
+    if (now < applyStart) {
+      return 'draft'; // 신청 시작 전
+    }
+    
+    // 신청 기간 중
+    if (now >= applyStart && now <= applyEnd) {
+      return 'open'; // 모집 중
+    }
+    
+    // 신청 기간 종료 후, 활동 시작 전
+    if (now > applyEnd && programStart && now < programStart) {
+      return 'closed'; // 신청 마감, 활동 시작 전
+    }
+    
+    // 활동 기간 중
+    if (programStart && programEnd && now >= programStart && now <= programEnd) {
+      return 'ongoing'; // 진행 중
+    }
+    
+    // 활동 종료 후
+    if (programEnd && now > programEnd) {
+      return 'completed'; // 완료
+    }
+    
+    // 활동 기간이 설정되지 않은 경우
+    if (!programStart && !programEnd) {
+      return 'closed'; // 신청 마감
+    }
+    
+    return 'closed';
+  }
+
+  // 프로그램 상태를 업데이트하는 메서드
+  private async updateProgramStatus(program: Program): Promise<Program> {
+    const calculatedStatus = this.calculateProgramStatus(program);
+    
+    if (calculatedStatus !== program.status) {
+      program.status = calculatedStatus as any;
+      return await this.programRepository.save(program);
+    }
+    
+    return program;
+  }
+
   async findAll(query: ProgramQueryDto, user: User | null): Promise<{ programs: Program[]; total: number }> {
     const { status, organizerId, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
@@ -74,8 +132,13 @@ export class ProgramsService {
       .take(limit)
       .getManyAndCount();
 
+    // 각 프로그램의 상태를 자동으로 업데이트
+    const updatedPrograms = await Promise.all(
+      programs.map(program => this.updateProgramStatus(program))
+    );
+
     // 각 프로그램에 대한 통계 정보 추가
-    const programsWithStats = programs.map(program => {
+    const programsWithStats = updatedPrograms.map(program => {
       const selectedCount = program.applications.filter(app => 
         app.selection && app.selection.selected
       ).length;
@@ -101,24 +164,27 @@ export class ProgramsService {
       throw new NotFoundException('프로그램을 찾을 수 없습니다.');
     }
 
+    // 프로그램 상태를 자동으로 업데이트
+    const updatedProgram = await this.updateProgramStatus(program);
+
     // 로그인되지 않은 사용자는 공개된 프로그램만 조회 가능
-    if (!user && program.status !== 'open') {
+    if (!user && updatedProgram.status !== 'open') {
       throw new ForbiddenException('접근 권한이 없습니다.');
     }
 
     // 일반 사용자(신청자)는 공개된 프로그램만 조회 가능
-    if (user && user.role === UserRole.APPLICANT && program.status !== 'open') {
+    if (user && user.role === UserRole.APPLICANT && updatedProgram.status !== 'open') {
       throw new ForbiddenException('접근 권한이 없습니다.');
     }
 
     // 관리자/운영자는 자신의 기관 프로그램만 조회 가능
     if (user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR) && user.organizationId) {
-      if (program.organizerId !== user.organizationId) {
+      if (updatedProgram.organizerId !== user.organizationId) {
         throw new ForbiddenException('이 프로그램에 접근할 권한이 없습니다.');
       }
     }
 
-    return program;
+    return updatedProgram;
   }
 
   async update(id: string, updateProgramDto: UpdateProgramDto, user: User): Promise<Program> {

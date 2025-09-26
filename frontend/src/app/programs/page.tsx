@@ -16,16 +16,20 @@ import { UserSidebar } from '@/components/layout/user-sidebar';
 // Program interface는 이미 types/program.ts에서 import하므로 제거
 
 const statusLabels = {
-  draft: '임시저장',
+  draft: '신청 전',
   open: '모집중',
-  closed: '종료',
+  closed: '신청마감',
+  ongoing: '진행중',
+  completed: '완료',
   archived: '보관',
 };
 
 const statusColors = {
   draft: 'bg-gray-100 text-gray-800',
   open: 'bg-green-100 text-green-800',
-  closed: 'bg-red-100 text-red-800',
+  closed: 'bg-orange-100 text-orange-800',
+  ongoing: 'bg-blue-100 text-blue-800',
+  completed: 'bg-purple-100 text-purple-800',
   archived: 'bg-yellow-100 text-yellow-800',
 };
 
@@ -72,10 +76,8 @@ export default function ProgramsPage() {
   };
 
   const isApplicationOpen = (program: Program) => {
-    const now = new Date();
-    const startDate = new Date(program.applyStart);
-    const endDate = new Date(program.applyEnd);
-    return now >= startDate && now <= endDate && program.status === 'open';
+    // 상태가 'open'인 경우에만 신청 가능
+    return program.status === 'open';
   };
 
   // 로그인 다이얼로그 열기
@@ -141,34 +143,57 @@ export default function ProgramsPage() {
             </div>
 
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {programs && programs.length > 0 ? programs.map((program, index) => {
           const gradientColors = [
             'from-blue-500 to-blue-600',
-            'from-blue-600 to-blue-700',
-            'from-blue-700 to-blue-800',
-            'from-blue-500 to-blue-800',
-            'from-blue-600 to-blue-800',
-            'from-blue-500 to-blue-700'
+            'from-green-500 to-green-600',
+            'from-purple-500 to-purple-600',
+            'from-pink-500 to-pink-600',
+            'from-orange-500 to-orange-600',
+            'from-teal-500 to-teal-600'
           ];
           const gradientColor = gradientColors[index % gradientColors.length];
           
           return (
-            <Card key={program.id} className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white/90 backdrop-blur-sm border-0 overflow-hidden">
-              <div className={`h-2 bg-gradient-to-r ${gradientColor}`}></div>
-              {program.imageUrl && (
-                <div className="relative h-48 overflow-hidden">
+            <Card key={program.id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 overflow-hidden">
+              {/* 이미지 영역 - 고정 크기 */}
+              <div className="relative h-48 w-full overflow-hidden">
+                {program.imageUrl ? (
                   <img
                     src={program.imageUrl}
                     alt={program.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                ) : (
+                  <div className={`w-full h-full bg-gradient-to-br ${gradientColor} flex items-center justify-center`}>
+                    <div className="text-white text-center">
+                      <Calendar className="h-12 w-12 mx-auto mb-2 opacity-80" />
+                      <p className="text-sm font-medium">프로그램 이미지</p>
+                    </div>
+                  </div>
+                )}
+                {/* 상태 배지 */}
+                <div className="absolute top-3 right-3">
+                  <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium shadow-lg`}>
+                    {statusLabels[program.status]}
+                  </Badge>
                 </div>
-              )}
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl text-gray-800 group-hover:text-blue-600 transition-colors">
+                {/* 신청 가능 여부 오버레이 */}
+                {isApplicationOpen(program) && (
+                  <div className="absolute top-3 left-3">
+                    <Badge className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
+                      신청 가능
+                    </Badge>
+                  </div>
+                )}
+              </div>
+              
+              {/* 카드 내용 - 간소화 */}
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  <div>
+                    <CardTitle className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-2">
                       {program.title}
                     </CardTitle>
                     {program.summary && (
@@ -177,76 +202,47 @@ export default function ProgramsPage() {
                       </p>
                     )}
                   </div>
-                  <Badge className={`${statusColors[program.status]} px-3 py-1 rounded-full text-xs font-medium ml-3`}>
-                    {statusLabels[program.status]}
-                  </Badge>
+                  
+                  {/* 핵심 정보만 표시 */}
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <MapPin className="h-4 w-4 mr-2 text-blue-500" />
+                      <span className="truncate">{program.organizer.name}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="h-4 w-4 mr-2 text-green-500" />
+                      <span className="truncate">{formatDate(program.applyStart)}</span>
+                    </div>
+                  </div>
                 </div>
-                <CardDescription className="text-gray-600 leading-relaxed line-clamp-3">
-                  {program.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                    <MapPin className="h-4 w-4 mr-3 text-blue-500" />
-                    <span className="font-medium">{program.organizer.name}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                    <Calendar className="h-4 w-4 mr-3 text-green-500" />
-                    <span className="font-medium">{formatDate(program.applyStart)} ~ {formatDate(program.applyEnd)}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                    <Clock className="h-4 w-4 mr-3 text-purple-500" />
-                    <span className="font-medium">{isApplicationOpen(program) ? '신청 가능' : '신청 마감'}</span>
-                  </div>
-                  {program.programStart && (
-                    <div className="flex items-center text-sm text-gray-600 bg-blue-50 rounded-lg p-3">
-                      <Calendar className="h-4 w-4 mr-3 text-blue-600" />
-                      <div className="flex-1">
-                        <div className="font-medium text-blue-800">활동 기간</div>
-                        <div className="text-xs text-blue-600">
-                          {formatDate(program.programStart)} ~ {formatDate(program.programEnd)}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {program.location && (
-                    <div className="flex items-center text-sm text-gray-600 bg-green-50 rounded-lg p-3">
-                      <MapPin className="h-4 w-4 mr-3 text-green-600" />
-                      <div className="flex-1">
-                        <div className="font-medium text-green-800">장소</div>
-                        <div className="text-xs text-green-600">{program.location}</div>
-                      </div>
-                    </div>
-                  )}
-                  {program.fee !== undefined && (
-                    <div className="flex items-center text-sm text-gray-600 bg-yellow-50 rounded-lg p-3">
-                      <Users className="h-4 w-4 mr-3 text-yellow-600" />
-                      <div className="flex-1">
-                        <div className="font-medium text-yellow-800">참가비</div>
-                        <div className="text-xs text-yellow-600">
-                          {program.fee > 0 ? `${program.fee.toLocaleString()}원` : '무료'}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1 border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all duration-300" asChild>
+                
+                {/* 버튼 영역 */}
+                <div className="flex gap-2 mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 text-xs border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-all duration-300" 
+                    asChild
+                  >
                     <Link href={`/programs/${program.id}`}>
                       상세보기
                     </Link>
                   </Button>
                   {isApplicationOpen(program) && (
                     user?.role === 'applicant' ? (
-                      <Button className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300" asChild>
+                      <Button 
+                        size="sm" 
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-xs shadow-lg hover:shadow-xl transition-all duration-300" 
+                        asChild
+                      >
                         <Link href={`/programs/${program.id}/apply`}>
                           신청하기
                         </Link>
                       </Button>
                     ) : (
                       <Button 
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                        size="sm"
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-xs shadow-lg hover:shadow-xl transition-all duration-300"
                         onClick={() => openLoginDialog(program.id, program.title)}
                       >
                         신청하기
