@@ -9,7 +9,7 @@ export interface Program {
     name: string;
     type: string;
   };
-  status: 'draft' | 'open' | 'closed' | 'archived';
+  status: 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived';
   applyStart: string;
   applyEnd: string;
   programStart: string;
@@ -30,7 +30,7 @@ export interface CreateProgramData {
   description?: string;
   summary?: string;
   organizerId: string;
-  status: 'draft' | 'open' | 'closed' | 'archived';
+  status: 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived';
   applyStart: string;
   applyEnd: string;
   programStart: string;

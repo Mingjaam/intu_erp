@@ -57,14 +57,18 @@ interface SystemHealth {
 const statusColors = {
   draft: 'bg-gray-100 text-gray-800',
   open: 'bg-green-100 text-green-800',
-  closed: 'bg-red-100 text-red-800',
+  closed: 'bg-orange-100 text-orange-800',
+  ongoing: 'bg-blue-100 text-blue-800',
+  completed: 'bg-purple-100 text-purple-800',
   archived: 'bg-yellow-100 text-yellow-800',
 };
 
 const statusLabels = {
-  draft: '기획중',
+  draft: '신청 전',
   open: '모집중',
-  closed: '종료',
+  closed: '신청마감',
+  ongoing: '진행중',
+  completed: '완료',
   archived: '보관',
 };
 

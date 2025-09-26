@@ -16,17 +16,21 @@ import { Header } from '@/components/layout/header';
 import { UserSidebar } from '@/components/layout/user-sidebar';
 
 const statusLabels: Record<string, string> = {
-  draft: '임시저장',
+  draft: '신청 전',
   open: '모집중',
-  closed: '모집종료',
-  archived: '보관됨',
+  closed: '신청마감',
+  ongoing: '진행중',
+  completed: '완료',
+  archived: '보관',
 };
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-gray-200 text-gray-800',
+  draft: 'bg-gray-100 text-gray-800',
   open: 'bg-green-100 text-green-800',
-  closed: 'bg-red-100 text-red-800',
-  archived: 'bg-blue-100 text-blue-800',
+  closed: 'bg-orange-100 text-orange-800',
+  ongoing: 'bg-blue-100 text-blue-800',
+  completed: 'bg-purple-100 text-purple-800',
+  archived: 'bg-yellow-100 text-yellow-800',
 };
 
 export default function ProgramDetailPage() {

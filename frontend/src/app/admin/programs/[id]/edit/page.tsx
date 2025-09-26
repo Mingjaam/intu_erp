@@ -21,7 +21,7 @@ const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
   summary: z.string().min(1, '한줄 설명을 입력해주세요'),
   description: z.string().min(1, '프로그램 설명을 입력해주세요'),
-  status: z.enum(['draft', 'open', 'closed', 'archived']),
+  status: z.enum(['draft', 'open', 'closed', 'ongoing', 'completed', 'archived']),
   maxParticipants: z.number().min(1, '최대 참여자 수를 입력해주세요'),
   applyStart: z.string().min(1, '신청 시작일을 입력해주세요'),
   applyEnd: z.string().min(1, '신청 마감일을 입력해주세요'),
@@ -50,7 +50,7 @@ interface Program {
   title: string;
   summary: string;
   description: string;
-  status: 'draft' | 'open' | 'closed' | 'archived';
+  status: 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived';
   maxParticipants: number;
   applyStart: string;
   applyEnd: string;
@@ -324,7 +324,7 @@ export default function EditProgramPage() {
                 <Label htmlFor="status">상태 *</Label>
                 <Select 
                   value={watch('status') || ''} 
-                  onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'archived')}
+                  onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived')}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="상태를 선택해주세요" />
