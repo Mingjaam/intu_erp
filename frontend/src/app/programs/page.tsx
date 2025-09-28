@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, MapPin, Users, Clock, LogIn, UserPlus } from 'lucide-react';
+import { Calendar, MapPin, Users, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Program } from '@/types/program';
 import { Header } from '@/components/layout/header';
 import { UserSidebar } from '@/components/layout/user-sidebar';
@@ -160,10 +161,11 @@ export default function ProgramsPage() {
               {/* 이미지 영역 - 고정 크기 */}
               <div className="relative h-48 w-full overflow-hidden">
                 {program.imageUrl ? (
-                  <img
+                  <Image
                     src={program.imageUrl}
                     alt={program.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <div className={`w-full h-full bg-gradient-to-br ${gradientColor} flex items-center justify-center`}>
@@ -179,9 +181,30 @@ export default function ProgramsPage() {
                     {statusLabels[program.status]}
                   </Badge>
                 </div>
-                {/* 신청 가능 여부 오버레이 */}
-                {isApplicationOpen(program) && (
+                {/* D-Day 배지 */}
+                {program.status === 'open' && program.daysUntilDeadline !== undefined && (
                   <div className="absolute top-3 left-3">
+                    <Badge 
+                      className={`px-2 py-1 rounded-full text-xs font-bold shadow-lg ${
+                        program.daysUntilDeadline <= 3 
+                          ? 'bg-red-500 text-white' 
+                          : program.daysUntilDeadline <= 7 
+                          ? 'bg-orange-500 text-white' 
+                          : 'bg-blue-500 text-white'
+                      }`}
+                    >
+                      {program.daysUntilDeadline > 0 
+                        ? `D-${program.daysUntilDeadline}` 
+                        : program.daysUntilDeadline === 0 
+                        ? 'D-Day' 
+                        : '마감됨'
+                      }
+                    </Badge>
+                  </div>
+                )}
+                {/* 신청 가능 여부 오버레이 */}
+                {isApplicationOpen(program) && program.status === 'open' && (
+                  <div className="absolute bottom-3 left-3">
                     <Badge className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                       신청 가능
                     </Badge>

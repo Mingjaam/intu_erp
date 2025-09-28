@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Program } from '@/types/program';
 import { 
   FolderOpen, 
   Plus, 
@@ -18,30 +19,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-
-interface Program {
-  id: string;
-  title: string;
-  description: string;
-  status: 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived';
-  maxParticipants: number;
-  applyStart: string;
-  applyEnd: string;
-  programStart: string;
-  programEnd: string;
-  location: string;
-  fee: number;
-  organizerId: string;
-  organizer?: {
-    id: string;
-    name: string;
-  };
-  applicationCount?: number;
-  selectedCount?: number;
-  revenue?: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
 const statusLabels = {
   draft: '신청 전',
@@ -119,7 +96,7 @@ function ProgramsPageContent() {
 
   const filteredPrograms = programs.filter(program => {
     const matchesSearch = program.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         program.description.toLowerCase().includes(searchTerm.toLowerCase());
+                         (program.description && program.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'all' || program.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -283,6 +260,19 @@ function ProgramsPageContent() {
                       <Badge className={statusColors[program.status]}>
                         {statusLabels[program.status]}
                       </Badge>
+                      {program.status === 'open' && program.daysUntilDeadline !== undefined && (
+                        <Badge 
+                          variant={program.daysUntilDeadline <= 3 ? "destructive" : program.daysUntilDeadline <= 7 ? "secondary" : "outline"}
+                          className="font-bold"
+                        >
+                          {program.daysUntilDeadline > 0 
+                            ? `D-${program.daysUntilDeadline}` 
+                            : program.daysUntilDeadline === 0 
+                            ? 'D-Day' 
+                            : '마감됨'
+                          }
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-gray-600 mb-4 line-clamp-2">{program.description}</p>
                     

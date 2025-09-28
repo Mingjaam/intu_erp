@@ -23,6 +23,11 @@ export interface Program {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  // 추가된 필드들
+  applicationCount?: number;
+  selectedCount?: number;
+  revenue?: number;
+  daysUntilDeadline?: number; // 모집 마감까지 남은 일수
 }
 
 export interface CreateProgramData {
