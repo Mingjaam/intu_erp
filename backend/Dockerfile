@@ -13,11 +13,8 @@ RUN npm ci --only=production
 # Copy source code
 COPY . .
 
-# Build the application
-RUN npm run build
-
 # Expose port
 EXPOSE 3001
 
-# Start the application
-CMD ["npm", "run", "start:prod"]
+# Start the application in development mode
+CMD ["npm", "run", "start:dev"]

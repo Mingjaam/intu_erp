@@ -38,6 +38,7 @@ export class ProgramsController {
   @ApiOperation({ summary: '프로그램 목록 조회' })
   @ApiResponse({ status: 200, description: '프로그램 목록을 성공적으로 조회했습니다.' })
   findAll(@Query() query: ProgramQueryDto) {
+    console.log('=== 컨트롤러 findAll 호출됨 ===', query);
     return this.programsService.findAll(query, null);
   }
 

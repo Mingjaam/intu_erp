@@ -252,7 +252,7 @@ export default function ProgramsPage() {
                     </Link>
                   </Button>
                   {isApplicationOpen(program) && (
-                    user?.role === 'applicant' ? (
+                    user ? (
                       <Button 
                         size="sm" 
                         className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-xs shadow-lg hover:shadow-xl transition-all duration-300" 
