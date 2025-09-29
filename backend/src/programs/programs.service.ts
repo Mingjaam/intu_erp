@@ -226,8 +226,8 @@ export class ProgramsService {
       throw new ForbiddenException('접근 권한이 없습니다.');
     }
 
-    // 관리자/운영자는 자신의 기관 프로그램만 조회 가능
-    if (user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR) && user.organizationId) {
+    // 관리자는 모든 프로그램 조회 가능, 운영자/직원은 자신의 기관 프로그램만 조회 가능
+    if (user && (user.role === UserRole.OPERATOR) && user.organizationId) {
       if (updatedProgram.organizerId !== user.organizationId) {
         throw new ForbiddenException('이 프로그램에 접근할 권한이 없습니다.');
       }

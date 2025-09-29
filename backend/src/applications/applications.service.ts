@@ -91,8 +91,8 @@ export class ApplicationsService {
       queryBuilder.andWhere('application.applicantId = :applicantId', { applicantId: user.id });
     }
 
-    // 관리자/운영자는 자신의 기관 프로그램 신청서만 조회 가능
-    if ((user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR) && user.organizationId) {
+    // 관리자는 모든 프로그램 신청서 조회 가능, 운영자/직원은 자신의 기관 프로그램 신청서만 조회 가능
+    if (user.role === UserRole.OPERATOR && user.organizationId) {
       queryBuilder.andWhere('program.organizerId = :organizationId', { organizationId: user.organizationId });
     }
 
