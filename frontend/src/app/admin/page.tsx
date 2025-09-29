@@ -111,8 +111,32 @@ export default function AdminDashboard() {
 
   const handleExport = async (type: string) => {
     try {
-      await apiClient.get(`/dashboard/export?type=${type}`);
-      toast.success(`${type} 데이터 내보내기가 준비되었습니다.`);
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/dashboard/export?type=${type}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // 엑셀 파일을 Blob으로 받기
+      const blob = await response.blob();
+      
+      // 파일 다운로드
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${type}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`${type} 데이터가 성공적으로 다운로드되었습니다.`);
     } catch (error) {
       console.error('데이터 내보내기 오류:', error);
       toast.error('데이터 내보내기에 실패했습니다.');
