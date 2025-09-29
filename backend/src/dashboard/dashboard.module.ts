@@ -8,6 +8,7 @@ import { Application } from '@/database/entities/application.entity';
 import { Selection } from '@/database/entities/selection.entity';
 import { Visit } from '@/database/entities/visit.entity';
 import { Organization } from '@/database/entities/organization.entity';
+import { ExcelService } from '@/common/services/excel.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { Organization } from '@/database/entities/organization.entity';
     ]),
   ],
   controllers: [DashboardController],
-  providers: [DashboardService],
+  providers: [DashboardService, ExcelService],
   exports: [DashboardService],
 })
 export class DashboardModule {}

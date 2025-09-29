@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Query, Request } from '@nestjs/common';
+import { Controller, Get, UseGuards, Query, Request, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
@@ -6,6 +6,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole, User } from '@/database/entities/user.entity';
 import { DashboardService } from './dashboard.service';
 import { DashboardQueryDto } from './dto/dashboard.dto';
+import { Response } from 'express';
 
 @ApiTags('dashboard')
 @Controller('dashboard')
@@ -35,16 +36,28 @@ export class DashboardController {
   }
 
   @Get('export')
-  @ApiOperation({ summary: '데이터 내보내기' })
-  @ApiResponse({ status: 200, description: '데이터를 성공적으로 내보냈습니다.' })
+  @ApiOperation({ summary: '데이터 엑셀 다운로드' })
+  @ApiResponse({ status: 200, description: '엑셀 파일이 성공적으로 생성되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
   @ApiQuery({ name: 'type', required: true, description: '내보낼 데이터 타입 (users, programs, applications)' })
-  async exportData(@Query('type') type: string) {
-    // 실제 구현에서는 CSV 또는 Excel 파일을 생성하여 반환
-    return {
-      message: `${type} 데이터 내보내기 기능은 구현 예정입니다.`,
-      type,
-      timestamp: new Date().toISOString(),
-    };
+  async exportData(@Query('type') type: string, @Res() res: Response, @Request() req: { user: User }) {
+    try {
+      const excelBuffer = await this.dashboardService.exportData(type, req.user);
+      
+      const filename = `${type}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      res.set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+        'Content-Length': excelBuffer.length.toString(),
+      });
+      
+      res.send(excelBuffer);
+    } catch (error) {
+      res.status(500).json({ 
+        message: '엑셀 파일 생성 중 오류가 발생했습니다.',
+        error: error.message 
+      });
+    }
   }
 }

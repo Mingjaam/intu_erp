@@ -8,6 +8,7 @@ import { Selection } from '@/database/entities/selection.entity';
 import { Visit } from '@/database/entities/visit.entity';
 import { Organization } from '@/database/entities/organization.entity';
 import { DashboardQueryDto, DateRange } from './dto/dashboard.dto';
+import { ExcelService } from '@/common/services/excel.service';
 
 @Injectable()
 export class DashboardService {
@@ -24,6 +25,7 @@ export class DashboardService {
     private visitRepository: Repository<Visit>,
     @InjectRepository(Organization)
     private organizationRepository: Repository<Organization>,
+    private excelService: ExcelService,
   ) {}
 
   async getDashboardStats(query?: DashboardQueryDto, user?: User) {
@@ -423,5 +425,77 @@ export class DashboardService {
     const applicationRate = applications / Math.max(users, 1);
     
     return Math.min(100, Math.round((programUtilization * 50) + (applicationRate * 50)));
+  }
+
+  /**
+   * 데이터 타입에 따른 엑셀 다운로드
+   */
+  async exportData(type: string, user?: User) {
+    const organizationId = user?.organizationId;
+
+    switch (type) {
+      case 'users':
+        const users = await this.getUsersForExport(organizationId);
+        return this.excelService.exportUsers(users);
+      
+      case 'programs':
+        const programs = await this.getProgramsForExport(organizationId);
+        return this.excelService.exportPrograms(programs);
+      
+      case 'applications':
+        const applications = await this.getApplicationsForExport(organizationId);
+        return this.excelService.exportApplications(applications);
+      
+      default:
+        throw new Error(`지원하지 않는 데이터 타입입니다: ${type}`);
+    }
+  }
+
+  private async getUsersForExport(organizationId?: string) {
+    if (organizationId) {
+      return this.userRepository.find({
+        where: { organizationId },
+        relations: ['organization'],
+        order: { createdAt: 'DESC' },
+      });
+    }
+    
+    return this.userRepository.find({
+      relations: ['organization'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  private async getProgramsForExport(organizationId?: string) {
+    if (organizationId) {
+      return this.programRepository.find({
+        where: { organizerId: organizationId },
+        relations: ['organizer', 'applications', 'applications.selection'],
+        order: { createdAt: 'DESC' },
+      });
+    }
+    
+    return this.programRepository.find({
+      relations: ['organizer', 'applications', 'applications.selection'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  private async getApplicationsForExport(organizationId?: string) {
+    if (organizationId) {
+      return this.applicationRepository
+        .createQueryBuilder('application')
+        .leftJoinAndSelect('application.program', 'program')
+        .leftJoinAndSelect('application.applicant', 'applicant')
+        .leftJoinAndSelect('application.selection', 'selection')
+        .where('program.organizerId = :organizationId', { organizationId })
+        .orderBy('application.createdAt', 'DESC')
+        .getMany();
+    }
+    
+    return this.applicationRepository.find({
+      relations: ['program', 'applicant', 'selection'],
+      order: { createdAt: 'DESC' },
+    });
   }
 }
