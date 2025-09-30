@@ -12,6 +12,7 @@ import { OrganizationsModule } from './organizations/organizations.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { UploadModule } from './upload/upload.module';
 import { UserReportsModule } from './user-reports/user-reports.module';
+import { TodosModule } from './todos/todos.module';
 import { User } from './database/entities/user.entity';
 import { Organization } from './database/entities/organization.entity';
 import { Program } from './database/entities/program.entity';
@@ -20,6 +21,7 @@ import { Selection } from './database/entities/selection.entity';
 import { Visit } from './database/entities/visit.entity';
 import { AuditLog } from './database/entities/audit-log.entity';
 import { UserReport } from './database/entities/user-report.entity';
+import { Todo } from './database/entities/todo.entity';
 
 @Module({
   imports: [
@@ -43,6 +45,7 @@ import { UserReport } from './database/entities/user-report.entity';
         Visit,
         AuditLog,
         UserReport,
+        Todo,
       ],
       synchronize: process.env.NODE_ENV === 'development',
       logging: process.env.NODE_ENV === 'development',
@@ -64,6 +67,7 @@ import { UserReport } from './database/entities/user-report.entity';
     DashboardModule,
     UploadModule,
     UserReportsModule,
+    TodosModule,
   ],
 })
 export class AppModule {}
