@@ -192,6 +192,7 @@ export const API_ENDPOINTS = {
         ORGANIZATIONS: {
           LIST: '/organizations',
           CREATE: '/organizations',
+          GET: (id: string) => `/organizations/${id}`,
           DETAIL: (id: string) => `/organizations/${id}`,
           UPDATE: (id: string) => `/organizations/${id}`,
           DELETE: (id: string) => `/organizations/${id}`,
@@ -213,5 +214,15 @@ export const API_ENDPOINTS = {
           DETAIL: (id: string) => `/user-reports/${id}`,
           UPDATE: (id: string) => `/user-reports/${id}`,
           DELETE: (id: string) => `/user-reports/${id}`,
+        },
+
+        // 할 일
+        TODOS: {
+          LIST: '/todos',
+          CREATE: '/todos',
+          DETAIL: (id: string) => `/todos/${id}`,
+          UPDATE: (id: string) => `/todos/${id}`,
+          DELETE: (id: string) => `/todos/${id}`,
+          TOGGLE: (id: string) => `/todos/${id}/toggle`,
         },
 } as const;
