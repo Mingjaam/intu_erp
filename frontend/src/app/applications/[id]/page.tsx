@@ -147,6 +147,11 @@ export default function ApplicationDetailPage() {
                 </span>
               </div>
 
+              <div className="flex items-center text-sm text-gray-600">
+                <span className="font-medium mr-2">매출:</span>
+                <span className="text-green-600 font-semibold">₩{((application.program.revenue as number) || 0).toLocaleString()}</span>
+              </div>
+
             </CardContent>
           </Card>
 
