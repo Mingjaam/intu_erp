@@ -116,6 +116,11 @@ export class ChangeUserRoleDto {
   @ApiProperty({ enum: UserRole, example: UserRole.STAFF })
   @IsEnum(UserRole)
   role: UserRole;
+
+  @ApiProperty({ example: 'organization-uuid', required: false, description: '운영자 승급 시 할당할 조직 ID' })
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
 }
 
 export class ChangePasswordDto {
