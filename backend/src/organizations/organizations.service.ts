@@ -25,7 +25,7 @@ export class OrganizationsService {
   }
 
   async findAll(query: OrganizationQueryDto, user: User): Promise<{ organizations: Organization[]; total: number }> {
-    const { type, search, page = 1, limit = 10 } = query;
+    const { type, search, page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.organizationRepository
@@ -44,8 +44,13 @@ export class OrganizationsService {
       );
     }
 
+    // 정렬 필드 검증 및 적용
+    const allowedSortFields = ['createdAt', 'updatedAt', 'name'];
+    const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const sortDirection = sortOrder === 'ASC' ? 'ASC' : 'DESC';
+
     const [organizations, total] = await queryBuilder
-      .orderBy('organization.createdAt', 'DESC')
+      .orderBy(`organization.${sortField}`, sortDirection)
       .skip(skip)
       .take(limit)
       .getManyAndCount();
