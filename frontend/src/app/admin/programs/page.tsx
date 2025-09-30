@@ -290,9 +290,6 @@ function ProgramsPageContent() {
                         <span className="font-medium">참가비:</span> ₩{program.fee.toLocaleString()}
                       </div>
                       <div>
-                        <span className="font-medium">매출:</span> ₩{(program.revenue || 0).toLocaleString()}
-                      </div>
-                      <div>
                         <span className="font-medium">장소:</span> {program.location}
                       </div>
                     </div>
