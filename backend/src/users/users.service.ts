@@ -346,6 +346,17 @@ export class UsersService {
     // 역할 변경 시 조직 이동 로직
     const updateData: any = { role: changeUserRoleDto.role };
     
+    // 운영자(operator) 역할로 변경하는 경우, 지정된 조직으로 이동
+    if (changeUserRoleDto.role === UserRole.OPERATOR) {
+      if (changeUserRoleDto.organizationId) {
+        // 지정된 조직이 있는 경우 해당 조직으로 이동
+        updateData.organizationId = changeUserRoleDto.organizationId;
+      } else {
+        // 조직이 지정되지 않은 경우 현재 사용자의 조직으로 이동
+        updateData.organizationId = currentUser.organizationId;
+      }
+    }
+    
     // 직원(staff) 역할로 변경하는 경우, 부여한 사람의 조직으로 이동
     if (changeUserRoleDto.role === UserRole.STAFF && currentUser.organizationId) {
       updateData.organizationId = currentUser.organizationId;
