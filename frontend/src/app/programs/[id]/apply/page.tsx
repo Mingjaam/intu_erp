@@ -170,10 +170,10 @@ export default function ApplyPage() {
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
-              disabled={!!(user && ['name', 'email', 'phone'].includes(name))}
-              className={user && ['name', 'email', 'phone'].includes(name) ? 'bg-gray-50' : ''}
+              disabled={!!(user && ['name', 'email', 'phone', 'address'].includes(name))}
+              className={user && ['name', 'email', 'phone', 'address'].includes(name) ? 'bg-gray-50' : ''}
             />
-            {user && ['name', 'email', 'phone'].includes(name) && (
+            {user && ['name', 'email', 'phone', 'address'].includes(name) && (
               <p className="text-xs text-gray-500">로그인된 사용자 정보 (수정 불가)</p>
             )}
           </div>
