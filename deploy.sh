@@ -25,15 +25,15 @@ fi
 
 # 기존 컨테이너 정리
 echo "🧹 기존 컨테이너 정리 중..."
-docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml --env-file .env.production down
 
 # 이미지 빌드
 echo "🔨 이미지 빌드 중..."
-docker-compose -f docker-compose.prod.yml build --no-cache
+docker-compose -f docker-compose.prod.yml --env-file .env.production build --no-cache
 
 # 서비스 시작
 echo "🚀 서비스 시작 중..."
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
 
 # 상태 확인
 echo "📊 서비스 상태 확인 중..."
