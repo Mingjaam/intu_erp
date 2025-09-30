@@ -89,6 +89,9 @@ export default function UserManagePage() {
   });
 
   const [newRole, setNewRole] = useState<string>('');
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('');
+  const [organizations, setOrganizations] = useState<Array<{id: string; name: string; type: string}>>([]);
+  const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(false);
 
   const fetchUsers = async (page = 1, search = '') => {
     try {
@@ -120,6 +123,20 @@ export default function UserManagePage() {
       setTotalUsers(0);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchOrganizations = async () => {
+    try {
+      setIsLoadingOrganizations(true);
+      const response = await apiClient.get(`${API_ENDPOINTS.ORGANIZATIONS.LIST}?page=1&limit=100`);
+      const data = response.data || response;
+      setOrganizations((data as { organizations?: Array<{id: string; name: string; type: string}> }).organizations || []);
+    } catch (error) {
+      console.error('조직 목록 조회 오류:', error);
+      toast.error('조직 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoadingOrganizations(false);
     }
   };
 
@@ -159,6 +176,11 @@ export default function UserManagePage() {
       currentRole,
     });
     setNewRole(currentRole);
+    setSelectedOrganizationId('');
+    // 운영자로 승급하는 경우 조직 목록 조회
+    if (currentRole !== 'operator') {
+      fetchOrganizations();
+    }
   };
 
   const closeRoleChangeDialog = () => {
@@ -175,15 +197,21 @@ export default function UserManagePage() {
     if (!roleChangeDialog.userId || !newRole) return;
 
     try {
+      const requestData: { role: string; organizationId?: string } = { role: newRole };
+      
+      // 운영자로 승급하는 경우 조직 ID 포함
+      if (newRole === 'operator' && selectedOrganizationId) {
+        requestData.organizationId = selectedOrganizationId;
+      }
+      
       console.log('역할 변경 요청:', {
         userId: roleChangeDialog.userId,
         newRole: newRole,
+        organizationId: selectedOrganizationId,
         url: API_ENDPOINTS.USERS.CHANGE_ROLE(roleChangeDialog.userId)
       });
       
-      const response = await apiClient.patch(API_ENDPOINTS.USERS.CHANGE_ROLE(roleChangeDialog.userId), {
-        role: newRole,
-      });
+      const response = await apiClient.patch(API_ENDPOINTS.USERS.CHANGE_ROLE(roleChangeDialog.userId), requestData);
       
       console.log('역할 변경 응답:', response);
       toast.success('사용자 역할이 변경되었습니다.');
@@ -200,7 +228,7 @@ export default function UserManagePage() {
     }
   };
 
-  const getAvailableRoles = (targetUserRole: string) => {
+  const getAvailableRoles = () => {
     if (user?.role === 'admin') {
       // 관리자는 운영자, 직원, 신청자만 부여 가능 (관리자 제외)
       return [
@@ -431,7 +459,7 @@ export default function UserManagePage() {
                   <SelectValue placeholder="역할을 선택하세요" />
                 </SelectTrigger>
                   <SelectContent>
-                    {getAvailableRoles(roleChangeDialog.currentRole).map((role) => (
+                    {getAvailableRoles().map((role) => (
                       <SelectItem key={role.value} value={role.value}>
                         {role.label}
                       </SelectItem>
@@ -439,6 +467,34 @@ export default function UserManagePage() {
                   </SelectContent>
               </Select>
             </div>
+
+            {/* 운영자 승급 시 조직 선택 */}
+            {newRole === 'operator' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  소속 조직 선택
+                </label>
+                <Select 
+                  value={selectedOrganizationId} 
+                  onValueChange={setSelectedOrganizationId}
+                  disabled={isLoadingOrganizations}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={isLoadingOrganizations ? "조직 목록을 불러오는 중..." : "조직을 선택하세요"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {organizations.map((org) => (
+                      <SelectItem key={org.id} value={org.id}>
+                        {org.name} ({org.type === 'village' ? '마을' : org.type === 'company' ? '기업' : org.type === 'institution' ? '기관' : '비영리단체'})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  운영자는 선택한 조직의 관리 권한을 갖게 됩니다.
+                </p>
+              </div>
+            )}
 
             {/* 안내 메시지 */}
             <div className="bg-blue-50 rounded-lg p-4">
@@ -448,9 +504,16 @@ export default function UserManagePage() {
                   : '운영자는 같은 조직의 사용자만 직원으로 변경할 수 있습니다.'
                 }
               </p>
-              <p className="text-sm text-blue-600 mt-2">
-                💡 직원으로 변경하면 부여한 사람의 조직으로 이동됩니다.
-              </p>
+              {newRole === 'operator' && (
+                <p className="text-sm text-blue-600 mt-2">
+                  💡 운영자로 승급하면 선택한 조직의 관리 권한을 갖게 됩니다.
+                </p>
+              )}
+              {newRole === 'staff' && (
+                <p className="text-sm text-blue-600 mt-2">
+                  💡 직원으로 변경하면 부여한 사람의 조직으로 이동됩니다.
+                </p>
+              )}
             </div>
           </div>
 
@@ -460,7 +523,11 @@ export default function UserManagePage() {
             </Button>
             <Button 
               onClick={handleRoleChange}
-              disabled={!newRole || newRole === roleChangeDialog.currentRole}
+              disabled={
+                !newRole || 
+                newRole === roleChangeDialog.currentRole ||
+                (newRole === 'operator' && !selectedOrganizationId)
+              }
             >
               역할 변경
             </Button>
