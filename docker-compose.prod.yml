@@ -9,11 +9,13 @@ services:
       POSTGRES_DB: intu_erp
       POSTGRES_USER: intu_erp_user
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
     networks:
       - intu_erp_network
     restart: unless-stopped
+    command: postgres -c ssl=off
 
   # Redis Cache
   redis:
@@ -33,12 +35,13 @@ services:
     container_name: intu_erp_backend_prod
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://intu_erp_user:${DB_PASSWORD}@postgres:5432/intu_erp
+      DATABASE_URL: postgresql://intu_erp_user:${DB_PASSWORD}@postgres:5432/intu_erp?sslmode=disable
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USERNAME: intu_erp_user
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: intu_erp
+      DB_SSL: false
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: 7d
