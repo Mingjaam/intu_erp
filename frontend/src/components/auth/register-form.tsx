@@ -11,12 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
 
 const registerSchema = z.object({
   email: z.string().email('올바른 이메일 주소를 입력해주세요'),
   password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다'),
   name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다'),
-  phone: z.string().optional(),
+  phone: z.string().min(1, '전화번호는 필수입니다').regex(/^[0-9]+$/, '전화번호는 숫자만 입력해주세요 (하이픈 제외)'),
+  address: z.string().min(1, '주소는 필수입니다'),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
