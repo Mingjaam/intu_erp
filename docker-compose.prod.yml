@@ -11,9 +11,11 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
+      - /opt/postgres-ssl:/etc/ssl/certs/postgresql
     networks:
       - intu_erp_network
     restart: unless-stopped
+    command: postgres -c ssl=on -c ssl_cert_file=/etc/ssl/certs/postgresql/server.crt -c ssl_key_file=/etc/ssl/certs/postgresql/server.key
 
   # Redis Cache
   redis:
