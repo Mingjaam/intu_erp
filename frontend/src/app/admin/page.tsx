@@ -6,19 +6,162 @@ import { apiClient } from '@/lib/api';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Users, 
   FolderOpen, 
   FileText, 
-  TrendingUp,
   BarChart3,
   Download,
   Activity,
   RefreshCw,
-  Plus
+  Plus,
+  Calendar,
+  Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+
+interface Todo {
+  id: string;
+  title: string;
+  date: string;
+  completed: boolean;
+  createdAt: string;
+  createdBy: {
+    id: string;
+    name: string;
+  };
+}
+
+// 작은 캘린더 컴포넌트
+function MiniCalendar({ onDateClick, todos }: { onDateClick?: (date: string) => void; todos?: Todo[] }) {
+  const today = new Date();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+  const currentDate = today.getDate();
+
+  // 현재 월의 첫 번째 날과 마지막 날
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const lastDay = new Date(currentYear, currentMonth + 1, 0);
+  const firstDayOfWeek = firstDay.getDay();
+  const daysInMonth = lastDay.getDate();
+
+  // 달력에 표시할 날짜들
+  const calendarDays = [];
+  
+  // 이전 달의 마지막 날들 (빈 칸 채우기)
+  for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+    const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+    calendarDays.push({
+      date: prevMonthLastDay - i,
+      isCurrentMonth: false,
+      isToday: false
+    });
+  }
+  
+  // 현재 달의 날짜들
+  for (let day = 1; day <= daysInMonth; day++) {
+    calendarDays.push({
+      date: day,
+      isCurrentMonth: true,
+      isToday: day === currentDate
+    });
+  }
+  
+  // 다음 달의 첫 번째 날들 (빈 칸 채우기)
+  const remainingDays = 42 - calendarDays.length; // 6주 * 7일 = 42
+  for (let day = 1; day <= remainingDays; day++) {
+    calendarDays.push({
+      date: day,
+      isCurrentMonth: false,
+      isToday: false
+    });
+  }
+
+  const monthNames = [
+    '1월', '2월', '3월', '4월', '5월', '6월',
+    '7월', '8월', '9월', '10월', '11월', '12월'
+  ];
+
+  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+
+  // 특정 날짜의 할 일 가져오기
+  const getTodosForDate = (day: number) => {
+    if (!todos || !day) return [];
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return todos.filter(todo => todo.date === dateStr);
+  };
+
+  return (
+    <div className="w-full">
+      {/* 월/년도 헤더 */}
+      <div className="text-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          {currentYear}년 {monthNames[currentMonth]}
+        </h3>
+      </div>
+      
+      {/* 요일 헤더 */}
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {dayNames.map((day) => (
+          <div key={day} className="text-center text-xs font-medium text-gray-500 py-1">
+            {day}
+          </div>
+        ))}
+      </div>
+      
+      {/* 날짜 그리드 */}
+      <div className="grid grid-cols-7 gap-1">
+        {calendarDays.map((day, index) => (
+          <div
+            key={index}
+            className={`
+              h-15 flex items-start justify-start text-xs rounded-md cursor-pointer relative
+              ${day.isCurrentMonth 
+                ? 'text-gray-900 hover:bg-gray-100' 
+                : 'text-gray-400'
+              }
+              ${day.isToday 
+                ? 'bg-sky-100 text-sky-700 font-bold' 
+                : ''
+              }
+            `}
+            onClick={() => {
+              if (onDateClick && day.isCurrentMonth) {
+                const date = new Date(currentYear, currentMonth, day.date);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(date.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${dayStr}`;
+                onDateClick(dateString);
+              }
+            }}
+          >
+            <span className="absolute top-1 left-1 text-xs">
+              {day.date}
+            </span>
+            {/* 할 일 표시 */}
+            {day.isCurrentMonth && (
+              <div className="absolute top-6 left-1 right-1 flex flex-wrap gap-0.5">
+                {getTodosForDate(day.date).map((todo, todoIndex) => (
+                  <div
+                    key={todoIndex}
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      todo.completed ? 'bg-green-500' : 'bg-blue-500'
+                    }`}
+                    title={todo.title}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface DashboardStats {
   overview: {
@@ -29,6 +172,7 @@ interface DashboardStats {
     totalVisits: number;
     totalOrganizations: number;
     totalRevenue: number;
+    activePrograms: number;
   };
   recent: {
     applications: Record<string, unknown>[];
@@ -78,6 +222,9 @@ export default function AdminDashboard() {
   const [systemHealth] = useState<SystemHealth | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [showTodoDialog, setShowTodoDialog] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>('');
 
   const fetchDashboardStats = useCallback(async () => {
     try {
@@ -102,17 +249,56 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  const fetchTodos = useCallback(async () => {
+    try {
+      const response = await apiClient.get('/todos');
+      setTodos(Array.isArray(response) ? response : []);
+    } catch (error) {
+      console.error('할 일 목록 조회 오류:', error);
+    }
+  }, []);
+
   useEffect(() => {
     if (user?.role === 'admin' || user?.role === 'operator') {
       fetchDashboardStats();
       fetchSystemHealth();
+      fetchTodos();
     }
-  }, [user, dateRange, fetchDashboardStats, fetchSystemHealth]);
+  }, [user, dateRange, fetchDashboardStats, fetchSystemHealth, fetchTodos]);
+
+  const handleDateClick = (date: string) => {
+    setSelectedDate(date);
+    setShowTodoDialog(true);
+  };
 
   const handleExport = async (type: string) => {
     try {
-      await apiClient.get(`/dashboard/export?type=${type}`);
-      toast.success(`${type} 데이터 내보내기가 준비되었습니다.`);
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/dashboard/export?type=${type}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // 엑셀 파일을 Blob으로 받기
+      const blob = await response.blob();
+      
+      // 파일 다운로드
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${type}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`${type} 데이터가 성공적으로 다운로드되었습니다.`);
     } catch (error) {
       console.error('데이터 내보내기 오류:', error);
       toast.error('데이터 내보내기에 실패했습니다.');
@@ -187,26 +373,13 @@ export default function AdminDashboard() {
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">총 참여자 수</p>
+                <p className="text-sm font-medium text-gray-600">총 직원 수</p>
                 <p className="text-2xl font-bold text-gray-900">{stats?.overview.totalUsers || 0}명</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <BarChart3 className="h-8 w-8 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">총 매출</p>
-                <p className="text-2xl font-bold text-gray-900">₩{(stats?.overview.totalRevenue || 0).toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardContent className="p-6">
@@ -216,7 +389,7 @@ export default function AdminDashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">진행중인 프로그램</p>
-                <p className="text-2xl font-bold text-gray-900">{stats?.overview.totalPrograms || 0}개</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.overview.activePrograms || 0}개</p>
               </div>
             </div>
           </CardContent>
@@ -235,99 +408,196 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <FileText className="h-8 w-8 text-indigo-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">총 신청자 수</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.overview.totalApplications || 0}명</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* 프로그램 목록 */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* 왼쪽: 오늘의 할 일 + 최근 프로그램 */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* 오늘의 할 일 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Calendar className="h-5 w-5 mr-2" />
+                오늘의 할 일
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3 max-h-42 overflow-y-auto">
+                {todos.filter(todo => {
+                  const today = new Date();
+                  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                  return todo.date === todayStr;
+                }).sort((a, b) => {
+                  // 미완료를 먼저, 완료된 것을 나중에
+                  if (a.completed === b.completed) return 0;
+                  return a.completed ? 1 : -1;
+                }).map((todo) => (
+                  <div key={todo.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-2 flex-1">
+                      <Checkbox
+                        checked={todo.completed}
+                        onCheckedChange={async () => {
+                          try {
+                            await apiClient.patch(`/todos/${todo.id}/toggle`);
+                            await fetchTodos();
+                            toast.success('할 일 상태가 변경되었습니다.');
+                          } catch (error) {
+                            console.error('할 일 상태 변경 오류:', error);
+                            toast.error('할 일 상태 변경에 실패했습니다.');
+                          }
+                        }}
+                      />
+                      <span className={`text-sm font-medium truncate ${todo.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                        {todo.title}
+                      </span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          await apiClient.delete(`/todos/${todo.id}`);
+                          await fetchTodos();
+                          toast.success('할 일이 삭제되었습니다.');
+                        } catch (error) {
+                          console.error('할 일 삭제 오류:', error);
+                          toast.error('할 일 삭제에 실패했습니다.');
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                {todos.filter(todo => {
+                  const today = new Date();
+                  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                  return todo.date === todayStr;
+                }).length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-4">오늘 등록된 할 일이 없습니다.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 최근 프로그램 */}
+          <Card>
+            <CardHeader>
               <CardTitle className="flex items-center">
                 <FolderOpen className="h-5 w-5 mr-2" />
-                프로그램 목록
+                최근 프로그램
               </CardTitle>
-              <Link href="/admin/programs/new">
-                <Button size="sm" variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  새 프로그램
-                </Button>
-              </Link>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stats?.recent.programs?.slice(0, 8).map((program: Record<string, unknown>) => (
-                <div key={program.id as string} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{program.title as string}</p>
-                    <p className="text-sm text-gray-600">
-                      {new Date(program.createdAt as string).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Badge className={statusColors[program.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}>
-                      {statusLabels[program.status as keyof typeof statusLabels] || (program.status as string)}
-                    </Badge>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">참여자</p>
-                      <p className="font-medium">{(program.selectedCount as number) || 0}/{(program.maxParticipants as number) || 0}</p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {stats?.recent.programs?.slice(0, 1).map((program: Record<string, unknown>) => (
+                  <div key={program.id as string} className="p-4 bg-gray-50 rounded-lg border">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <h4 className="text-sm font-semibold text-gray-900 truncate">{program.title as string}</h4>
+                          <Link href={`/admin/programs/${program.id as string}/applications`}>
+                            <Button size="sm" variant="outline" className="text-xs ml-2">
+                              <Users className="h-3 w-3 mr-1" />
+                              신청서 보기
+                            </Button>
+                          </Link>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className={`text-xs ${statusColors[program.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+                            {statusLabels[program.status as keyof typeof statusLabels] || (program.status as string)}
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            {new Date(program.createdAt as string).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">매출</p>
-                      <p className="font-medium">₩{((program.revenue as number) || 0).toLocaleString()}</p>
+                    
+                    {/* 신청자 수 - 더 크고 눈에 띄게 */}
+                    <div className="mb-3 p-2 bg-blue-50 rounded-md">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-blue-700">신청자</span>
+                        <span className="text-lg font-bold text-blue-800">
+                          {(program.applicationCount as number) || 0}/{(program.maxParticipants as number) || 0}명
+                        </span>
+                      </div>
                     </div>
-                    <Link href={`/programs/${program.id as string}`}>
-                      <Button size="sm" variant="outline">
-                        <FileText className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              )) || (
-                <div className="text-center py-8 text-gray-500">
-                  프로그램 데이터가 없습니다.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* 월별 참여자 현황 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2" />
-              월별 참여자 현황
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stats?.charts.monthlyStats?.slice(0, 7).map((item: Record<string, unknown>, index: number) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
-                    {new Date(item.month as string).toLocaleDateString('ko-KR', { month: 'short' })}월
-                  </span>
-                  <div className="flex items-center">
-                    <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
-                        style={{ 
-                          width: `${Math.min(100, ((item.count as number) / Math.max(...(stats?.charts.monthlyStats || []).map((m: Record<string, unknown>) => m.count as number))) * 100)}%` 
-                        }}
-                      ></div>
+                    {/* 기간 정보 */}
+                    <div className="space-y-1 text-xs text-gray-600 mb-3">
+                      <div className="flex items-center">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        <span>신청: {program.applyStart ? new Date(program.applyStart as string).toLocaleDateString() : '미정'} ~ {program.applyEnd ? new Date(program.applyEnd as string).toLocaleDateString() : '미정'}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        <span>활동: {program.programStart ? new Date(program.programStart as string).toLocaleDateString() : '미정'} ~ {program.programEnd ? new Date(program.programEnd as string).toLocaleDateString() : '미정'}</span>
+                      </div>
                     </div>
-                    <span className="text-sm font-medium w-8 text-right">{item.count as number}</span>
+
                   </div>
-                </div>
-              )) || (
-                <div className="text-center py-8 text-gray-500">
-                  월별 데이터가 없습니다.
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                )) || (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    최근 프로그램이 없습니다.
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 text-center">
+                <Link href="/admin/programs">
+                  <Button variant="outline" size="sm" className="w-full">
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    프로그램 관리
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 오른쪽: 캘린더 */}
+        <div className="lg:col-span-1">
+          <Card className="h-[650px] flex flex-col">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center">
+                  <Calendar className="h-5 w-5 mr-2" />
+                  캘린더
+                </CardTitle>
+                <Link href="/admin/calendar">
+                  <Button size="sm" variant="outline">
+                    전체 보기
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden">
+              <div className="h-full">
+                <MiniCalendar 
+                  onDateClick={handleDateClick}
+                  todos={todos}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
+
 
       {/* 시스템 상태 */}
       {systemHealth && (
@@ -393,6 +663,87 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 할 일 다이얼로그 */}
+      <Dialog open={showTodoDialog} onOpenChange={setShowTodoDialog}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Calendar className="h-5 w-5 mr-2" />
+              {selectedDate} 할 일 관리
+            </DialogTitle>
+          </DialogHeader>
+          
+          {/* 해당 날짜의 할 일 목록 */}
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">할 일 목록</h3>
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {todos.filter(todo => todo.date === selectedDate)
+                .sort((a, b) => {
+                  // 미완료를 먼저, 완료된 것을 나중에
+                  if (a.completed === b.completed) return 0;
+                  return a.completed ? 1 : -1;
+                })
+                .map((todo) => (
+                <div key={todo.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={todo.completed}
+                      onCheckedChange={async () => {
+                        try {
+                          await apiClient.patch(`/todos/${todo.id}/toggle`);
+                          await fetchTodos();
+                          toast.success('할 일 상태가 변경되었습니다.');
+                        } catch (error) {
+                          console.error('할 일 상태 변경 오류:', error);
+                          toast.error('할 일 상태 변경에 실패했습니다.');
+                        }
+                      }}
+                    />
+                    <span className={`text-sm ${todo.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                      {todo.title}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          await apiClient.delete(`/todos/${todo.id}`);
+                          await fetchTodos();
+                          toast.success('할 일이 삭제되었습니다.');
+                        } catch (error) {
+                          console.error('할 일 삭제 오류:', error);
+                          toast.error('할 일 삭제에 실패했습니다.');
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {todos.filter(todo => todo.date === selectedDate).length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">등록된 할 일이 없습니다.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setShowTodoDialog(false)}>
+              닫기
+            </Button>
+            <Button onClick={() => {
+              setShowTodoDialog(false);
+              window.location.href = `/admin/calendar?date=${selectedDate}`;
+            }}>
+              <Plus className="h-4 w-4 mr-2" />
+              할 일 추가
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
