@@ -511,7 +511,7 @@ export default function EditProgramPage() {
                         value={field.label}
                         onChange={(e) => updateFormField(index, { label: e.target.value })}
                         placeholder="필드명을 입력해주세요"
-                        disabled={['name', 'email', 'phone'].includes(field.name)}
+                        disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
                       />
                       <p className="text-xs text-gray-500">
                         ID: {field.name} (자동 생성)
@@ -523,7 +523,7 @@ export default function EditProgramPage() {
                         value={field.description || ''}
                         onChange={(e) => updateFormField(index, { description: e.target.value })}
                         placeholder="필드 설명 (선택사항)"
-                        disabled={['name', 'email', 'phone'].includes(field.name)}
+                        disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -531,7 +531,7 @@ export default function EditProgramPage() {
                       <Select
                         value={field.type}
                         onValueChange={(value) => updateFormField(index, { type: value })}
-                        disabled={['name', 'email', 'phone'].includes(field.name)}
+                        disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -547,7 +547,7 @@ export default function EditProgramPage() {
                       <Select
                         value={field.required ? 'true' : 'false'}
                         onValueChange={(value) => updateFormField(index, { required: value === 'true' })}
-                        disabled={['name', 'email', 'phone'].includes(field.name)}
+                        disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
                       >
                         <SelectTrigger>
                           <SelectValue />
