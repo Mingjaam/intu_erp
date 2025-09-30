@@ -35,6 +35,7 @@ export class DashboardService {
     const [
       totalUsers,
       totalPrograms,
+      activePrograms,
       totalApplications,
       totalSelections,
       totalVisits,
@@ -51,6 +52,7 @@ export class DashboardService {
     ] = await Promise.all([
       this.getUserCount(organizationId),
       this.getProgramCount(organizationId),
+      this.getActiveProgramCount(organizationId),
       this.getApplicationCount(organizationId),
       this.getSelectionCount(organizationId),
       this.getVisitCount(organizationId),
@@ -73,6 +75,7 @@ export class DashboardService {
       overview: {
         totalUsers,
         totalPrograms,
+        activePrograms,
         totalApplications,
         totalSelections,
         totalVisits,
@@ -103,6 +106,18 @@ export class DashboardService {
   private async getProgramCount(organizationId?: string) {
     if (!organizationId) return this.programRepository.count();
     return this.programRepository.count({ where: { organizerId: organizationId } });
+  }
+
+  private async getActiveProgramCount(organizationId?: string) {
+    if (!organizationId) {
+      return this.programRepository.count({ where: { status: ProgramStatus.OPEN } });
+    }
+    return this.programRepository.count({ 
+      where: { 
+        organizerId: organizationId,
+        status: ProgramStatus.OPEN 
+      } 
+    });
   }
 
   private async getApplicationCount(organizationId?: string) {
@@ -156,20 +171,37 @@ export class DashboardService {
   }
 
   private async getRecentPrograms(limit = 5, organizationId?: string) {
+    let programs;
+    
     if (!organizationId) {
-      return this.programRepository.find({
-        relations: ['organizer'],
+      programs = await this.programRepository.find({
+        relations: ['organizer', 'applications'],
+        order: { createdAt: 'DESC' },
+        take: limit,
+      });
+    } else {
+      programs = await this.programRepository.find({
+        where: { organizerId: organizationId },
+        relations: ['organizer', 'applications'],
         order: { createdAt: 'DESC' },
         take: limit,
       });
     }
 
-    return this.programRepository.find({
-      where: { organizerId: organizationId },
-      relations: ['organizer'],
-      order: { createdAt: 'DESC' },
-      take: limit,
-    });
+    return programs.map(program => ({
+      id: program.id,
+      title: program.title,
+      status: program.status,
+      applicationCount: program.applications.length,
+      maxParticipants: program.maxParticipants,
+      fee: program.fee,
+      createdAt: program.createdAt,
+      organizer: program.organizer,
+      applyStart: program.applyStart,
+      applyEnd: program.applyEnd,
+      programStart: program.programStart,
+      programEnd: program.programEnd,
+    }));
   }
 
   private async getRecentVisits(limit = 5, organizationId?: string) {
