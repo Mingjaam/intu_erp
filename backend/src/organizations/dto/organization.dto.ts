@@ -77,4 +77,14 @@ export class OrganizationQueryDto {
   @ApiProperty({ example: 10, required: false })
   @IsOptional()
   limit?: number;
+
+  @ApiProperty({ example: 'createdAt', required: false })
+  @IsString()
+  @IsOptional()
+  sortBy?: string;
+
+  @ApiProperty({ example: 'DESC', enum: ['ASC', 'DESC'], required: false })
+  @IsString()
+  @IsOptional()
+  sortOrder?: 'ASC' | 'DESC';
 }
