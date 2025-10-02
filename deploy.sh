@@ -11,11 +11,11 @@ fi
 
 # 기존 컨테이너 정리
 echo "🧹 기존 컨테이너 정리 중..."
-docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml --env-file .env.production down
 
 # 이미지 빌드
 echo "🔨 이미지 빌드 중..."
-docker-compose -f docker-compose.prod.yml build
+docker-compose -f docker-compose.prod.yml --env-file .env.production build
 
 # 서비스 시작
 echo "🚀 서비스 시작 중..."
@@ -24,7 +24,7 @@ docker-compose -f docker-compose.prod.yml --env-file .env.production up -d
 # 상태 확인
 echo "📊 서비스 상태 확인 중..."
 sleep 10
-docker-compose -f docker-compose.prod.yml ps
+docker-compose -f docker-compose.prod.yml --env-file .env.production ps
 
 # 헬스 체크
 echo "🏥 헬스 체크 중..."
@@ -43,5 +43,5 @@ echo "- 프론트엔드: http://localhost:3000"
 echo "- 백엔드 API: http://localhost:3001/api"
 echo ""
 echo "🔧 유용한 명령어:"
-echo "- 로그 확인: docker-compose -f docker-compose.prod.yml logs -f"
-echo "- 서비스 중지: docker-compose -f docker-compose.prod.yml down"
+echo "- 로그 확인: docker-compose -f docker-compose.prod.yml --env-file .env.production logs -f"
+echo "- 서비스 중지: docker-compose -f docker-compose.prod.yml --env-file .env.production down"
