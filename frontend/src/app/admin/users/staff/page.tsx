@@ -141,7 +141,7 @@ export default function StaffManagementPage() {
     }
   };
 
-  if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">

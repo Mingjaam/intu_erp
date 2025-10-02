@@ -244,7 +244,7 @@ export default function EditProgramPage() {
   }
 
   // 사용자 정보가 없거나 권한이 없으면 접근 거부
-  if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
       <div className="p-8">
         <div className="text-center">

@@ -289,7 +289,7 @@ export default function VillageManagePage() {
     return roleColors[role as keyof typeof roleColors] || 'bg-gray-100 text-gray-800';
   };
 
-  if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
