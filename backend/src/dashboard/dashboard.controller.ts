@@ -11,7 +11,7 @@ import { Response } from 'express';
 @ApiTags('dashboard')
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.OPERATOR)
+@Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
 @ApiBearerAuth()
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
