@@ -29,9 +29,16 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:3002',
-      'http://localhost:3001'
+      'http://localhost:3001',
+      // 프로덕션 도메인
+      'https://nuvio.kr',
+      'https://www.nuvio.kr',
+      'http://nuvio.kr',
+      'http://www.nuvio.kr'
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
   // Global prefix

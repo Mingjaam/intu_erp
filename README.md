@@ -1,186 +1,171 @@
-# Intu ERP - 풀스택 ERP 웹 애플리케이션
+# Intu ERP
 
-신청자, 수혜자, 프로그램, 후속 활동을 관리할 수 있는 ERP 시스템입니다.
+마을 관리 시스템
 
-## 기술 스택
+## 🚀 빠른 시작
 
-### 백엔드
-- **Framework**: NestJS (Node.js, TypeScript)
-- **Database**: PostgreSQL (JSONB 지원)
-- **Cache/Queue**: Redis
-- **Authentication**: JWT
-- **File Storage**: AWS S3
-- **ORM**: TypeORM
+### 로컬 개발 환경
 
-### 프론트엔드
-- **Framework**: Next.js 14 (React, TypeScript)
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **State Management**: React Query
-- **Forms**: React Hook Form + Yup
-- **API Client**: OpenAPI TypeScript
-
-### 인프라
-- **Containerization**: Docker
-- **CI/CD**: GitHub Actions
-- **Database**: AWS RDS (PostgreSQL)
-- **File Storage**: AWS S3
-
-## 프로젝트 구조
-
-```
-intu_erp/
-├── backend/                 # NestJS 백엔드
-│   ├── src/
-│   │   ├── auth/           # 인증/인가 모듈
-│   │   ├── users/          # 사용자 관리
-│   │   ├── organizations/  # 조직 관리
-│   │   ├── programs/       # 프로그램 관리
-│   │   ├── applications/   # 신청 관리
-│   │   ├── visits/         # 방문 관리
-│   │   ├── audit/          # 감사 로그
-│   │   └── common/         # 공통 모듈
-│   ├── prisma/             # 데이터베이스 스키마
-│   └── docker/
-├── frontend/               # Next.js 프론트엔드
-│   ├── src/
-│   │   ├── app/            # App Router
-│   │   ├── components/     # UI 컴포넌트
-│   │   ├── lib/            # 유틸리티
-│   │   ├── hooks/          # 커스텀 훅
-│   │   └── types/          # TypeScript 타입
-│   └── public/
-├── docker-compose.yml      # 로컬 개발 환경
-├── .github/workflows/      # CI/CD 파이프라인
-└── docs/                   # 문서
-```
-
-## 핵심 기능
-
-### 1. 사용자 & 조직 관리 ✅
-- JWT 기반 인증 시스템
-- 역할 기반 접근 제어 (관리자/운영자/심사자/신청자)
-- 조직(마을, 기관, 기업, NGO) 관리
-- 사용자 ↔ 조직 관계 관리
-
-### 2. 프로그램 관리 ✅
-- 프로그램 CRUD (생성/조회/수정/삭제)
-- 상태 관리 (임시저장/모집중/종료/보관)
-- 신청 기간 설정 및 관리
-- 프로그램별 통계 제공
-
-### 3. 신청서 관리 ✅
-- 폼 기반 신청서 작성 및 제출
-- 로그인된 사용자 정보 자동 채움
-- 신청서 상태 관리 (제출됨/심사중/선정됨/탈락/철회됨)
-- 신청서 수정 및 철회 기능
-
-### 4. 선정 관리 ✅
-- 신청서 심사 및 점수 입력
-- 선정/탈락 처리
-- 심사 기준 및 사유 기록
-- 선정 결과 통계
-
-### 5. 방문 관리 ✅
-- 방문 예약 및 일정 관리
-- 방문 완료/취소 처리
-- 방문 결과 및 후속 조치 기록
-- 방문 통계 및 추적
-
-### 6. 조직 관리 ✅
-- 조직 CRUD (생성/조회/수정/삭제)
-- 조직 유형별 관리 (마을/기관/기업/NGO)
-- 조직별 통계 및 현황
-- 조직 검색 및 필터링
-
-### 7. 대시보드 & 통계 ✅
-- 실시간 KPI 대시보드
-- 프로그램별 신청/선정 통계
-- 조직별 활동 현황
-- 방문 및 후속 활동 추적
-
-### 8. 감사 & 로그 ✅
-- 모든 변경 내역 자동 기록
-- 사용자 활동 추적
-- 시스템 전역 감사 로그
-
-## 시작하기
-
-### 로컬 개발 환경 설정
-
-1. **저장소 클론**
 ```bash
-git clone <repository-url>
-cd intu_erp
-```
+# 1. 백엔드 서비스 시작 (Docker)
+./run-local.sh
 
-2. **환경 변수 설정**
-```bash
-cp env.example .env
-# 환경 변수 수정
-```
-
-3. **PostgreSQL 설치 및 설정**
-```bash
-# macOS (Homebrew)
-brew install postgresql@15
-brew services start postgresql@15
-createdb intu_erp
-
-# 환경 변수 설정
-export DATABASE_URL="postgresql://$(whoami)@localhost:5432/intu_erp"
-export NODE_ENV="development"
-export JWT_SECRET="your-super-secret-jwt-key-for-development"
-export JWT_EXPIRES_IN="7d"
-export PORT=3001
-export CORS_ORIGIN="http://localhost:3000"
-```
-
-4. **의존성 설치**
-```bash
-# 루트 디렉토리
-npm install
-
-# 백엔드
-cd backend
-npm install
-
-# 프론트엔드
-cd ../frontend
-npm install
-```
-
-5. **개발 서버 실행**
-```bash
-# 백엔드 (터미널 1)
-cd backend
-npm run start:dev
-
-# 프론트엔드 (터미널 2)
+# 2. 프론트엔드 개발 서버 시작 (로컬)
 cd frontend
+npm install
 npm run dev
 ```
 
-6. **접속**
-- 프론트엔드: http://localhost:3000
-- 백엔드 API: http://localhost:3001/api
-- API 문서: http://localhost:3001/api/docs
+**접속 정보:**
+- 프론트엔드: http://localhost:3000 (로컬) / https://nuvio.kr (프로덕션)
+- 백엔드 API: http://localhost:3001/api (로컬) / https://nuvio.kr/api (프로덕션)
 
-## API 문서
+### 프로덕션 배포
 
-- Swagger UI: http://localhost:3001/api/docs
-- OpenAPI Spec: http://localhost:3001/api/docs-json
+```bash
+# 1. 환경 변수 설정
+cp env.production.example .env.production
+# .env.production 파일을 편집하여 실제 값 설정
 
-## 배포
+# 2. 프로덕션 배포
+./deploy.sh
+```
 
-### 스테이징 환경
-- URL: https://staging.intu-erp.com
-- 자동 배포: `develop` 브랜치 푸시 시
+## 📁 프로젝트 구조
 
-### 운영 환경
-- URL: https://intu-erp.com
-- 자동 배포: `main` 브랜치 푸시 시
+```
+intu_erp/
+├── frontend/          # Next.js 프론트엔드
+├── backend/           # NestJS 백엔드
+├── nginx/             # Nginx 설정
+├── docker-compose.yml # 로컬 개발용
+├── docker-compose.dev.yml    # 로컬 개발용 (백엔드만)
+├── docker-compose.prod.yml   # 프로덕션용
+├── run-local.sh       # 로컬 개발 스크립트
+├── deploy.sh          # 프로덕션 배포 스크립트
+└── env.production.example # 프로덕션 환경 변수 예시
+```
 
-## 라이선스
+## 🔧 개발 환경 설정
 
-MIT License
+### 로컬 개발 (권장)
+- **프론트엔드**: 로컬에서 `npm run dev`로 실행
+- **백엔드**: Docker에서 실행 (데이터베이스, Redis 포함)
+
+```bash
+# 백엔드 서비스만 Docker로 실행
+./run-local.sh
+
+# 프론트엔드 로컬 실행
+cd frontend
+npm install
+npm run dev
+```
+
+### 전체 Docker 개발
+```bash
+# 모든 서비스 Docker로 실행
+docker-compose up -d
+```
+
+## 🌐 프로덕션 배포
+
+### 클라우드 서버 배포
+
+1. **환경 변수 설정**
+```bash
+cp env.production.example .env.production
+# .env.production 파일 편집
+```
+
+2. **배포 실행**
+```bash
+./deploy.sh
+```
+
+### 환경 변수 설정
+
+`.env.production` 파일에 다음 값들을 설정:
+
+```env
+# 데이터베이스
+DB_PASSWORD=your_secure_password
+DB_SSL=false
+
+# JWT
+JWT_SECRET=your_super_secure_jwt_secret
+
+# URL
+FRONTEND_URL=https://nuvio.kr
+API_URL=https://nuvio.kr/api
+```
+
+## 🛠️ 유용한 명령어
+
+### 로컬 개발
+```bash
+# 백엔드 서비스 시작
+./run-local.sh
+
+# 로그 확인
+docker-compose -f docker-compose.dev.yml logs -f
+
+# 서비스 중지
+docker-compose -f docker-compose.dev.yml down
+```
+
+### 프로덕션
+```bash
+# 배포
+./deploy.sh
+
+# 로그 확인
+docker-compose -f docker-compose.prod.yml logs -f
+
+# 서비스 중지
+docker-compose -f docker-compose.prod.yml down
+```
+
+## 🔐 기본 계정
+
+로컬 개발 시 자동으로 생성되는 어드민 계정:
+- **이메일**: admin@nuvio.kr
+- **비밀번호**: admin123!
+
+## 📝 API 문서
+
+- **Swagger**: http://localhost:3001/api/docs (개발 환경)
+- **프로덕션**: https://nuvio.kr/api/docs
+
+## 🐛 트러블슈팅
+
+### 포트 충돌
+```bash
+# 사용 중인 포트 확인
+lsof -i :3000
+lsof -i :3001
+
+# 포트 변경 (docker-compose.yml 수정)
+```
+
+### 데이터베이스 연결 실패
+```bash
+# PostgreSQL 상태 확인
+docker-compose ps postgres
+
+# 로그 확인
+docker-compose logs postgres
+```
+
+### 메모리 부족
+```bash
+# Docker 메모리 사용량 확인
+docker stats
+
+# 불필요한 컨테이너 정리
+docker system prune
+```
+
+## 📞 지원
+
+문제가 발생하면 이슈를 등록하거나 개발팀에 문의해주세요.

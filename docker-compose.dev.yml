@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: intu_erp_postgres_dev
+    environment:
+      POSTGRES_DB: intu_erp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - intu_erp_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: intu_erp_redis_dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data_dev:/data
+    networks:
+      - intu_erp_network
+
+  # Backend API (개발용)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: intu_erp_backend_dev
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/intu_erp
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_NAME: intu_erp
+      DB_SSL: "false"
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your-super-secret-jwt-key
+      JWT_EXPIRES_IN: 7d
+      PORT: 3001
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - intu_erp_network
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+
+networks:
+  intu_erp_network:
+    driver: bridge
