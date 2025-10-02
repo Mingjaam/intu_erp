@@ -133,9 +133,13 @@ export default function VillageManagePage() {
   }, [user?.organizationId]);
 
   useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'operator') {
-      fetchVillageInfo();
-      fetchVillageMembers();
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
+      if (user?.organizationId) {
+        fetchVillageInfo();
+        fetchVillageMembers();
+      } else {
+        setIsLoading(false);
+      }
     } else {
       router.push('/admin'); // 권한이 없는 경우 리다이렉트
     }
@@ -308,6 +312,18 @@ export default function VillageManagePage() {
             <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
             <p className="text-gray-600">마을 정보를 불러오는 중...</p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user?.organizationId) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">마을이 할당되지 않았습니다</h1>
+          <p className="text-gray-600 mb-4">이 계정은 아직 마을에 할당되지 않았습니다.</p>
+          <p className="text-sm text-gray-500">관리자에게 문의하여 마을을 할당받으세요.</p>
         </div>
       </div>
     );
