@@ -44,6 +44,7 @@ export default function CalendarPage() {
   const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -127,6 +128,27 @@ export default function CalendarPage() {
       // 완료되지 않은 것들을 먼저, 완료된 것들을 나중에
       if (a.completed === b.completed) return 0;
       return a.completed ? 1 : -1;
+    });
+  };
+
+  // 특정 날짜의 프로그램 가져오기
+  const getProgramsForDate = (date: string) => {
+    if (!programs || !date) return [];
+    const targetDate = new Date(date);
+    
+    return programs.filter(program => {
+      if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
+        return false;
+      }
+      
+      const appStart = new Date(program.applyStart);
+      const appEnd = new Date(program.applyEnd);
+      const actStart = new Date(program.programStart);
+      const actEnd = new Date(program.programEnd);
+      
+      // 신청 기간 또는 활동 기간에 포함되는지 확인
+      return (targetDate >= appStart && targetDate <= appEnd) || 
+             (targetDate >= actStart && targetDate <= actEnd);
     });
   };
 
@@ -249,7 +271,7 @@ export default function CalendarPage() {
     setShowAddForm(false);
   };
 
-  // 할 일 목록 불러오기
+  // 할 일 목록과 프로그램 목록 불러오기
   useEffect(() => {
     const fetchTodos = async () => {
       try {
@@ -263,9 +285,34 @@ export default function CalendarPage() {
       }
     };
 
+    const fetchPrograms = async () => {
+      try {
+        console.log('프로그램 목록 조회 시작...');
+        const response = await apiClient.get('/programs');
+        console.log('프로그램 목록 응답:', response);
+        
+        // API 응답 구조 확인
+        let programsData = [];
+        if (Array.isArray(response)) {
+          programsData = response;
+        } else if (response && Array.isArray(response.data)) {
+          programsData = response.data;
+        } else if (response && response.programs && Array.isArray(response.programs)) {
+          programsData = response.programs;
+        }
+        
+        setPrograms(programsData);
+        console.log('프로그램 목록 설정됨:', programsData);
+        console.log('프로그램 개수:', programsData.length);
+      } catch (error) {
+        console.error('프로그램 목록 조회 오류:', error);
+      }
+    };
+
     if (user) {
       console.log('사용자 정보:', user);
       fetchTodos();
+      fetchPrograms();
     }
   }, [user]);
 
@@ -347,7 +394,9 @@ export default function CalendarPage() {
           <div className="grid grid-cols-7 gap-1">
             {getCalendarDays().map((day, index) => {
               const dayTodos = getTodosForDate(day.fullDate);
+              const dayPrograms = getProgramsForDate(day.fullDate);
               const hasTodos = dayTodos.length > 0;
+              const hasPrograms = dayPrograms.length > 0;
               const completedTodos = dayTodos.filter(todo => todo.completed).length;
               
               return (
@@ -372,6 +421,41 @@ export default function CalendarPage() {
                       </Badge>
                     )}
                   </div>
+                  
+                  {/* 프로그램 기간 표시 */}
+                  {hasPrograms && (
+                    <div className="mb-2 space-y-1">
+                      {dayPrograms.slice(0, 2).map((program, programIndex) => {
+                        const targetDate = new Date(day.fullDate);
+                        const appStart = new Date(program.applyStart);
+                        const appEnd = new Date(program.applyEnd);
+                        const actStart = new Date(program.programStart);
+                        const actEnd = new Date(program.programEnd);
+                        
+                        const isApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
+                        const isActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
+                        
+                        return (
+                          <div
+                            key={`program-${programIndex}`}
+                            className={`text-xs p-1 rounded truncate ${
+                              isApplicationPeriod 
+                                ? 'bg-orange-100 text-orange-800' 
+                                : 'bg-purple-100 text-purple-800'
+                            }`}
+                            title={`${program.name} - ${isApplicationPeriod ? '신청기간' : '활동기간'}`}
+                          >
+                            {program.name}
+                          </div>
+                        );
+                      })}
+                      {dayPrograms.length > 2 && (
+                        <div className="text-xs text-gray-500">
+                          +{dayPrograms.length - 2}개 프로그램
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   {/* 할 일 목록 (최대 3개) */}
                   <div className="space-y-1">
