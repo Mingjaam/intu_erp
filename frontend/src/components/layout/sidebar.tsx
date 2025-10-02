@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 import { 
   Home, 
   Users, 
@@ -14,52 +15,63 @@ import {
   ChevronRight
 } from 'lucide-react';
 
-const navigation = [
-  { 
-    name: '대시보드', 
-    href: '/admin', 
-    icon: Home,
-    children: []
-  },
-  { 
-    name: '캘린더', 
-    href: '/admin/calendar', 
-    icon: Calendar,
-    children: []
-  },
-  { 
-    name: '프로그램', 
-    href: '/admin/programs', 
-    icon: FolderOpen,
-    children: [
-      { name: '전체 프로그램', href: '/admin/programs' },
-      { name: '프로그램 등록', href: '/admin/programs/new' },
-    ]
-  },
-  { 
-    name: '회원', 
-    href: '/admin/users', 
-    icon: Users,
-    children: [
-      { name: '전체 회원', href: '/admin/users' },
-      { name: '불량회원 관리', href: '/admin/users/reports' },
-    ]
-  },
-          { 
-            name: '관리', 
-            href: '/admin/users/manage', 
-            icon: Settings,
-            children: [
-              { name: '회원 관리', href: '/admin/users/manage' },
-              { name: '전체 마을', href: '/admin/villages' },
-              { name: '마을 및 직원 관리', href: '/admin/village/manage' },
-            ]
-          },
-];
+const getNavigation = (userRole: string) => {
+  const baseNavigation = [
+    { 
+      name: '대시보드', 
+      href: '/admin', 
+      icon: Home,
+      children: []
+    },
+    { 
+      name: '캘린더', 
+      href: '/admin/calendar', 
+      icon: Calendar,
+      children: []
+    },
+    { 
+      name: '프로그램', 
+      href: '/admin/programs', 
+      icon: FolderOpen,
+      children: [
+        { name: '전체 프로그램', href: '/admin/programs' },
+        { name: '프로그램 등록', href: '/admin/programs/new' },
+      ]
+    },
+    { 
+      name: '회원', 
+      href: '/admin/users', 
+      icon: Users,
+      children: [
+        { name: '전체 회원', href: '/admin/users' },
+        { name: '불량회원 관리', href: '/admin/users/reports' },
+      ]
+    }
+  ];
+
+  // 관리자만 관리 메뉴 표시
+  if (userRole === 'admin') {
+    baseNavigation.push({
+      name: '관리', 
+      href: '/admin/users/manage', 
+      icon: Settings,
+      children: [
+        { name: '회원 관리', href: '/admin/users/manage' },
+        { name: '전체 마을', href: '/admin/villages' },
+        { name: '마을 및 직원 관리', href: '/admin/village/manage' },
+      ]
+    });
+  }
+
+  return baseNavigation;
+};
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>(['대시보드', '프로그램', '회원', '관리']);
+  
+  const navigation = getNavigation(user?.role || '');
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev => 

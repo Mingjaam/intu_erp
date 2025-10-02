@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
+import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ const statusColors = {
 function ProgramsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,13 +73,15 @@ function ProgramsPageContent() {
   }, [statusFilter]);
 
   useEffect(() => {
-    // URL 파라미터에서 상태 필터 가져오기
-    const status = searchParams.get('status');
-    if (status) {
-      setStatusFilter(status);
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
+      // URL 파라미터에서 상태 필터 가져오기
+      const status = searchParams.get('status');
+      if (status) {
+        setStatusFilter(status);
+      }
+      fetchPrograms();
     }
-    fetchPrograms();
-  }, [searchParams, statusFilter, fetchPrograms]);
+  }, [user, searchParams, statusFilter, fetchPrograms]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말로 이 프로그램을 삭제하시겠습니까?')) {
@@ -100,6 +104,17 @@ function ProgramsPageContent() {
     const matchesStatus = statusFilter === 'all' || program.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">접근 권한이 없습니다</h1>
+          <p className="text-gray-600">관리자 권한이 필요한 페이지입니다.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

@@ -118,7 +118,7 @@ export function Header() {
                 </DropdownMenuItem>
                 
                 {/* 관리자 이상일 경우에만 관리자 페이지 메뉴 표시 */}
-                {(user.role === 'admin' || user.role === 'operator') && (
+                {(user.role === 'admin' || user.role === 'operator' || user.role === 'staff') && (
                   <>
                     <DropdownMenuItem asChild>
                       <Link href="/admin" className="flex items-center">

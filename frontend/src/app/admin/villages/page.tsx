@@ -111,7 +111,7 @@ export default function VillagesPage() {
   };
 
   useEffect(() => {
-    if (user?.role === 'admin') {
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
       fetchVillages(currentPage, searchTerm);
     }
   }, [user, currentPage, searchTerm, fetchVillages]);
@@ -199,7 +199,7 @@ export default function VillagesPage() {
     }
   };
 
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
