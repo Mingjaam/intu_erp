@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
@@ -29,7 +29,7 @@ interface FormField {
   placeholder?: string;
 }
 
-export default function ApplyPage() {
+function ApplyPageContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -443,5 +443,13 @@ export default function ApplyPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ApplyPage() {
+  return (
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <ApplyPageContent />
+    </Suspense>
   );
 }
