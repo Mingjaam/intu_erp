@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
 
   const fetchUserProfile = useCallback(async () => {
     try {
-      const response = await apiClient.get<User>(API_ENDPOINTS.AUTH.PROFILE);
+      const response = await apiClient.get<User>(API_ENDPOINTS.USERS.PROFILE);
       const data = response.data || response;
       setUser(data);
     } catch (error) {
