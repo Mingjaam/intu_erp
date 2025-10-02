@@ -75,7 +75,13 @@ class ApiClient {
       throw new Error(error.message || `HTTP error! status: ${response.status}`);
     }
 
-    return response.json();
+    // 응답이 비어있으면 빈 객체 반환
+    const text = await response.text();
+    if (!text) {
+      return { success: true, data: {} } as ApiResponse<T>;
+    }
+    
+    return JSON.parse(text);
   }
 
   async get<T>(endpoint: string, params?: Record<string, unknown>): Promise<ApiResponse<T>> {
