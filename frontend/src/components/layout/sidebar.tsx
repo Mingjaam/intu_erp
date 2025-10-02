@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { 
   Home, 
@@ -79,8 +79,14 @@ export function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<string[]>(['대시보드', '프로그램', '회원', '마을 관리', '관리자 전용']);
+  const [mounted, setMounted] = useState(false);
   
-  const navigation = getNavigation(user?.role || '');
+  // 클라이언트에서만 마운트되도록 처리
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const navigation = mounted ? getNavigation(user?.role || '') : [];
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev => 
