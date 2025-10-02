@@ -36,7 +36,9 @@ interface Todo {
 }
 
 // 작은 캘린더 컴포넌트
-function MiniCalendar({ onDateClick, todos }: { onDateClick?: (date: string) => void; todos?: Todo[] }) {
+function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: string) => void; todos?: Todo[]; programs?: any[] }) {
+  console.log('MiniCalendar 렌더링됨, programs:', programs?.length || 0);
+  
   const today = new Date();
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
@@ -94,6 +96,100 @@ function MiniCalendar({ onDateClick, todos }: { onDateClick?: (date: string) => 
     return todos.filter(todo => todo.date === dateStr);
   };
 
+  // 특정 날짜의 프로그램 가져오기
+  const getProgramsForDate = (day: number) => {
+    if (!programs || !day || programs.length === 0) return [];
+    const targetDate = new Date(currentYear, currentMonth, day);
+    
+    const filteredPrograms = programs.filter(program => {
+      if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
+        return false;
+      }
+      
+      const appStart = new Date(program.applyStart);
+      const appEnd = new Date(program.applyEnd);
+      const actStart = new Date(program.programStart);
+      const actEnd = new Date(program.programEnd);
+      
+      const isInApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
+      const isInActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
+      
+      return isInApplicationPeriod || isInActivityPeriod;
+    });
+    
+    return filteredPrograms;
+  };
+
+  // 프로그램 기간을 연속된 날짜로 표시하는 함수
+  const getProgramPeriods = () => {
+    if (!programs || programs.length === 0) return [];
+    
+    const periods = [];
+    
+    programs.forEach(program => {
+      if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
+        return;
+      }
+      
+      const appStart = new Date(program.applyStart);
+      const appEnd = new Date(program.applyEnd);
+      const actStart = new Date(program.programStart);
+      const actEnd = new Date(program.programEnd);
+      
+      // 신청 기간 추가 (현재 월과 겹치는 경우)
+      const appStartMonth = appStart.getMonth();
+      const appStartYear = appStart.getFullYear();
+      const appEndMonth = appEnd.getMonth();
+      const appEndYear = appEnd.getFullYear();
+      
+      if ((appStartMonth === currentMonth && appStartYear === currentYear) || 
+          (appEndMonth === currentMonth && appEndYear === currentYear) ||
+          (appStartYear < currentYear && appEndYear > currentYear) ||
+          (appStartYear === currentYear && appEndYear === currentYear && appStartMonth <= currentMonth && appEndMonth >= currentMonth)) {
+        
+        const startDate = appStartMonth === currentMonth && appStartYear === currentYear ? appStart.getDate() : 1;
+        const endDate = appEndMonth === currentMonth && appEndYear === currentYear ? 
+          Math.min(appEnd.getDate(), new Date(currentYear, currentMonth + 1, 0).getDate()) : 
+          new Date(currentYear, currentMonth + 1, 0).getDate();
+        
+        periods.push({
+          type: 'application',
+          program: program,
+          start: startDate,
+          end: endDate,
+          color: 'bg-orange-400'
+        });
+      }
+      
+      // 활동 기간 추가 (현재 월과 겹치는 경우)
+      const actStartMonth = actStart.getMonth();
+      const actStartYear = actStart.getFullYear();
+      const actEndMonth = actEnd.getMonth();
+      const actEndYear = actEnd.getFullYear();
+      
+      if ((actStartMonth === currentMonth && actStartYear === currentYear) || 
+          (actEndMonth === currentMonth && actEndYear === currentYear) ||
+          (actStartYear < currentYear && actEndYear > currentYear) ||
+          (actStartYear === currentYear && actEndYear === currentYear && actStartMonth <= currentMonth && actEndMonth >= currentMonth)) {
+        
+        const startDate = actStartMonth === currentMonth && actStartYear === currentYear ? actStart.getDate() : 1;
+        const endDate = actEndMonth === currentMonth && actEndYear === currentYear ? 
+          Math.min(actEnd.getDate(), new Date(currentYear, currentMonth + 1, 0).getDate()) : 
+          new Date(currentYear, currentMonth + 1, 0).getDate();
+        
+        periods.push({
+          type: 'activity',
+          program: program,
+          start: startDate,
+          end: endDate,
+          color: 'bg-purple-400'
+        });
+      }
+    });
+    
+    return periods;
+  };
+
   return (
     <div className="w-full">
       {/* 월/년도 헤더 */}
@@ -142,18 +238,41 @@ function MiniCalendar({ onDateClick, todos }: { onDateClick?: (date: string) => 
             <span className="absolute top-1 left-1 text-xs">
               {day.date}
             </span>
+            {/* 프로그램 기간 표시 (날짜 숫자 아래) */}
+            {day.isCurrentMonth && (
+              <div className="absolute top-6 left-1 right-1">
+                {getProgramPeriods().map((period, periodIndex) => {
+                  // 현재 날짜가 이 기간에 포함되는지 확인
+                  const isInPeriod = day.date >= period.start && day.date <= period.end;
+                  
+                  if (!isInPeriod) return null;
+                  
+                  return (
+                    <div
+                      key={`period-${periodIndex}`}
+                      className={`h-1 w-full rounded mb-0.5 ${period.color}`}
+                      title={`${period.program.title} - ${period.type === 'application' ? '신청기간' : '활동기간'}`}
+                    />
+                  );
+                })}
+              </div>
+            )}
+            
             {/* 할 일 표시 */}
             {day.isCurrentMonth && (
-              <div className="absolute top-6 left-1 right-1 flex flex-wrap gap-0.5">
-                {getTodosForDate(day.date).map((todo, todoIndex) => (
+              <div className="absolute top-9 left-1 right-1 flex flex-wrap gap-0.5">
+                {getTodosForDate(day.date).slice(0, 11).map((todo, todoIndex) => (
                   <div
-                    key={todoIndex}
+                    key={`todo-${todoIndex}`}
                     className={`w-1.5 h-1.5 rounded-full ${
                       todo.completed ? 'bg-green-500' : 'bg-blue-500'
                     }`}
                     title={todo.title}
                   />
                 ))}
+                {getTodosForDate(day.date).length > 11 && (
+                  <div className="w-1.5 h-1.5 rounded-full bg-gray-400" title={`+${getTodosForDate(day.date).length - 11}개 더`} />
+                )}
               </div>
             )}
           </div>
@@ -223,6 +342,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [programs, setPrograms] = useState<any[]>([]);
   const [showTodoDialog, setShowTodoDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
 
@@ -258,13 +378,38 @@ export default function AdminDashboard() {
     }
   }, []);
 
+  const fetchPrograms = useCallback(async () => {
+    try {
+      console.log('프로그램 목록 조회 시작...');
+      const response = await apiClient.get('/programs');
+      console.log('프로그램 목록 응답:', response);
+      
+      // API 응답 구조 확인
+      let programsData = [];
+      if (Array.isArray(response)) {
+        programsData = response;
+      } else if (response && Array.isArray(response.data)) {
+        programsData = response.data;
+      } else if (response && response.programs && Array.isArray(response.programs)) {
+        programsData = response.programs;
+      }
+      
+      setPrograms(programsData);
+      console.log('프로그램 목록 설정됨:', programsData);
+      console.log('프로그램 개수:', programsData.length);
+    } catch (error) {
+      console.error('프로그램 목록 조회 오류:', error);
+    }
+  }, []);
+
   useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'operator') {
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
       fetchDashboardStats();
       fetchSystemHealth();
       fetchTodos();
+      fetchPrograms();
     }
-  }, [user, dateRange, fetchDashboardStats, fetchSystemHealth, fetchTodos]);
+  }, [user, dateRange, fetchDashboardStats, fetchSystemHealth, fetchTodos, fetchPrograms]);
 
   const handleDateClick = (date: string) => {
     setSelectedDate(date);
@@ -311,7 +456,7 @@ export default function AdminDashboard() {
     fetchSystemHealth();
   };
 
-  if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
@@ -437,7 +582,7 @@ export default function AdminDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-3 max-h-42 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3 h-28 overflow-y-auto">
                 {todos.filter(todo => {
                   const today = new Date();
                   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -447,7 +592,7 @@ export default function AdminDashboard() {
                   if (a.completed === b.completed) return 0;
                   return a.completed ? 1 : -1;
                 }).map((todo) => (
-                  <div key={todo.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={todo.id} className="flex h-12 items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-2 flex-1">
                       <Checkbox
                         checked={todo.completed}
@@ -572,7 +717,7 @@ export default function AdminDashboard() {
 
         {/* 오른쪽: 캘린더 */}
         <div className="lg:col-span-1">
-          <Card className="h-[650px] flex flex-col">
+          <Card className="h-[590px] flex flex-col">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center">
@@ -591,6 +736,7 @@ export default function AdminDashboard() {
                 <MiniCalendar 
                   onDateClick={handleDateClick}
                   todos={todos}
+                  programs={programs}
                 />
               </div>
             </CardContent>
