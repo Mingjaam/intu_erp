@@ -53,12 +53,7 @@ export class UsersService {
       .addSelect('COUNT(DISTINCT report.id)', 'reportCount')
       .groupBy('user.id, organization.id, organization.name, organization.type, organization.address, organization.contact, organization.description, organization.isActive, organization.createdAt, organization.updatedAt');
 
-    // 운영자와 직원은 같은 조직의 사용자만 조회 가능
-    if (currentUser.role === UserRole.OPERATOR || currentUser.role === UserRole.STAFF) {
-      queryBuilder.andWhere('user.organizationId = :organizationId', { 
-        organizationId: currentUser.organizationId 
-      });
-    }
+    // 모든 역할이 모든 사용자 조회 가능
 
     if (search) {
       queryBuilder.andWhere(
@@ -76,11 +71,6 @@ export class UsersService {
     
     // 총 개수를 별도로 조회
     const totalQuery = this.userRepository.createQueryBuilder('user');
-    if (currentUser.role === UserRole.OPERATOR || currentUser.role === UserRole.STAFF) {
-      totalQuery.andWhere('user.organizationId = :organizationId', { 
-        organizationId: currentUser.organizationId 
-      });
-    }
     if (search) {
       totalQuery.andWhere(
         '(user.name ILIKE :search OR user.email ILIKE :search)',
@@ -113,12 +103,7 @@ export class UsersService {
       .addSelect('COUNT(DISTINCT report.id)', 'reportCount')
       .groupBy('user.id, organization.id, organization.name, organization.type, organization.address, organization.contact, organization.description, organization.isActive, organization.createdAt, organization.updatedAt');
 
-    // 관리자는 모든 사용자, 운영자는 같은 조직의 사용자만
-    if (currentUser.role === UserRole.OPERATOR) {
-      queryBuilder.andWhere('user.organizationId = :organizationId', { 
-        organizationId: currentUser.organizationId 
-      });
-    }
+    // 모든 역할이 모든 사용자 조회 가능
 
     if (search) {
       queryBuilder.andWhere(
@@ -136,11 +121,6 @@ export class UsersService {
     
     // 총 개수를 별도로 조회
     const totalQuery = this.userRepository.createQueryBuilder('user');
-    if (currentUser.role === UserRole.OPERATOR) {
-      totalQuery.andWhere('user.organizationId = :organizationId', { 
-        organizationId: currentUser.organizationId 
-      });
-    }
     if (search) {
       totalQuery.andWhere(
         '(user.name ILIKE :search OR user.email ILIKE :search)',
