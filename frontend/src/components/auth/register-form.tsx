@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
-import { Eye, EyeOff } from 'lucide-react';
 
 const registerSchema = z.object({
   email: z.string().email('올바른 이메일 주소를 입력해주세요'),
@@ -21,7 +20,6 @@ const registerSchema = z.object({
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
-
 
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -110,120 +108,6 @@ export function RegisterForm() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? '가입 중...' : '회원가입'}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
-}
-
-              <p className="text-sm text-red-500">{errors.email.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">비밀번호</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="비밀번호를 입력하세요"
-              {...register('password')}
-            />
-            {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="name">이름</Label>
-            <Input
-              id="name"
-              type="text"
-              placeholder="이름을 입력하세요"
-              {...register('name')}
-            />
-            {errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">전화번호 *</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="전화번호를 입력하세요 (하이픈 제외)"
-              {...register('phone')}
-            />
-            {errors.phone && (
-              <p className="text-sm text-red-500">{errors.phone.message}</p>
-            )}
-          </div>
-
-          {/* 외국인 체크박스 */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isForeigner"
-              checked={isForeigner}
-              onCheckedChange={(checked) => setIsForeigner(checked as boolean)}
-            />
-            <Label htmlFor="isForeigner">외국인입니다</Label>
-          </div>
-
-          {/* 거주지 선택 */}
-          {!isForeigner ? (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="city">시/도 (선택사항)</Label>
-                <Select onValueChange={(value) => setSelectedCity(value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="시/도를 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cities.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.city && (
-                  <p className="text-sm text-red-500">{errors.city.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="district">군/구 (선택사항)</Label>
-                <Select onValueChange={(value) => register('district').onChange({ target: { value } })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="군/구를 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedCity && districts[selectedCity]?.map((district) => (
-                      <SelectItem key={district} value={district}>
-                        {district}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.district && (
-                  <p className="text-sm text-red-500">{errors.district.message}</p>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="space-y-2">
-              <Label htmlFor="foreignAddress">거주지 (선택사항)</Label>
-              <Input
-                id="foreignAddress"
-                type="text"
-                placeholder="거주지를 입력하세요"
-                {...register('foreignAddress')}
-              />
-              {errors.foreignAddress && (
-                <p className="text-sm text-red-500">{errors.foreignAddress.message}</p>
-              )}
-            </div>
-          )}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? '가입 중...' : '회원가입'}
           </Button>
