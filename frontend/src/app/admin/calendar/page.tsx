@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useSearchParams } from 'next/navigation';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
@@ -39,7 +39,7 @@ interface Todo {
   endDate?: string;
 }
 
-export default function CalendarPage() {
+function CalendarPageContent() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -827,5 +827,13 @@ export default function CalendarPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function CalendarPage() {
+  return (
+    <Suspense fallback={<div>로딩 중...</div>}>
+      <CalendarPageContent />
+    </Suspense>
   );
 }
