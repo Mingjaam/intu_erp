@@ -7,23 +7,18 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { 
   Users, 
   Search, 
   RefreshCw, 
   Plus,
-  Eye,
-  Edit,
   Mail,
   Phone,
   Calendar,
-  Flag,
   Building
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { UserReportDialog } from '@/components/user-report-dialog';
 
 interface User {
   id: string;
@@ -68,15 +63,6 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [reportDialog, setReportDialog] = useState<{
-    isOpen: boolean;
-    userId: string;
-    userName: string;
-  }>({
-    isOpen: false,
-    userId: '',
-    userName: '',
-  });
 
 
   const fetchUsers = async (page = 1, search = '') => {
@@ -117,7 +103,7 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'operator') {
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
       fetchUsers(currentPage, searchTerm);
     }
   }, [user, currentPage, searchTerm]);
@@ -133,17 +119,6 @@ export default function UsersPage() {
   };
 
 
-  const handleReportUser = (userId: string, userName: string) => {
-    setReportDialog({
-      isOpen: true,
-      userId,
-      userName,
-    });
-  };
-
-  const handleReportSuccess = () => {
-    fetchUsers(currentPage, searchTerm);
-  };
 
 
   if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
@@ -263,23 +238,6 @@ export default function UsersPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => handleReportUser(user.id, user.name)}
-                      className="text-orange-600 hover:text-orange-700"
-                      title="회원 신고"
-                    >
-                      <Flag className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
               ))}
             </div>
@@ -312,14 +270,6 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* 회원 신고 다이얼로그 */}
-      <UserReportDialog
-        isOpen={reportDialog.isOpen}
-        onClose={() => setReportDialog({ isOpen: false, userId: '', userName: '' })}
-        reportedUserId={reportDialog.userId}
-        reportedUserName={reportDialog.userName}
-        onSuccess={handleReportSuccess}
-      />
 
     </div>
   );
