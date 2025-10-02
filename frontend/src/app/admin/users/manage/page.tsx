@@ -141,7 +141,7 @@ export default function UserManagePage() {
   };
 
   useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'operator') {
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
       fetchUsers(currentPage, searchTerm);
     }
   }, [user, currentPage, searchTerm]);

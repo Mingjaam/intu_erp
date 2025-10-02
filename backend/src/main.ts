@@ -29,7 +29,12 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:3002',
-      'http://localhost:3001'
+      'http://localhost:3001',
+      // 프로덕션 도메인
+      ...(process.env.NODE_ENV === 'production' ? [
+        'https://nuvio.kr',
+        'https://www.nuvio.kr'
+      ] : [])
     ],
     credentials: true,
   });

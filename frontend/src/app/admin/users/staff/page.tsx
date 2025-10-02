@@ -102,7 +102,7 @@ export default function StaffManagementPage() {
   };
 
   useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'operator') {
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
       fetchUsers(currentPage);
     }
   }, [user, currentPage]);

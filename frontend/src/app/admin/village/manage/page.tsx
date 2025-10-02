@@ -133,7 +133,7 @@ export default function VillageManagePage() {
   }, [user?.organizationId]);
 
   useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'operator') {
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
       fetchVillageInfo();
       fetchVillageMembers();
     } else {
