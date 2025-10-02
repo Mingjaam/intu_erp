@@ -49,16 +49,25 @@ const getNavigation = (userRole: string) => {
     }
   ];
 
-  // 관리자만 관리 메뉴 표시
+  // 모든 역할이 마을 및 직원 관리 접근 가능
+  baseNavigation.push({
+    name: '마을 관리', 
+    href: '/admin/village/manage', 
+    icon: Settings,
+    children: [
+      { name: '마을 및 직원 관리', href: '/admin/village/manage' },
+    ]
+  });
+
+  // 관리자만 관리자 전용 메뉴 표시
   if (userRole === 'admin') {
     baseNavigation.push({
-      name: '관리', 
+      name: '관리자 전용', 
       href: '/admin/users/manage', 
       icon: Settings,
       children: [
         { name: '회원 관리', href: '/admin/users/manage' },
         { name: '전체 마을', href: '/admin/villages' },
-        { name: '마을 및 직원 관리', href: '/admin/village/manage' },
       ]
     });
   }
@@ -69,7 +78,7 @@ const getNavigation = (userRole: string) => {
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['대시보드', '프로그램', '회원', '관리']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['대시보드', '프로그램', '회원', '마을 관리', '관리자 전용']);
   
   const navigation = getNavigation(user?.role || '');
 
