@@ -146,7 +146,7 @@ export default function UsersPage() {
   };
 
 
-  if (!user || (user.role !== 'admin' && user.role !== 'operator')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
@@ -171,12 +171,6 @@ export default function UsersPage() {
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               새로고침
             </Button>
-            <Link href="/admin/users/new">
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                새 회원 등록
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
