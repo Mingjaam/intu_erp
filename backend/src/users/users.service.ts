@@ -38,7 +38,7 @@ export class UsersService {
     return this.toResponseDto(savedUser);
   }
 
-  async findAll(pagination: PaginationDto): Promise<{
+  async findAll(pagination: PaginationDto, currentUser: User): Promise<{
     users: UserResponseDto[];
     total: number;
     page: number;
@@ -53,8 +53,15 @@ export class UsersService {
       .addSelect('COUNT(DISTINCT report.id)', 'reportCount')
       .groupBy('user.id, organization.id, organization.name, organization.type, organization.address, organization.contact, organization.description, organization.isActive, organization.createdAt, organization.updatedAt');
 
+    // 운영자와 직원은 같은 조직의 사용자만 조회 가능
+    if (currentUser.role === UserRole.OPERATOR || currentUser.role === UserRole.STAFF) {
+      queryBuilder.andWhere('user.organizationId = :organizationId', { 
+        organizationId: currentUser.organizationId 
+      });
+    }
+
     if (search) {
-      queryBuilder.where(
+      queryBuilder.andWhere(
         '(user.name ILIKE :search OR user.email ILIKE :search)',
         { search: `%${search}%` }
       );
@@ -69,8 +76,13 @@ export class UsersService {
     
     // 총 개수를 별도로 조회
     const totalQuery = this.userRepository.createQueryBuilder('user');
+    if (currentUser.role === UserRole.OPERATOR || currentUser.role === UserRole.STAFF) {
+      totalQuery.andWhere('user.organizationId = :organizationId', { 
+        organizationId: currentUser.organizationId 
+      });
+    }
     if (search) {
-      totalQuery.where(
+      totalQuery.andWhere(
         '(user.name ILIKE :search OR user.email ILIKE :search)',
         { search: `%${search}%` }
       );

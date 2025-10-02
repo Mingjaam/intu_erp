@@ -41,14 +41,14 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '전체 사용자 목록 조회' })
   @ApiResponse({
     status: 200,
     description: '전체 사용자 목록 조회 성공',
   })
-  async findAll(@Query() pagination: PaginationDto): Promise<ApiResponseDto<any>> {
-    const result = await this.usersService.findAll(pagination);
+  async findAll(@Query() pagination: PaginationDto, @Request() req): Promise<ApiResponseDto<any>> {
+    const result = await this.usersService.findAll(pagination, req.user);
     return new ApiResponseDto({
       users: result.users,
       pagination: {
