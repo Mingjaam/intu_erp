@@ -29,14 +29,14 @@ services:
       - intu_erp_network
     restart: unless-stopped
 
-  # Backend API (프로덕션용)
+  # Backend API (개발 모드)
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     container_name: intu_erp_backend_prod
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       DATABASE_URL: postgresql://intu_erp_user:${DB_PASSWORD}@postgres:5432/intu_erp?sslmode=disable
       DB_HOST: postgres
       DB_PORT: 5432
@@ -55,19 +55,24 @@ services:
       - postgres
       - redis
     volumes:
+      - ./backend:/app
+      - /app/node_modules
       - ./uploads:/app/uploads:rw
     networks:
       - intu_erp_network
     restart: unless-stopped
 
-  # Frontend (프로덕션용)
+  # Frontend (개발 모드)
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
     container_name: intu_erp_frontend_prod
     environment:
       NEXT_PUBLIC_API_URL: ${API_URL}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
     depends_on:
