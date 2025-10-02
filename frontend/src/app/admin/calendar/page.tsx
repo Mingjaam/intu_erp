@@ -131,26 +131,6 @@ export default function CalendarPage() {
     });
   };
 
-  // 특정 날짜의 프로그램 가져오기
-  const getProgramsForDate = (date: string) => {
-    if (!programs || !date) return [];
-    const targetDate = new Date(date);
-    
-    return programs.filter(program => {
-      if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
-        return false;
-      }
-      
-      const appStart = new Date(program.applyStart);
-      const appEnd = new Date(program.applyEnd);
-      const actStart = new Date(program.programStart);
-      const actEnd = new Date(program.programEnd);
-      
-      // 신청 기간 또는 활동 기간에 포함되는지 확인
-      return (targetDate >= appStart && targetDate <= appEnd) || 
-             (targetDate >= actStart && targetDate <= actEnd);
-    });
-  };
 
   // 반복 투두 생성
 
@@ -248,6 +228,28 @@ export default function CalendarPage() {
       console.error('할 일 삭제 오류:', error);
       toast.error('할 일 삭제에 실패했습니다.');
     }
+  };
+
+  // 특정 날짜의 프로그램 조회
+  const getProgramsForDate = (dateString: string) => {
+    if (!programs || !dateString || programs.length === 0) return [];
+    const targetDate = new Date(dateString);
+    
+    return programs.filter(program => {
+      if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
+        return false;
+      }
+      
+      const appStart = new Date(program.applyStart);
+      const appEnd = new Date(program.applyEnd);
+      const actStart = new Date(program.programStart);
+      const actEnd = new Date(program.programEnd);
+      
+      const isInApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
+      const isInActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
+      
+      return isInApplicationPeriod || isInActivityPeriod;
+    });
   };
 
   // 월 변경
@@ -493,6 +495,51 @@ export default function CalendarPage() {
               {selectedDate} 할 일 관리
             </DialogTitle>
           </DialogHeader>
+          
+          {/* 프로그램 기간 정보 */}
+          {getProgramsForDate(selectedDate).length > 0 && (
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border">
+              <h3 className="text-sm font-medium text-blue-800 mb-3 flex items-center">
+                <Calendar className="h-4 w-4 mr-2" />
+                프로그램 기간
+              </h3>
+              <div className="space-y-2">
+                {getProgramsForDate(selectedDate).map((program) => {
+                  const targetDate = new Date(selectedDate);
+                  const appStart = new Date(program.applyStart);
+                  const appEnd = new Date(program.applyEnd);
+                  const actStart = new Date(program.programStart);
+                  const actEnd = new Date(program.programEnd);
+                  
+                  const isApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
+                  const isActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
+                  
+                  return (
+                    <div key={program.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-900">{program.title}</span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            isApplicationPeriod 
+                              ? 'bg-orange-100 text-orange-800' 
+                              : 'bg-purple-100 text-purple-800'
+                          }`}>
+                            {isApplicationPeriod ? '신청기간' : '활동기간'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {isApplicationPeriod 
+                            ? `신청: ${appStart.toLocaleDateString()} ~ ${appEnd.toLocaleDateString()}`
+                            : `활동: ${actStart.toLocaleDateString()} ~ ${actEnd.toLocaleDateString()}`
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           
           {/* 오늘의 할 일 목록 */}
           <div className="mb-6">

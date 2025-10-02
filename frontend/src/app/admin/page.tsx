@@ -65,15 +65,18 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
   
   // 현재 달의 날짜들
   for (let day = 1; day <= daysInMonth; day++) {
+    const isToday = day === currentDate && 
+                   today.getMonth() === currentMonth && 
+                   today.getFullYear() === currentYear;
     calendarDays.push({
       date: day,
       isCurrentMonth: true,
-      isToday: day === currentDate
+      isToday: isToday
     });
   }
   
   // 다음 달의 첫 번째 날들 (빈 칸 채우기)
-  const remainingDays = 42 - calendarDays.length; // 6주 * 7일 = 42
+  const remainingDays = 35 - calendarDays.length; // 5주 * 7일 = 35
   for (let day = 1; day <= remainingDays; day++) {
     calendarDays.push({
       date: day,
@@ -99,7 +102,10 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
   // 특정 날짜의 프로그램 가져오기
   const getProgramsForDate = (day: number) => {
     if (!programs || !day || programs.length === 0) return [];
-    const targetDate = new Date(currentYear, currentMonth, day);
+    
+    // 날짜 문자열을 생성하여 정확한 날짜 비교
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const targetDate = new Date(dateStr);
     
     const filteredPrograms = programs.filter(program => {
       if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
@@ -241,17 +247,24 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
             {/* 프로그램 기간 표시 (날짜 숫자 아래) */}
             {day.isCurrentMonth && (
               <div className="absolute top-6 left-1 right-1">
-                {getProgramPeriods().map((period, periodIndex) => {
-                  // 현재 날짜가 이 기간에 포함되는지 확인
-                  const isInPeriod = day.date >= period.start && day.date <= period.end;
+                {getProgramsForDate(day.date).map((program, programIndex) => {
+                  const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day.date).padStart(2, '0')}`;
+                  const targetDate = new Date(dateStr);
+                  const appStart = new Date(program.applyStart);
+                  const appEnd = new Date(program.applyEnd);
+                  const actStart = new Date(program.programStart);
+                  const actEnd = new Date(program.programEnd);
                   
-                  if (!isInPeriod) return null;
+                  const isApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
+                  const isActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
                   
                   return (
                     <div
-                      key={`period-${periodIndex}`}
-                      className={`h-1 w-full rounded mb-0.5 ${period.color}`}
-                      title={`${period.program.title} - ${period.type === 'application' ? '신청기간' : '활동기간'}`}
+                      key={`program-${programIndex}`}
+                      className={`h-1 w-full rounded mb-0.5 ${
+                        isApplicationPeriod ? 'bg-orange-400' : 'bg-purple-400'
+                      }`}
+                      title={`${program.title} - ${isApplicationPeriod ? '신청기간' : '활동기간'}`}
                     />
                   );
                 })}
@@ -401,6 +414,28 @@ export default function AdminDashboard() {
       console.error('프로그램 목록 조회 오류:', error);
     }
   }, []);
+
+  // 다이얼로그용 프로그램 조회 함수 (날짜 문자열 사용)
+  const getProgramsForDateString = (dateString: string) => {
+    if (!programs || !dateString || programs.length === 0) return [];
+    const targetDate = new Date(dateString);
+    
+    return programs.filter(program => {
+      if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
+        return false;
+      }
+      
+      const appStart = new Date(program.applyStart);
+      const appEnd = new Date(program.applyEnd);
+      const actStart = new Date(program.programStart);
+      const actEnd = new Date(program.programEnd);
+      
+      const isInApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
+      const isInActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
+      
+      return isInApplicationPeriod || isInActivityPeriod;
+    });
+  };
 
   useEffect(() => {
     if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
@@ -617,7 +652,8 @@ export default function AdminDashboard() {
                       onClick={async () => {
                         try {
                           await apiClient.delete(`/todos/${todo.id}`);
-                          await fetchTodos();
+                          // 즉시 UI에서 제거
+                          setTodos(prevTodos => prevTodos.filter(t => t.id !== todo.id));
                           toast.success('할 일이 삭제되었습니다.');
                         } catch (error) {
                           console.error('할 일 삭제 오류:', error);
@@ -820,6 +856,51 @@ export default function AdminDashboard() {
             </DialogTitle>
           </DialogHeader>
           
+          {/* 프로그램 기간 정보 */}
+          {getProgramsForDateString(selectedDate).length > 0 && (
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg border">
+              <h3 className="text-sm font-medium text-blue-800 mb-3 flex items-center">
+                <FolderOpen className="h-4 w-4 mr-2" />
+                프로그램 기간
+              </h3>
+              <div className="space-y-2">
+                {getProgramsForDateString(selectedDate).map((program) => {
+                  const targetDate = new Date(selectedDate);
+                  const appStart = new Date(program.applyStart);
+                  const appEnd = new Date(program.applyEnd);
+                  const actStart = new Date(program.programStart);
+                  const actEnd = new Date(program.programEnd);
+                  
+                  const isApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
+                  const isActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
+                  
+                  return (
+                    <div key={program.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-medium text-gray-900">{program.title}</span>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            isApplicationPeriod 
+                              ? 'bg-orange-100 text-orange-800' 
+                              : 'bg-purple-100 text-purple-800'
+                          }`}>
+                            {isApplicationPeriod ? '신청기간' : '활동기간'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {isApplicationPeriod 
+                            ? `신청: ${appStart.toLocaleDateString()} ~ ${appEnd.toLocaleDateString()}`
+                            : `활동: ${actStart.toLocaleDateString()} ~ ${actEnd.toLocaleDateString()}`
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
           {/* 해당 날짜의 할 일 목록 */}
           <div className="mb-6">
             <h3 className="text-sm font-medium text-gray-700 mb-3">할 일 목록</h3>
@@ -857,7 +938,8 @@ export default function AdminDashboard() {
                       onClick={async () => {
                         try {
                           await apiClient.delete(`/todos/${todo.id}`);
-                          await fetchTodos();
+                          // 즉시 UI에서 제거
+                          setTodos(prevTodos => prevTodos.filter(t => t.id !== todo.id));
                           toast.success('할 일이 삭제되었습니다.');
                         } catch (error) {
                           console.error('할 일 삭제 오류:', error);

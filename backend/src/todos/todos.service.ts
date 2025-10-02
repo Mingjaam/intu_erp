@@ -84,11 +84,7 @@ export class TodosService {
   async update(id: string, updateTodoDto: UpdateTodoDto, user: User): Promise<Todo> {
     const todo = await this.findOne(id, user);
 
-    // 작성자만 수정 가능
-    if (todo.createdById !== user.id) {
-      throw new ForbiddenException('할 일을 수정할 권한이 없습니다.');
-    }
-
+    // 모든 역할이 수정 가능
     Object.assign(todo, updateTodoDto);
     return this.todoRepository.save(todo);
   }
@@ -96,11 +92,7 @@ export class TodosService {
   async remove(id: string, user: User): Promise<void> {
     const todo = await this.findOne(id, user);
 
-    // 작성자만 삭제 가능
-    if (todo.createdById !== user.id) {
-      throw new ForbiddenException('할 일을 삭제할 권한이 없습니다.');
-    }
-
+    // 모든 역할이 삭제 가능
     await this.todoRepository.remove(todo);
   }
 
