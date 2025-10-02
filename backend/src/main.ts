@@ -33,10 +33,14 @@ async function bootstrap() {
       // 프로덕션 도메인
       ...(process.env.NODE_ENV === 'production' ? [
         'https://nuvio.kr',
-        'https://www.nuvio.kr'
+        'https://www.nuvio.kr',
+        'http://nuvio.kr',
+        'http://www.nuvio.kr'
       ] : [])
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
   // Global prefix

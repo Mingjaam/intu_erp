@@ -86,7 +86,7 @@ export function Sidebar() {
     setMounted(true);
   }, []);
   
-  const navigation = mounted ? getNavigation(user?.role || '') : 
+  const navigation = mounted ? getNavigation(user?.role || '') : [];
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev => 
