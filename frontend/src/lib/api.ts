@@ -1,5 +1,5 @@
 // API 기본 URL 설정 (로컬 개발용)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nuvio.kr:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nuvio.kr/api';
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
