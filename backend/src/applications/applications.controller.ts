@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Query,
   UseGuards,
   Request,
@@ -86,7 +85,7 @@ export class ApplicationsController {
 
   @Patch(':id/review')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '신청서 심사' })
   @ApiResponse({ status: 200, description: '신청서가 성공적으로 심사되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
