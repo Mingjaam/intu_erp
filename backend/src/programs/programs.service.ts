@@ -272,8 +272,8 @@ export class ProgramsService {
   async remove(id: string, user: User): Promise<void> {
     const program = await this.findOne(id, user);
 
-    // 권한 확인: 관리자 또는 운영자만 삭제 가능
-    if (user.role !== UserRole.ADMIN && user.role !== UserRole.OPERATOR) {
+    // 권한 확인: 관리자, 운영자, 직원만 삭제 가능
+    if (user.role !== UserRole.ADMIN && user.role !== UserRole.OPERATOR && user.role !== UserRole.STAFF) {
       throw new ForbiddenException('프로그램 삭제 권한이 없습니다.');
     }
 

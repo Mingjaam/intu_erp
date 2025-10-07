@@ -25,7 +25,7 @@ export class ProgramsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '프로그램 생성' })
   @ApiResponse({ status: 201, description: '프로그램이 성공적으로 생성되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
@@ -44,7 +44,7 @@ export class ProgramsController {
 
   @Get('admin')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '관리자용 프로그램 목록 조회' })
   @ApiResponse({ status: 200, description: '관리자용 프로그램 목록을 성공적으로 조회했습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
@@ -76,7 +76,7 @@ export class ProgramsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '프로그램 수정' })
   @ApiResponse({ status: 200, description: '프로그램이 성공적으로 수정되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
@@ -88,7 +88,7 @@ export class ProgramsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '프로그램 삭제' })
   @ApiResponse({ status: 200, description: '프로그램이 성공적으로 삭제되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
