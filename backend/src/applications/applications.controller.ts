@@ -98,7 +98,7 @@ export class ApplicationsController {
 
   @Patch(':id/payment')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '입금 상태 업데이트' })
   @ApiResponse({ status: 200, description: '입금 상태가 성공적으로 업데이트되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
