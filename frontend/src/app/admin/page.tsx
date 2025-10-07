@@ -394,7 +394,8 @@ export default function AdminDashboard() {
   const fetchPrograms = useCallback(async () => {
     try {
       console.log('프로그램 목록 조회 시작...');
-      const response = await apiClient.get('/programs');
+      // 캐시 무효화를 위해 타임스탬프 추가
+      const response = await apiClient.get(`/programs?t=${Date.now()}`);
       console.log('프로그램 목록 응답:', response);
       
       // API 응답 구조 확인
@@ -407,9 +408,12 @@ export default function AdminDashboard() {
         programsData = response.programs;
       }
       
-      setPrograms(programsData);
-      console.log('프로그램 목록 설정됨:', programsData);
-      console.log('프로그램 개수:', programsData.length);
+      // 삭제된 프로그램(isActive: false) 필터링
+      const activePrograms = programsData.filter(program => program.isActive !== false);
+      
+      setPrograms(activePrograms);
+      console.log('프로그램 목록 설정됨:', activePrograms);
+      console.log('프로그램 개수:', activePrograms.length);
     } catch (error) {
       console.error('프로그램 목록 조회 오류:', error);
     }
@@ -445,6 +449,17 @@ export default function AdminDashboard() {
       fetchPrograms();
     }
   }, [user, dateRange, fetchDashboardStats, fetchSystemHealth, fetchTodos, fetchPrograms]);
+
+  // 프로그램 목록 주기적 새로고침 (5분마다)
+  useEffect(() => {
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
+      const interval = setInterval(() => {
+        fetchPrograms();
+      }, 5 * 60 * 1000); // 5분
+
+      return () => clearInterval(interval);
+    }
+  }, [user, fetchPrograms]);
 
   const handleDateClick = (date: string) => {
     setSelectedDate(date);
@@ -489,6 +504,8 @@ export default function AdminDashboard() {
     setIsLoading(true);
     fetchDashboardStats();
     fetchSystemHealth();
+    fetchTodos();
+    fetchPrograms();
   };
 
   if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
