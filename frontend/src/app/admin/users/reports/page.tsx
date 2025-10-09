@@ -97,7 +97,7 @@ export default function UserReportsPage() {
   };
 
   useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'operator') {
+    if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
       fetchReports(currentPage, searchTerm);
     }
   }, [user, currentPage, searchTerm]);
