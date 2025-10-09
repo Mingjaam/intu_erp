@@ -15,8 +15,8 @@ export class ProgramsService {
   ) {}
 
   async create(createProgramDto: CreateProgramDto, user: User): Promise<Program> {
-    // 권한 확인: 관리자 또는 운영자만 프로그램 생성 가능
-    if (user.role !== UserRole.ADMIN && user.role !== UserRole.OPERATOR) {
+    // 권한 확인: 관리자, 운영자, 직원만 프로그램 생성 가능
+    if (user.role !== UserRole.ADMIN && user.role !== UserRole.OPERATOR && user.role !== UserRole.STAFF) {
       throw new ForbiddenException('프로그램 생성 권한이 없습니다.');
     }
 
