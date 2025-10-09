@@ -137,8 +137,8 @@ export class ProgramsService {
       queryBuilder.andWhere('program.status = :status', { status: 'open' });
     }
 
-    // 관리자/운영자는 자신의 기관 프로그램만 조회
-    if (user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR) && user.organizationId) {
+    // 관리자/운영자/직원은 자신의 기관 프로그램만 조회
+    if (user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR || user.role === UserRole.STAFF) && user.organizationId) {
       queryBuilder.andWhere('program.organizerId = :userOrganizationId', { userOrganizationId: user.organizationId });
     }
 
