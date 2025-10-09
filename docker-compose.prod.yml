@@ -57,6 +57,7 @@ services:
       - redis
     volumes:
       - ./uploads:/app/uploads:rw
+    user: "1000:1000"
     networks:
       - intu_erp_network
     restart: unless-stopped
