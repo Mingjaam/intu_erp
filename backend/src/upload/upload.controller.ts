@@ -41,16 +41,29 @@ export class UploadController {
     }),
   )
   async uploadImage(@UploadedFile() file: Express.Multer.File) {
-    if (!file) {
-      throw new BadRequestException('파일이 선택되지 않았습니다.');
-    }
+    try {
+      if (!file) {
+        throw new BadRequestException('파일이 선택되지 않았습니다.');
+      }
 
-    return {
-      filename: file.filename,
-      originalName: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      url: `/uploads/images/${file.filename}`,
-    };
+      console.log('파일 업로드 성공:', {
+        filename: file.filename,
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        path: file.path
+      });
+
+      return {
+        filename: file.filename,
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        url: `/uploads/images/${file.filename}`,
+      };
+    } catch (error) {
+      console.error('파일 업로드 오류:', error);
+      throw error;
+    }
   }
 }
