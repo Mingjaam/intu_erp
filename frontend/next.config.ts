@@ -10,6 +10,22 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'nuvio.kr',
+        port: '',
+        pathname: '/uploads/images/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.nuvio.kr',
+        port: '',
+        pathname: '/uploads/images/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
