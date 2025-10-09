@@ -40,6 +40,7 @@ export class UserReportsController {
   }
 
   @Get()
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '회원 신고 목록 조회' })
   @ApiResponse({
     status: 200,
@@ -59,6 +60,7 @@ export class UserReportsController {
   }
 
   @Get(':id')
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '회원 신고 상세 조회' })
   @ApiResponse({
     status: 200,

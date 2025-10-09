@@ -63,8 +63,8 @@ export class UserReportsService {
       queryBuilder.andWhere('report.reporterId = :reporterId', { reporterId: user.id });
     }
 
-    // 관리자/운영자는 모든 신고 조회 가능 (마을 구분 없이)
-    if (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR) {
+    // 관리자/운영자/직원은 모든 신고 조회 가능 (마을 구분 없이)
+    if (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR || user.role === UserRole.STAFF) {
       // 모든 마을의 신고를 볼 수 있음
     }
 
