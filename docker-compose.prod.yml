@@ -56,7 +56,7 @@ services:
       - postgres
       - redis
     volumes:
-      - ./uploads:/app/uploads:rw
+      - ../uploads:/app/uploads:rw
     user: "1000:1000"
     networks:
       - intu_erp_network
@@ -92,7 +92,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:rw
       - ./nginx/ssl:/etc/nginx/ssl:rw
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./uploads:/var/www/uploads:rw
+      - ../uploads:/var/www/uploads:rw
     networks:
       - intu_erp_network
     restart: unless-stopped
