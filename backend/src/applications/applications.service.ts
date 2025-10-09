@@ -170,7 +170,7 @@ export class ApplicationsService {
       throw new NotFoundException('신청서를 찾을 수 없습니다.');
     }
 
-    // 권한 확인: 신청자 본인 또는 관리자/운영자/심사자만 조회 가능
+    // 권한 확인: 신청자 본인 또는 관리자/운영자/직원만 조회 가능
     if (
       user.role === UserRole.APPLICANT &&
       application.applicantId !== user.id

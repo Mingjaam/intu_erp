@@ -28,6 +28,7 @@ export class UserReportsController {
   constructor(private readonly userReportsService: UserReportsService) {}
 
   @Post()
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '회원 신고 생성' })
   @ApiResponse({
     status: 201,
@@ -74,6 +75,7 @@ export class UserReportsController {
 
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '회원 신고 삭제' })
   @ApiResponse({
     status: 200,

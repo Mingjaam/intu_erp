@@ -82,10 +82,11 @@ export class OrganizationsService {
   async update(id: string, updateOrganizationDto: UpdateOrganizationDto, user: User): Promise<Organization> {
     const organization = await this.findOne(id, user);
 
-    // 권한 확인: 관리자, 운영자, 또는 해당 조직 사용자만 수정 가능
+    // 권한 확인: 관리자, 운영자, 직원, 또는 해당 조직 사용자만 수정 가능
     if (
       user.role !== UserRole.ADMIN &&
       user.role !== UserRole.OPERATOR &&
+      user.role !== UserRole.STAFF &&
       organization.id !== user.organizationId
     ) {
       throw new ForbiddenException('조직 수정 권한이 없습니다.');
