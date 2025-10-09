@@ -17,7 +17,7 @@ import { randomUUID } from 'crypto';
 
 @Controller('upload')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(UserRole.ADMIN, UserRole.OPERATOR)
+@Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
 export class UploadController {
   @Post('image')
   @UseInterceptors(

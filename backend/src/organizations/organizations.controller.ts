@@ -27,7 +27,7 @@ export class OrganizationsController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '조직 생성' })
   @ApiResponse({ status: 201, description: '조직이 성공적으로 생성되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })
@@ -76,7 +76,7 @@ export class OrganizationsController {
 
   @Delete(':id')
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '조직 삭제' })
   @ApiResponse({ status: 200, description: '조직이 성공적으로 삭제되었습니다.' })
   @ApiResponse({ status: 403, description: '권한이 없습니다.' })

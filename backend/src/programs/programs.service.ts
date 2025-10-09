@@ -227,7 +227,7 @@ export class ProgramsService {
     }
 
     // 관리자는 모든 프로그램 조회 가능, 운영자/직원은 자신의 기관 프로그램만 조회 가능
-    if (user && (user.role === UserRole.OPERATOR) && user.organizationId) {
+    if (user && (user.role === UserRole.OPERATOR || user.role === UserRole.STAFF) && user.organizationId) {
       if (updatedProgram.organizerId !== user.organizationId) {
         throw new ForbiddenException('이 프로그램에 접근할 권한이 없습니다.');
       }

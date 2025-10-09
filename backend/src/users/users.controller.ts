@@ -28,7 +28,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '사용자 생성' })
   @ApiResponse({
     status: 201,
@@ -61,7 +61,7 @@ export class UsersController {
   }
 
   @Get('manageable')
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '관리 가능한 사용자 목록 조회 (역할 변경 가능)' })
   @ApiResponse({
     status: 200,
@@ -81,7 +81,7 @@ export class UsersController {
   }
 
   @Get('staff')
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '직원 관리 목록 조회 (같은 조직의 운영자, 직원)' })
   @ApiResponse({
     status: 200,
@@ -128,7 +128,7 @@ export class UsersController {
   }
 
   @Get('by-role/:role')
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '역할별 사용자 조회' })
   @ApiResponse({
     status: 200,
@@ -140,7 +140,7 @@ export class UsersController {
   }
 
   @Get('by-organization/:organizationId')
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '조직별 사용자 조회' })
   @ApiResponse({
     status: 200,
@@ -152,7 +152,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '사용자 상세 조회' })
   @ApiResponse({
     status: 200,
@@ -165,7 +165,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '사용자 정보 수정' })
   @ApiResponse({
     status: 200,
@@ -181,7 +181,7 @@ export class UsersController {
   }
 
   @Patch(':id/role')
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '사용자 역할 변경' })
   @ApiResponse({
     status: 200,
@@ -198,7 +198,7 @@ export class UsersController {
   }
 
   @Patch(':id/memo')
-  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
   @ApiOperation({ summary: '사용자 메모 수정' })
   @ApiResponse({
     status: 200,

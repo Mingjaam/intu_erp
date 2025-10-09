@@ -59,8 +59,8 @@ const getNavigation = (userRole: string) => {
     ]
   });
 
-  // 관리자만 관리자 전용 메뉴 표시
-  if (userRole === 'admin') {
+  // 관리자, 운영자, 직원이 관리자 전용 메뉴 표시
+  if (userRole === 'admin' || userRole === 'operator' || userRole === 'staff') {
     baseNavigation.push({
       name: '관리자 전용', 
       href: '/admin/users/manage', 

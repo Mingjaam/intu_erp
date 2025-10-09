@@ -311,18 +311,15 @@ export class UsersService {
     }
 
     // 권한 체크
-    if (currentUser.role === UserRole.OPERATOR) {
-      // 운영자는 운영자, 직원, 신청자만 부여 가능
+    if (currentUser.role === UserRole.OPERATOR || currentUser.role === UserRole.STAFF) {
+      // 운영자와 직원은 운영자, 직원, 신청자만 부여 가능
       if (changeUserRoleDto.role === UserRole.ADMIN) {
-        throw new ConflictException('운영자는 관리자 역할을 부여할 수 없습니다.');
+        throw new ConflictException('관리자 역할을 부여할 수 없습니다.');
       }
       // 같은 조직 내에서만 가능
       if (targetUser.organizationId !== currentUser.organizationId) {
         throw new ConflictException('같은 조직의 사용자만 역할을 변경할 수 있습니다.');
       }
-    } else if (currentUser.role === UserRole.STAFF) {
-      // 직원은 역할 변경 불가
-      throw new ConflictException('직원은 다른 사용자의 역할을 변경할 수 없습니다.');
     }
     
     // 관리자 역할은 아무도 변경할 수 없음

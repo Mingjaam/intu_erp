@@ -39,11 +39,11 @@ export class SelectionsService {
       throw new ConflictException('이미 선정 처리된 신청서입니다.');
     }
 
-    // 권한 확인: 심사자, 관리자, 운영자만 선정 처리 가능
+    // 권한 확인: 관리자, 운영자, 직원만 선정 처리 가능
     if (
-      user.role !== UserRole.STAFF &&
       user.role !== UserRole.ADMIN &&
-      user.role !== UserRole.OPERATOR
+      user.role !== UserRole.OPERATOR &&
+      user.role !== UserRole.STAFF
     ) {
       throw new ForbiddenException('선정 처리 권한이 없습니다.');
     }
