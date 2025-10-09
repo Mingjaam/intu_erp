@@ -8,7 +8,6 @@ import {
   Query,
   UseGuards,
   Request,
-  SetMetadata,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';

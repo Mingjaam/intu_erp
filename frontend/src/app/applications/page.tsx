@@ -6,7 +6,7 @@ import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Calendar, MapPin, Users, Eye, Edit, X, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
+import { Calendar, MapPin, Users, Eye, Edit, X, CheckCircle, XCircle, Clock, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Application } from '@/types/application';

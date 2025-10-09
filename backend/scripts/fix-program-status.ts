@@ -3,15 +3,15 @@ import { config } from 'dotenv';
 
 config();
 
-// ProgramStatus enum 정의
-enum ProgramStatus {
-  DRAFT = 'draft',
-  OPEN = 'open',
-  CLOSED = 'closed',
-  ONGOING = 'ongoing',
-  COMPLETED = 'completed',
-  ARCHIVED = 'archived',
-}
+// ProgramStatus enum 정의 (사용하지 않음 - 주석 처리)
+// enum ProgramStatus {
+//   DRAFT = 'draft',
+//   OPEN = 'open',
+//   CLOSED = 'closed',
+//   ONGOING = 'ongoing',
+//   COMPLETED = 'completed',
+//   ARCHIVED = 'archived',
+// }
 
 const AppDataSource = new DataSource({
   type: 'postgres',

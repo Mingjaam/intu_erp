@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Query,
@@ -12,8 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UserReportsService } from './user-reports.service';
-import { CreateUserReportDto, UpdateUserReportDto, UserReportResponseDto, UserReportQueryDto } from './dto/user-report.dto';
-import { PaginationDto } from '../common/dto/api-response.dto';
+import { CreateUserReportDto, UserReportResponseDto, UserReportQueryDto } from './dto/user-report.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';

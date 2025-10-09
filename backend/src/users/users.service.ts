@@ -38,7 +38,7 @@ export class UsersService {
     return this.toResponseDto(savedUser);
   }
 
-  async findAll(pagination: PaginationDto, currentUser: User): Promise<{
+  async findAll(pagination: PaginationDto, _currentUser: User): Promise<{
     users: UserResponseDto[];
     total: number;
     page: number;
@@ -88,7 +88,7 @@ export class UsersService {
     };
   }
 
-  async findManageable(pagination: PaginationDto, currentUser: User): Promise<{
+  async findManageable(pagination: PaginationDto, _currentUser: User): Promise<{
     users: UserResponseDto[];
     total: number;
     page: number;
