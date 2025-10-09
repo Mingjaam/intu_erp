@@ -49,6 +49,10 @@ interface UserReport {
 
 export default function UserReportsPage() {
   const { user } = useAuth();
+  
+  // 디버깅을 위한 로그
+  console.log('UserReportsPage - Current user:', user);
+  console.log('UserReportsPage - User role:', user?.role);
   const [reports, setReports] = useState<UserReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -114,7 +118,8 @@ export default function UserReportsPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">접근 권한이 없습니다</h1>
-          <p className="text-gray-600">관리자 권한이 필요한 페이지입니다.</p>
+          <p className="text-gray-600">관리자, 운영자, 직원 권한이 필요한 페이지입니다.</p>
+          <p className="text-sm text-gray-500 mt-2">현재 역할: {user?.role || '없음'}</p>
         </div>
       </div>
     );
