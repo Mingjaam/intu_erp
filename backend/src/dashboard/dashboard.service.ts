@@ -175,13 +175,14 @@ export class DashboardService {
     
     if (!organizationId) {
       programs = await this.programRepository.find({
+        where: { isActive: true },
         relations: ['organizer', 'applications'],
         order: { createdAt: 'DESC' },
         take: limit,
       });
     } else {
       programs = await this.programRepository.find({
-        where: { organizerId: organizationId },
+        where: { organizerId: organizationId, isActive: true },
         relations: ['organizer', 'applications'],
         order: { createdAt: 'DESC' },
         take: limit,
