@@ -55,8 +55,12 @@ export function ImageUpload({ value, onChange, disabled, className }: ImageUploa
       
       const data = await response.json();
       const { url } = data;
-      setPreview(url);
-      onChange(url);
+      
+      // 상대 경로를 절대 URL로 변환
+      const fullUrl = url.startsWith('http') ? url : `https://nuvio.kr${url}`;
+      
+      setPreview(fullUrl);
+      onChange(fullUrl);
       toast.success('이미지가 업로드되었습니다.');
     } catch (error) {
       console.error('이미지 업로드 오류:', error);
