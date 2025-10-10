@@ -47,18 +47,7 @@ export class AuthController {
     return new ApiResponseDto(result, true, '회원가입에 성공했습니다.');
   }
 
-  @Get('profile')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '사용자 프로필 조회' })
-  @ApiResponse({
-    status: 200,
-    description: '프로필 조회 성공',
-  })
-  async getProfile(@Request() req): Promise<ApiResponseDto<any>> {
-    const user = await this.authService.getUserProfile(req.user.id);
-    return new ApiResponseDto(user, true, '프로필을 조회했습니다.');
-  }
+  // 프로필 조회는 /users/profile로 통합됨
 
   @Post('refresh')
   @UseGuards(JwtAuthGuard)

@@ -121,33 +121,7 @@ export class AuthService {
     };
   }
 
-  async getUserProfile(userId: string): Promise<any> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['organization'],
-    });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, ...result } = user;
-    return {
-      id: result.id,
-      email: result.email,
-      name: result.name,
-      phone: result.phone,
-      role: result.role,
-      organizationId: result.organizationId,
-      organization: result.organization,
-      isActive: result.isActive,
-      lastLoginAt: result.lastLoginAt,
-      memo: result.memo,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-    };
-  }
+  // getUserProfile 메서드는 UsersService로 통합됨
 
   async changePassword(
     userId: string,
