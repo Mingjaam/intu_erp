@@ -355,27 +355,6 @@ function ApplyPageContent() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {program.title} {isEditing ? '신청서 수정' : '신청'}
               </h1>
-              
-              {/* 프로그램 이미지만 표시 */}
-              {program.imageUrl && (
-                <div className="max-w-md mx-auto mb-6">
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-lg">
-                    <div className="relative w-full h-full">
-                      {/* 흐림 배경 */}
-                      <div 
-                        className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-sm scale-110"
-                        style={{ backgroundImage: `url(${program.imageUrl})` }}
-                      />
-                      {/* 메인 이미지 */}
-                      <img
-                        src={program.imageUrl}
-                        alt={program.title}
-                        className="relative z-10 w-full h-full object-contain"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="max-w-2xl mx-auto">
