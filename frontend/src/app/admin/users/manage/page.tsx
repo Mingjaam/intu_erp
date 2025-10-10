@@ -38,11 +38,6 @@ interface User {
   isActive: boolean;
   reportCount?: number;
   lastLoginAt?: string;
-  memo?: string;
-  position?: string;
-  contractType?: string;
-  hireDate?: string;
-  resignationDate?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -93,21 +88,6 @@ export default function UserManagePage() {
     currentRole: '',
   });
 
-  const [editDialog, setEditDialog] = useState<{
-    isOpen: boolean;
-    user: User | null;
-  }>({
-    isOpen: false,
-    user: null,
-  });
-
-  const [editForm, setEditForm] = useState({
-    memo: '',
-    position: '',
-    contractType: '',
-    hireDate: '',
-    resignationDate: '',
-  });
 
   const [newRole, setNewRole] = useState<string>('');
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('');
@@ -214,64 +194,6 @@ export default function UserManagePage() {
     setNewRole('');
   };
 
-  const openEditDialog = (user: User) => {
-    setEditDialog({
-      isOpen: true,
-      user,
-    });
-    setEditForm({
-      memo: user.memo || '',
-      position: user.position || '',
-      contractType: user.contractType || '',
-      hireDate: user.hireDate ? user.hireDate.split('T')[0] : '',
-      resignationDate: user.resignationDate ? user.resignationDate.split('T')[0] : '',
-    });
-  };
-
-  const closeEditDialog = () => {
-    setEditDialog({
-      isOpen: false,
-      user: null,
-    });
-    setEditForm({
-      memo: '',
-      position: '',
-      contractType: '',
-      hireDate: '',
-      resignationDate: '',
-    });
-  };
-
-  const handleEditSubmit = async () => {
-    if (!editDialog.user) return;
-
-    try {
-      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.user.id), editForm);
-      toast.success('직원 정보가 수정되었습니다.');
-      closeEditDialog();
-      fetchUsers();
-    } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error('직원 정보 수정에 실패했습니다.');
-    }
-  };
-
-  const handleResignation = async () => {
-    if (!editDialog.user) return;
-
-    try {
-      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.user.id), {
-        resignationDate: new Date().toISOString().split('T')[0],
-        isActive: false,
-      });
-      toast.success('퇴사 처리가 완료되었습니다.');
-      closeEditDialog();
-      fetchUsers();
-    } catch (error) {
-      console.error('Error processing resignation:', error);
-      toast.error('퇴사 처리에 실패했습니다.');
-    }
-  };
 
   const handleRoleChange = async () => {
     if (!roleChangeDialog.userId || !newRole) return;
@@ -398,12 +320,8 @@ export default function UserManagePage() {
               관리 가능한 회원이 없습니다.
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* 재직 중인 직원 */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">재직 중인 직원</h3>
-                <div className="space-y-4">
-                  {users.filter(user => !user.resignationDate).map((user) => (
+            <div className="space-y-4">
+              {users.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -446,41 +364,9 @@ export default function UserManagePage() {
                           </div>
                         )}
                       </div>
-                      {/* 직원 정보 표시 */}
-                      {(user.role === 'staff' || user.role === 'operator') && (
-                        <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
-                          {user.position && (
-                            <div>직책: {user.position}</div>
-                          )}
-                          {user.contractType && (
-                            <div>계약형태: {user.contractType}</div>
-                          )}
-                          {user.hireDate && (
-                            <div>입사일: {new Date(user.hireDate).toLocaleDateString('ko-KR')}</div>
-                          )}
-                          {user.resignationDate && (
-                            <div className="text-red-600">퇴사일: {new Date(user.resignationDate).toLocaleDateString('ko-KR')}</div>
-                          )}
-                          {user.memo && (
-                            <div className="col-span-2 text-gray-500">메모: {user.memo}</div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* 직원/운영자 수정 버튼 */}
-                    {(user.role === 'staff' || user.role === 'operator') && (
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => openEditDialog(user)}
-                        className="text-green-600 hover:text-green-700"
-                        title="직원 정보 수정"
-                      >
-                        <UserCog className="h-4 w-4" />
-                      </Button>
-                    )}
                     {/* 관리자 역할은 변경 불가 */}
                     {user.role !== 'admin' && (
                       <Button 
@@ -504,106 +390,7 @@ export default function UserManagePage() {
                     </Button>
                   </div>
                 </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 퇴사한 직원 */}
-              {users.filter(user => user.resignationDate).length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">퇴사한 직원</h3>
-                  <div className="space-y-4">
-                    {users.filter(user => user.resignationDate).map((user) => (
-                      <div key={user.id} className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                            <Users className="h-5 w-5 text-red-600" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-1">
-                              <h3 className="font-medium text-gray-900">{user.name}</h3>
-                              <Badge className={roleColors[user.role] || 'bg-gray-100 text-gray-800'}>
-                                {roleLabels[user.role] || user.role}
-                              </Badge>
-                              <Badge className="bg-red-100 text-red-800">퇴사</Badge>
-                              {user.reportCount && user.reportCount > 0 ? (
-                                <Badge className="bg-orange-100 text-orange-800">
-                                  신고 {user.reportCount}건
-                                </Badge>
-                              ) : null}
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-600">
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-4 w-4" />
-                                {user.email}
-                              </div>
-                              {user.phone && (
-                                <div className="flex items-center gap-1">
-                                  <Phone className="h-4 w-4" />
-                                  {user.phone}
-                                </div>
-                              )}
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-4 w-4" />
-                                {new Date(user.createdAt).toLocaleDateString('ko-KR')}
-                              </div>
-                              {user.organization && (
-                                <div className="flex items-center gap-1">
-                                  <Building className="h-4 w-4" />
-                                  {user.organization.name}
-                                </div>
-                              )}
-                            </div>
-                            {/* 직원 정보 표시 */}
-                            {(user.role === 'staff' || user.role === 'operator') && (
-                              <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-gray-600">
-                                {user.position && (
-                                  <div>직책: {user.position}</div>
-                                )}
-                                {user.contractType && (
-                                  <div>계약형태: {user.contractType}</div>
-                                )}
-                                {user.hireDate && (
-                                  <div>입사일: {new Date(user.hireDate).toLocaleDateString('ko-KR')}</div>
-                                )}
-                                {user.resignationDate && (
-                                  <div className="text-red-600">퇴사일: {new Date(user.resignationDate).toLocaleDateString('ko-KR')}</div>
-                                )}
-                                {user.memo && (
-                                  <div className="col-span-2 text-gray-500">메모: {user.memo}</div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {/* 퇴사한 직원은 수정 버튼만 표시 */}
-                          {(user.role === 'staff' || user.role === 'operator') && (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => openEditDialog(user)}
-                              className="text-green-600 hover:text-green-700"
-                              title="직원 정보 수정"
-                            >
-                              <UserCog className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            onClick={() => handleReportUser(user.id, user.name)}
-                            className="text-orange-600 hover:text-orange-700"
-                            title="회원 신고"
-                          >
-                            <Flag className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
           )}
 
@@ -750,89 +537,6 @@ export default function UserManagePage() {
         </DialogContent>
       </Dialog>
 
-      {/* 직원 정보 수정 다이얼로그 */}
-      <Dialog open={editDialog.isOpen} onOpenChange={closeEditDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>직원 정보 수정</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">직책</label>
-                <Input
-                  value={editForm.position}
-                  onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
-                  placeholder="직책을 입력하세요"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">계약형태</label>
-                <Select 
-                  value={editForm.contractType} 
-                  onValueChange={(value) => setEditForm({ ...editForm, contractType: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="계약형태를 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="정규직">정규직</SelectItem>
-                    <SelectItem value="계약직">계약직</SelectItem>
-                    <SelectItem value="파트타임">파트타임</SelectItem>
-                    <SelectItem value="인턴">인턴</SelectItem>
-                    <SelectItem value="기타">기타</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700">입사일</label>
-                <Input
-                  type="date"
-                  value={editForm.hireDate}
-                  onChange={(e) => setEditForm({ ...editForm, hireDate: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">퇴사일</label>
-                <Input
-                  type="date"
-                  value={editForm.resignationDate}
-                  onChange={(e) => setEditForm({ ...editForm, resignationDate: e.target.value })}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">메모</label>
-              <textarea
-                className="w-full p-2 border border-gray-300 rounded-md resize-none"
-                rows={3}
-                value={editForm.memo}
-                onChange={(e) => setEditForm({ ...editForm, memo: e.target.value })}
-                placeholder="직원에 대한 메모를 입력하세요"
-              />
-            </div>
-          </div>
-          <DialogFooter className="flex justify-between">
-            <Button 
-              variant="destructive" 
-              onClick={handleResignation}
-              disabled={editDialog.user?.resignationDate}
-            >
-              퇴사 처리
-            </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={closeEditDialog}>
-                취소
-              </Button>
-              <Button onClick={handleEditSubmit}>
-                수정 완료
-              </Button>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
