@@ -144,7 +144,7 @@ export default function ProgramsPage() {
             </div>
 
 
-      <div className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
         {programs && programs.length > 0 ? programs.map((program, index) => {
           const gradientColors = [
             'from-blue-500 to-blue-600',
