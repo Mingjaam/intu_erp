@@ -125,12 +125,12 @@ export default function VillageManagePage() {
       setIsLoading(true);
       const response = await apiClient.get(`${API_ENDPOINTS.ORGANIZATIONS.GET(user.organizationId)}`);
       const data = response.data || response;
-      setVillageInfo(data);
+      setVillageInfo(data as VillageInfo);
       setEditForm({
-        name: data.name || '',
-        address: data.address || '',
-        contact: data.contact || '',
-        description: data.description || ''
+        name: (data as VillageInfo).name || '',
+        address: (data as VillageInfo).address || '',
+        contact: (data as VillageInfo).contact || '',
+        description: (data as VillageInfo).description || ''
       });
     } catch (error) {
       console.error('마을 정보 조회 오류:', error);
@@ -146,7 +146,7 @@ export default function VillageManagePage() {
     try {
       const response = await apiClient.get(`${API_ENDPOINTS.ORGANIZATIONS.GET(user.organizationId)}`);
       const data = response.data || response;
-      setMembers(data.users || []);
+      setMembers((data as any).users || []);
     } catch (error) {
       console.error('마을 직원 조회 오류:', error);
       toast.error('마을 직원 정보를 불러오는데 실패했습니다.');
@@ -298,9 +298,9 @@ export default function VillageManagePage() {
       setIsSearching(true);
       const response = await apiClient.get(`${API_ENDPOINTS.USERS.LIST}?search=${encodeURIComponent(searchTerm.trim())}&page=1&limit=20`);
       const data = response.data || response;
-      setSearchResults(data.users || []);
+      setSearchResults((data as any).users || []);
       
-      if (data.users && data.users.length === 0) {
+      if ((data as any).users && (data as any).users.length === 0) {
         toast.info('검색 결과가 없습니다.');
       }
     } catch (error) {
@@ -853,7 +853,7 @@ export default function VillageManagePage() {
             <Button 
               variant="destructive" 
               onClick={handleResignation}
-              disabled={editDialog.member?.resignationDate}
+              disabled={!!editDialog.member?.resignationDate}
             >
               퇴사 처리
             </Button>
