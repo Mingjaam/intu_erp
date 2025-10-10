@@ -157,8 +157,9 @@ export default function ProgramsPage() {
           const gradientColor = gradientColors[index % gradientColors.length];
           
           return (
-            <Card key={program.id} className="group hover:shadow-xl transition-all duration-300 bg-white border-0 overflow-hidden">
-              <div className="flex">
+            <Link key={program.id} href={`/programs/${program.id}`}>
+              <Card className="group hover:shadow-xl transition-all duration-300 bg-white border-0 overflow-hidden cursor-pointer">
+                <div className="flex">
                 {/* 이미지 영역 - 왼쪽 */}
                 <div className="relative aspect-[3/4] w-48 flex-shrink-0 overflow-hidden">
                   {program.imageUrl ? (
@@ -280,28 +281,10 @@ export default function ProgramsPage() {
                     </div>
                   </div>
                   
-                  {/* 버튼들 */}
-                  <div className="flex gap-3 mt-4">
-                    <Link href={`/programs/${program.id}`}>
-                      <Button variant="outline" className="flex-1">
-                        상세보기
-                      </Button>
-                    </Link>
-                    {program.status === 'open' ? (
-                      <Link href={`/programs/${program.id}/apply`}>
-                        <Button className="flex-1">
-                          신청하기
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Button disabled className="flex-1">
-                        {statusLabels[program.status]}
-                      </Button>
-                    )}
-                  </div>
                 </div>
               </div>
-            </Card>
+              </Card>
+            </Link>
           );
         }) : null}
       </div>
