@@ -8,10 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Calendar, MapPin, BarChart3, FolderOpen, LogIn, UserPlus } from 'lucide-react';
+import { Calendar, MapPin, FolderOpen, LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Program, ProgramStats } from '@/types/program';
+import { Program } from '@/types/program';
 import { Header } from '@/components/layout/header';
 import { UserSidebar } from '@/components/layout/user-sidebar';
 
@@ -38,7 +38,6 @@ export default function ProgramDetailPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [program, setProgram] = useState<Program | null>(null);
-  const [stats, setStats] = useState<ProgramStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loginDialog, setLoginDialog] = useState<{
     isOpen: boolean;
@@ -56,17 +55,6 @@ export default function ProgramDetailPage() {
         const programData = programResponse.data || programResponse;
         setProgram(programData);
         
-        // 통계 정보는 로그인된 사용자만 조회
-        if (user && user.role !== 'applicant') {
-          try {
-            const statsResponse = await apiClient.get<ProgramStats>(API_ENDPOINTS.PROGRAMS.STATS(programId));
-            const statsData = statsResponse.data || statsResponse;
-            setStats(statsData);
-          } catch (statsError) {
-            console.log('통계 정보 조회 실패 (권한 없음):', statsError);
-            // 통계 조회 실패는 무시하고 프로그램 정보만 표시
-          }
-        }
       } catch (error) {
         console.error('프로그램 조회 오류:', error);
         toast.error('프로그램 정보를 불러오는데 실패했습니다.');
@@ -120,183 +108,158 @@ export default function ProgramDetailPage() {
         <UserSidebar />
         <div className="flex-1 pb-16 md:pb-0">
           <div className="container mx-auto px-6 py-8">
-            {/* 히어로 섹션 */}
-            <div className="text-center mb-12">
-              {program.imageUrl ? (
-                <div className="relative mb-6">
-                  <img
-                    src={program.imageUrl}
-                    alt={program.title}
-                    className="w-full max-w-2xl mx-auto h-64 object-cover rounded-2xl shadow-lg"
-                  />
-                </div>
-              ) : (
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl mb-6 shadow-lg">
-                  <FolderOpen className="h-10 w-10 text-white" />
-                </div>
-              )}
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent mb-4">
-                {program.title}
-              </h1>
-              {program.summary && (
-                <p className="text-xl text-gray-500 mb-6 max-w-3xl mx-auto">
-                  {program.summary}
-                </p>
-              )}
-              <div className="flex justify-center items-center gap-4 mb-6">
-                <Badge className={`${statusColors[program.status]} px-6 py-3 rounded-full text-lg font-medium`}>
-                  {statusLabels[program.status]}
-                </Badge>
-                <div className="bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg">
-                  <span className="text-sm font-medium text-gray-700">주최: {program.organizer.name}</span>
+            {/* 프로그램 헤더 */}
+            <div className="mb-8">
+              {/* 제목, 한줄소개, 상태, 주최 */}
+              <div className="text-center mb-8">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                  {program.title}
+                </h1>
+                {program.summary && (
+                  <p className="text-xl text-gray-600 mb-6 max-w-3xl mx-auto">
+                    {program.summary}
+                  </p>
+                )}
+                <div className="flex justify-center items-center gap-4 mb-6">
+                  <Badge className={`${statusColors[program.status]} px-4 py-2 rounded-full text-sm font-medium`}>
+                    {statusLabels[program.status]}
+                  </Badge>
+                  <div className="bg-gray-100 rounded-full px-4 py-2">
+                    <span className="text-sm font-medium text-gray-700">주최: {program.organizer.name}</span>
+                  </div>
                 </div>
               </div>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">{program.description}</p>
+
+              {/* 이미지 - 3:4 비율 세로형 */}
+              <div className="max-w-md mx-auto mb-8">
+                {program.imageUrl ? (
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-lg">
+                    <div className="relative w-full h-full">
+                      {/* 흐림 배경 */}
+                      <div 
+                        className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-sm scale-110"
+                        style={{ backgroundImage: `url(${program.imageUrl})` }}
+                      />
+                      {/* 메인 이미지 */}
+                      <img
+                        src={program.imageUrl}
+                        alt={program.title}
+                        className="relative z-10 w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-[3/4] w-full bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
+                    <div className="text-white text-center">
+                      <FolderOpen className="h-16 w-16 mx-auto mb-4 opacity-80" />
+                      <p className="text-lg font-medium">프로그램 이미지</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 프로그램 기본 정보 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+                    <h3 className="font-semibold text-sm text-gray-700 mb-1">신청기간</h3>
+                    <p className="text-xs text-gray-600">
+                      {new Date(program.applyStart).toLocaleDateString('ko-KR')} ~ {new Date(program.applyEnd).toLocaleDateString('ko-KR')}
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <Calendar className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                    <h3 className="font-semibold text-sm text-gray-700 mb-1">활동기간</h3>
+                    <p className="text-xs text-gray-600">
+                      {new Date(program.programStart).toLocaleDateString('ko-KR')} ~ {new Date(program.programEnd).toLocaleDateString('ko-KR')}
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <div className="h-6 w-6 mx-auto mb-2 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">₩</span>
+                    </div>
+                    <h3 className="font-semibold text-sm text-gray-700 mb-1">참가비</h3>
+                    <p className="text-xs text-gray-600">
+                      {program.fee === 0 ? '무료' : `₩${program.fee.toLocaleString()}`}
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardContent className="p-4 text-center">
+                    <div className="h-6 w-6 mx-auto mb-2 bg-purple-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">👥</span>
+                    </div>
+                    <h3 className="font-semibold text-sm text-gray-700 mb-1">최대참가자</h3>
+                    <p className="text-xs text-gray-600">
+                      {program.maxParticipants}명
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>프로그램 정보</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-2" />
-                <span>주최: {program.organizer.name}</span>
-              </div>
-              
-              <div className="flex items-center text-sm text-gray-600">
-                <Calendar className="h-4 w-4 mr-2" />
-                <span>
-                  신청 기간: {new Date(program.applyStart).toLocaleDateString()} -{' '}
-                  {new Date(program.applyEnd).toLocaleDateString()}
-                </span>
-              </div>
-
-              {program.description && (
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">설명</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{program.description}</p>
-                </div>
-              )}
-
-              {/* 활동일정 정보 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">활동 시작일</h3>
-                  <p className="text-gray-600">
-                    {program.programStart ? new Date(program.programStart).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'long'
-                    }) : '미정'}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">활동 종료일</h3>
-                  <p className="text-gray-600">
-                    {program.programEnd ? new Date(program.programEnd).toLocaleDateString('ko-KR', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'long'
-                    }) : '미정'}
-                  </p>
-                </div>
-              </div>
-
-              {/* 추가 정보 */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">장소</h3>
-                  <p className="text-gray-600">{program.location || '미정'}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">참가비</h3>
-                  <p className="text-gray-600">{program.fee ? `${program.fee.toLocaleString()}원` : '무료'}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">최대 참가자</h3>
-                  <p className="text-gray-600">{program.maxParticipants}명</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-        </div>
-
-        <div className="space-y-6">
-          {stats && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BarChart3 className="h-5 w-5 mr-2" />
-                  통계
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">총 신청서</span>
-                  <span className="font-medium">{stats.totalApplications}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">제출됨</span>
-                  <span className="font-medium">{stats.submittedCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">심사중</span>
-                  <span className="font-medium">{stats.underReviewCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">선정됨</span>
-                  <span className="font-medium text-green-600">{stats.selectedCount}</span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {program.status === 'open' && (
-            user ? (
-              user.role === 'applicant' ? (
-                <Card>
-                  <CardContent className="pt-6">
-                    <Button className="w-full" asChild>
-                      <Link href={`/programs/${program.id}/apply`}>
-                        신청하기
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center text-gray-600">
-                      <p className="mb-2">신청은 신청자(applicant) 역할의 사용자만 가능합니다.</p>
-                      <p className="text-sm">현재 역할: {user.role}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            ) : (
+            {/* 프로그램 상세 정보 */}
+            <div className="max-w-4xl mx-auto">
               <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center space-y-3">
-                    <p className="text-gray-600">신청하려면 로그인이 필요합니다.</p>
-                    <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                      onClick={openLoginDialog}
-                    >
-                      <LogIn className="h-4 w-4 mr-2" />
-                      로그인 후 신청하기
-                    </Button>
+                <CardHeader>
+                  <CardTitle className="text-2xl">프로그램 설명</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {program.description && (
+                    <div className="prose prose-lg max-w-none">
+                      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{program.description}</p>
+                    </div>
+                  )}
+                  
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <div className="flex items-center text-sm text-gray-600 mb-4">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      <span>장소: {program.location || '미정'}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            )
-          )}
-              </div>
+
+              {/* 신청 버튼 */}
+              {program.status === 'open' && (
+                <div className="mt-8 text-center">
+                  {user ? (
+                    user.role === 'applicant' ? (
+                      <Button size="lg" className="px-8 py-3" asChild>
+                        <Link href={`/programs/${program.id}/apply`}>
+                          <UserPlus className="h-5 w-5 mr-2" />
+                          신청하기
+                        </Link>
+                      </Button>
+                    ) : (
+                      <div className="text-center text-gray-600">
+                        <p className="mb-2">신청은 신청자(applicant) 역할의 사용자만 가능합니다.</p>
+                        <p className="text-sm">현재 역할: {user.role}</p>
+                      </div>
+                    )
+                  ) : (
+                    <div className="text-center space-y-4">
+                      <p className="text-gray-600">신청하려면 로그인이 필요합니다.</p>
+                      <Button 
+                        size="lg"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
+                        onClick={openLoginDialog}
+                      >
+                        <LogIn className="h-5 w-5 mr-2" />
+                        로그인 후 신청하기
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
