@@ -130,79 +130,74 @@ export default function ProgramDetailPage() {
                 </div>
               </div>
 
-              {/* 이미지 - 3:4 비율 세로형 */}
-              <div className="max-w-md mx-auto mb-8">
-                {program.imageUrl ? (
-                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-lg">
-                    <div className="relative w-full h-full">
-                      {/* 흐림 배경 */}
-                      <div 
-                        className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-sm scale-110"
-                        style={{ backgroundImage: `url(${program.imageUrl})` }}
-                      />
-                      {/* 메인 이미지 */}
+              {/* 2열 레이아웃: 이미지 왼쪽, 정보 카드들 오른쪽 */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                {/* 왼쪽: 이미지 */}
+                <div className="flex justify-center lg:justify-start">
+                  {program.imageUrl ? (
+                    <div className="relative aspect-[4/3] w-full max-w-md overflow-hidden rounded-2xl shadow-lg">
                       <img
                         src={program.imageUrl}
                         alt={program.title}
-                        className="relative z-10 w-full h-full object-contain"
+                        className="w-full h-full object-cover"
                       />
                     </div>
-                  </div>
-                ) : (
-                  <div className="aspect-[3/4] w-full bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
-                    <div className="text-white text-center">
-                      <FolderOpen className="h-16 w-16 mx-auto mb-4 opacity-80" />
-                      <p className="text-lg font-medium">프로그램 이미지</p>
+                  ) : (
+                    <div className="aspect-[4/3] w-full max-w-md bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <FolderOpen className="h-16 w-16 mx-auto mb-4 opacity-80" />
+                        <p className="text-lg font-medium">프로그램 이미지</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              {/* 프로그램 기본 정보 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-500" />
-                    <h3 className="font-semibold text-sm text-gray-700 mb-1">신청기간</h3>
-                    <p className="text-xs text-gray-600">
-                      {new Date(program.applyStart).toLocaleDateString('ko-KR')} ~ {new Date(program.applyEnd).toLocaleDateString('ko-KR')}
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <Calendar className="h-6 w-6 mx-auto mb-2 text-green-500" />
-                    <h3 className="font-semibold text-sm text-gray-700 mb-1">활동기간</h3>
-                    <p className="text-xs text-gray-600">
-                      {new Date(program.programStart).toLocaleDateString('ko-KR')} ~ {new Date(program.programEnd).toLocaleDateString('ko-KR')}
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <div className="h-6 w-6 mx-auto mb-2 bg-yellow-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">₩</span>
-                    </div>
-                    <h3 className="font-semibold text-sm text-gray-700 mb-1">참가비</h3>
-                    <p className="text-xs text-gray-600">
-                      {program.fee === 0 ? '무료' : `₩${program.fee.toLocaleString()}`}
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-4 text-center">
-                    <div className="h-6 w-6 mx-auto mb-2 bg-purple-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">👥</span>
-                    </div>
-                    <h3 className="font-semibold text-sm text-gray-700 mb-1">최대참가자</h3>
-                    <p className="text-xs text-gray-600">
-                      {program.maxParticipants}명
-                    </p>
-                  </CardContent>
-                </Card>
+                {/* 오른쪽: 프로그램 기본 정보 (2x2 그리드) */}
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <Calendar className="h-6 w-6 mx-auto mb-2 text-blue-500" />
+                      <h3 className="font-semibold text-sm text-gray-700 mb-1">신청기간</h3>
+                      <p className="text-xs text-gray-600">
+                        {new Date(program.applyStart).toLocaleDateString('ko-KR')} ~ {new Date(program.applyEnd).toLocaleDateString('ko-KR')}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <Calendar className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                      <h3 className="font-semibold text-sm text-gray-700 mb-1">활동기간</h3>
+                      <p className="text-xs text-gray-600">
+                        {new Date(program.programStart).toLocaleDateString('ko-KR')} ~ {new Date(program.programEnd).toLocaleDateString('ko-KR')}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="h-6 w-6 mx-auto mb-2 bg-yellow-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">₩</span>
+                      </div>
+                      <h3 className="font-semibold text-sm text-gray-700 mb-1">참가비</h3>
+                      <p className="text-xs text-gray-600">
+                        {program.fee === 0 ? '무료' : `₩${program.fee.toLocaleString()}`}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="h-6 w-6 mx-auto mb-2 bg-purple-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">👥</span>
+                      </div>
+                      <h3 className="font-semibold text-sm text-gray-700 mb-1">최대참가자</h3>
+                      <p className="text-xs text-gray-600">
+                        {program.maxParticipants}명
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
 
@@ -228,7 +223,7 @@ export default function ProgramDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* 신청 버튼 */}
+              {/* 신청 버튼 - 하단 한 줄 */}
               {program.status === 'open' && (
                 <div className="mt-8 text-center">
                   {user ? (
@@ -246,8 +241,7 @@ export default function ProgramDetailPage() {
                       </div>
                     )
                   ) : (
-                    <div className="text-center space-y-4">
-                      <p className="text-gray-600">신청하려면 로그인이 필요합니다.</p>
+                    <div className="text-center">
                       <Button 
                         size="lg"
                         className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3"
@@ -256,6 +250,7 @@ export default function ProgramDetailPage() {
                         <LogIn className="h-5 w-5 mr-2" />
                         로그인 후 신청하기
                       </Button>
+                      <p className="text-sm text-gray-500 mt-2">신청하려면 로그인이 필요합니다.</p>
                     </div>
                   )}
                 </div>
@@ -290,7 +285,7 @@ export default function ProgramDetailPage() {
             {/* 안내 메시지 */}
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-blue-700 text-center">
-                로그인 후 프로그램 신청이 가능합니다.
+                로그인이 필요한 서비스입니다. 로그인 후 프로그램 신청이 가능합니다.
               </p>
             </div>
 
