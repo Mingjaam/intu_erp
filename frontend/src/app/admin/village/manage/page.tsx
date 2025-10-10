@@ -110,7 +110,7 @@ export default function VillageManagePage() {
     member: null,
   });
 
-  const [editForm, setEditForm] = useState({
+  const [memberEditForm, setMemberEditForm] = useState({
     memo: '',
     position: '',
     contractType: '',
@@ -233,7 +233,7 @@ export default function VillageManagePage() {
       isOpen: true,
       member,
     });
-    setEditForm({
+    setMemberEditForm({
       memo: member.memo || '',
       position: member.position || '',
       contractType: member.contractType || '',
@@ -247,7 +247,7 @@ export default function VillageManagePage() {
       isOpen: false,
       member: null,
     });
-    setEditForm({
+    setMemberEditForm({
       memo: '',
       position: '',
       contractType: '',
@@ -260,7 +260,7 @@ export default function VillageManagePage() {
     if (!editDialog.member) return;
 
     try {
-      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), editForm);
+      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), memberEditForm);
       toast.success('직원 정보가 수정되었습니다.');
       closeEditDialog();
       fetchVillageMembers();
@@ -799,8 +799,8 @@ export default function VillageManagePage() {
               <div>
                 <label className="text-sm font-medium text-gray-700">직책</label>
                 <Input
-                  value={editForm.position}
-                  onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
+                  value={memberEditForm.position}
+                  onChange={(e) => setMemberEditForm({ ...memberEditForm, position: e.target.value })}
                   placeholder="직책을 입력하세요"
                 />
               </div>
@@ -808,8 +808,8 @@ export default function VillageManagePage() {
                 <label className="text-sm font-medium text-gray-700">계약형태</label>
                 <select 
                   className="w-full p-2 border border-gray-300 rounded-md"
-                  value={editForm.contractType} 
-                  onChange={(e) => setEditForm({ ...editForm, contractType: e.target.value })}
+                  value={memberEditForm.contractType} 
+                  onChange={(e) => setMemberEditForm({ ...memberEditForm, contractType: e.target.value })}
                 >
                   <option value="">계약형태를 선택하세요</option>
                   <option value="정규직">정규직</option>
@@ -825,16 +825,16 @@ export default function VillageManagePage() {
                 <label className="text-sm font-medium text-gray-700">입사일</label>
                 <Input
                   type="date"
-                  value={editForm.hireDate}
-                  onChange={(e) => setEditForm({ ...editForm, hireDate: e.target.value })}
+                  value={memberEditForm.hireDate}
+                  onChange={(e) => setMemberEditForm({ ...memberEditForm, hireDate: e.target.value })}
                 />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700">퇴사일</label>
                 <Input
                   type="date"
-                  value={editForm.resignationDate}
-                  onChange={(e) => setEditForm({ ...editForm, resignationDate: e.target.value })}
+                  value={memberEditForm.resignationDate}
+                  onChange={(e) => setMemberEditForm({ ...memberEditForm, resignationDate: e.target.value })}
                 />
               </div>
             </div>
@@ -843,8 +843,8 @@ export default function VillageManagePage() {
               <textarea
                 className="w-full p-2 border border-gray-300 rounded-md resize-none"
                 rows={3}
-                value={editForm.memo}
-                onChange={(e) => setEditForm({ ...editForm, memo: e.target.value })}
+                value={memberEditForm.memo}
+                onChange={(e) => setMemberEditForm({ ...memberEditForm, memo: e.target.value })}
                 placeholder="직원에 대한 메모를 입력하세요"
               />
             </div>
