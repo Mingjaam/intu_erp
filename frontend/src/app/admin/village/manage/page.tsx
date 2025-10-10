@@ -260,7 +260,14 @@ export default function VillageManagePage() {
     if (!editDialog.member) return;
 
     try {
-      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), memberEditForm);
+      const updateData = { ...memberEditForm };
+      
+      // 퇴사일이 있으면 자동으로 퇴사 처리
+      if (memberEditForm.resignationDate) {
+        updateData.isActive = false;
+      }
+      
+      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), updateData);
       toast.success('직원 정보가 수정되었습니다.');
       closeEditDialog();
       fetchVillageMembers();
@@ -270,22 +277,6 @@ export default function VillageManagePage() {
     }
   };
 
-  const handleResignation = async () => {
-    if (!editDialog.member) return;
-
-    try {
-      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), {
-        resignationDate: new Date().toISOString().split('T')[0],
-        isActive: false,
-      });
-      toast.success('퇴사 처리가 완료되었습니다.');
-      closeEditDialog();
-      fetchVillageMembers();
-    } catch (error) {
-      console.error('Error processing resignation:', error);
-      toast.error('퇴사 처리에 실패했습니다.');
-    }
-  };
 
   // 사용자 검색
   const handleSearch = async () => {
@@ -628,8 +619,12 @@ export default function VillageManagePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {members.map((member) => (
+            <div className="space-y-6">
+              {/* 재직 중인 직원 */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">재직 중인 직원</h3>
+                <div className="space-y-3">
+                  {members.filter(member => !member.resignationDate).map((member) => (
                 <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -638,7 +633,7 @@ export default function VillageManagePage() {
                         {getRoleLabel(member.role)}
                       </Badge>
                       {member.resignationDate && (
-                        <Badge className="bg-red-100 text-red-800">퇴사</Badge>
+                        <Badge className="bg-gray-100 text-gray-600">퇴사</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-2 mb-2">
@@ -649,18 +644,18 @@ export default function VillageManagePage() {
                     </div>
                     {/* 직원 상세 정보 표시 */}
                     {(member.role === 'staff' || member.role === 'operator') && (
-                      <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                      <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600">
                         {member.position && (
-                          <div>직책: {member.position}</div>
+                          <span>직책: {member.position}</span>
                         )}
                         {member.contractType && (
-                          <div>계약형태: {member.contractType}</div>
+                          <span>계약형태: {member.contractType}</span>
                         )}
                         {member.hireDate && (
-                          <div>입사일: {new Date(member.hireDate).toLocaleDateString('ko-KR')}</div>
+                          <span>입사일: {new Date(member.hireDate).toLocaleDateString('ko-KR')}</span>
                         )}
                         {member.resignationDate && (
-                          <div className="text-red-600">퇴사일: {new Date(member.resignationDate).toLocaleDateString('ko-KR')}</div>
+                          <span className="text-red-600">퇴사일: {new Date(member.resignationDate).toLocaleDateString('ko-KR')}</span>
                         )}
                       </div>
                     )}
@@ -675,17 +670,67 @@ export default function VillageManagePage() {
                     >
                       <UserCog className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openMemoDialog(member.id, member.name, member.memo || '')}
-                      title="메모 수정"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
+                  </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 퇴사한 직원 */}
+              {members.filter(member => member.resignationDate).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">퇴사한 직원</h3>
+                  <div className="space-y-3">
+                    {members.filter(member => member.resignationDate).map((member) => (
+                      <div key={member.id} className="flex items-center justify-between p-4 bg-gray-100 rounded-lg border border-gray-200">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-medium text-gray-900">{member.name}</h4>
+                            <Badge className={getRoleColor(member.role)}>
+                              {getRoleLabel(member.role)}
+                            </Badge>
+                            <Badge className="bg-gray-100 text-gray-600">퇴사</Badge>
+                          </div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <p className="text-sm text-gray-600">{member.email}</p>
+                            {member.memo && (
+                              <span className="text-sm text-gray-500">• {member.memo}</span>
+                            )}
+                          </div>
+                          {/* 직원 상세 정보 표시 */}
+                          {(member.role === 'staff' || member.role === 'operator') && (
+                            <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600">
+                              {member.position && (
+                                <span>직책: {member.position}</span>
+                              )}
+                              {member.contractType && (
+                                <span>계약형태: {member.contractType}</span>
+                              )}
+                              {member.hireDate && (
+                                <span>입사일: {new Date(member.hireDate).toLocaleDateString('ko-KR')}</span>
+                              )}
+                              {member.resignationDate && (
+                                <span className="text-red-600">퇴사일: {new Date(member.resignationDate).toLocaleDateString('ko-KR')}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditDialog(member)}
+                            className="text-green-600 hover:text-green-700"
+                            title="직원 정보 수정"
+                          >
+                            <UserCog className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+              )}
+
               {members.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   등록된 직원이 없습니다.
@@ -850,13 +895,6 @@ export default function VillageManagePage() {
             </div>
           </div>
           <DialogFooter className="flex justify-between">
-            <Button 
-              variant="destructive" 
-              onClick={handleResignation}
-              disabled={!!editDialog.member?.resignationDate}
-            >
-              퇴사 처리
-            </Button>
             <div className="flex gap-2">
               <Button variant="outline" onClick={closeEditDialog}>
                 취소
