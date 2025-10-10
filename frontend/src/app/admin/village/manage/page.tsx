@@ -45,6 +45,10 @@ interface VillageMember {
   email: string;
   role: string;
   memo?: string;
+  position?: string;
+  contractType?: string;
+  hireDate?: string;
+  resignationDate?: string;
   createdAt: string;
 }
 
@@ -95,6 +99,23 @@ export default function VillageManagePage() {
     isOpen: false,
     selectedUser: null,
     newRole: 'staff'
+  });
+
+  // 직원 정보 수정 다이얼로그
+  const [editDialog, setEditDialog] = useState<{
+    isOpen: boolean;
+    member: VillageMember | null;
+  }>({
+    isOpen: false,
+    member: null,
+  });
+
+  const [editForm, setEditForm] = useState({
+    memo: '',
+    position: '',
+    contractType: '',
+    hireDate: '',
+    resignationDate: '',
   });
 
   const fetchVillageInfo = useCallback(async () => {
@@ -204,6 +225,65 @@ export default function VillageManagePage() {
     } catch (error) {
       console.error('메모 저장 오류:', error);
       toast.error('메모 저장에 실패했습니다.');
+    }
+  };
+
+  const openEditDialog = (member: VillageMember) => {
+    setEditDialog({
+      isOpen: true,
+      member,
+    });
+    setEditForm({
+      memo: member.memo || '',
+      position: member.position || '',
+      contractType: member.contractType || '',
+      hireDate: member.hireDate ? member.hireDate.split('T')[0] : '',
+      resignationDate: member.resignationDate ? member.resignationDate.split('T')[0] : '',
+    });
+  };
+
+  const closeEditDialog = () => {
+    setEditDialog({
+      isOpen: false,
+      member: null,
+    });
+    setEditForm({
+      memo: '',
+      position: '',
+      contractType: '',
+      hireDate: '',
+      resignationDate: '',
+    });
+  };
+
+  const handleEditSubmit = async () => {
+    if (!editDialog.member) return;
+
+    try {
+      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), editForm);
+      toast.success('직원 정보가 수정되었습니다.');
+      closeEditDialog();
+      fetchVillageMembers();
+    } catch (error) {
+      console.error('Error updating member:', error);
+      toast.error('직원 정보 수정에 실패했습니다.');
+    }
+  };
+
+  const handleResignation = async () => {
+    if (!editDialog.member) return;
+
+    try {
+      await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), {
+        resignationDate: new Date().toISOString().split('T')[0],
+        isActive: false,
+      });
+      toast.success('퇴사 처리가 완료되었습니다.');
+      closeEditDialog();
+      fetchVillageMembers();
+    } catch (error) {
+      console.error('Error processing resignation:', error);
+      toast.error('퇴사 처리에 실패했습니다.');
     }
   };
 
@@ -550,28 +630,60 @@ export default function VillageManagePage() {
           <CardContent>
             <div className="space-y-3">
               {members.map((member) => (
-                <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={member.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-2">
                       <h4 className="font-medium text-gray-900">{member.name}</h4>
                       <Badge className={getRoleColor(member.role)}>
                         {getRoleLabel(member.role)}
                       </Badge>
+                      {member.resignationDate && (
+                        <Badge className="bg-red-100 text-red-800">퇴사</Badge>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-2">
                       <p className="text-sm text-gray-600">{member.email}</p>
                       {member.memo && (
                         <span className="text-sm text-gray-500">• {member.memo}</span>
                       )}
                     </div>
+                    {/* 직원 상세 정보 표시 */}
+                    {(member.role === 'staff' || member.role === 'operator') && (
+                      <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        {member.position && (
+                          <div>직책: {member.position}</div>
+                        )}
+                        {member.contractType && (
+                          <div>계약형태: {member.contractType}</div>
+                        )}
+                        {member.hireDate && (
+                          <div>입사일: {new Date(member.hireDate).toLocaleDateString('ko-KR')}</div>
+                        )}
+                        {member.resignationDate && (
+                          <div className="text-red-600">퇴사일: {new Date(member.resignationDate).toLocaleDateString('ko-KR')}</div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openMemoDialog(member.id, member.name, member.memo || '')}
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openEditDialog(member)}
+                      className="text-green-600 hover:text-green-700"
+                      title="직원 정보 수정"
+                    >
+                      <UserCog className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openMemoDialog(member.id, member.name, member.memo || '')}
+                      title="메모 수정"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
               {members.length === 0 && (
@@ -672,6 +784,87 @@ export default function VillageManagePage() {
             <Button onClick={handleMemoSave}>
               저장
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 직원 정보 수정 다이얼로그 */}
+      <Dialog open={editDialog.isOpen} onOpenChange={closeEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>직원 정보 수정</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">직책</label>
+                <Input
+                  value={editForm.position}
+                  onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
+                  placeholder="직책을 입력하세요"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">계약형태</label>
+                <select 
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  value={editForm.contractType} 
+                  onChange={(e) => setEditForm({ ...editForm, contractType: e.target.value })}
+                >
+                  <option value="">계약형태를 선택하세요</option>
+                  <option value="정규직">정규직</option>
+                  <option value="계약직">계약직</option>
+                  <option value="파트타임">파트타임</option>
+                  <option value="인턴">인턴</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700">입사일</label>
+                <Input
+                  type="date"
+                  value={editForm.hireDate}
+                  onChange={(e) => setEditForm({ ...editForm, hireDate: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">퇴사일</label>
+                <Input
+                  type="date"
+                  value={editForm.resignationDate}
+                  onChange={(e) => setEditForm({ ...editForm, resignationDate: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">메모</label>
+              <textarea
+                className="w-full p-2 border border-gray-300 rounded-md resize-none"
+                rows={3}
+                value={editForm.memo}
+                onChange={(e) => setEditForm({ ...editForm, memo: e.target.value })}
+                placeholder="직원에 대한 메모를 입력하세요"
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex justify-between">
+            <Button 
+              variant="destructive" 
+              onClick={handleResignation}
+              disabled={editDialog.member?.resignationDate}
+            >
+              퇴사 처리
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={closeEditDialog}>
+                취소
+              </Button>
+              <Button onClick={handleEditSubmit}>
+                수정 완료
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
