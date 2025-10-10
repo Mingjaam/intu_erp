@@ -116,6 +116,7 @@ export default function VillageManagePage() {
     contractType: '',
     hireDate: '',
     resignationDate: '',
+    isActive: true,
   });
 
   const fetchVillageInfo = useCallback(async () => {
@@ -239,6 +240,7 @@ export default function VillageManagePage() {
       contractType: member.contractType || '',
       hireDate: member.hireDate ? member.hireDate.split('T')[0] : '',
       resignationDate: member.resignationDate ? member.resignationDate.split('T')[0] : '',
+      isActive: true,
     });
   };
 
@@ -253,6 +255,7 @@ export default function VillageManagePage() {
       contractType: '',
       hireDate: '',
       resignationDate: '',
+      isActive: true,
     });
   };
 
@@ -671,6 +674,7 @@ export default function VillageManagePage() {
                       <UserCog className="h-4 w-4" />
                     </Button>
                   </div>
+                </div>
                   ))}
                 </div>
               </div>
