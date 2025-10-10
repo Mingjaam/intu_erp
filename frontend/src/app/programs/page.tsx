@@ -158,15 +158,23 @@ export default function ProgramsPage() {
           
           return (
             <Card key={program.id} className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 overflow-hidden">
-              {/* 이미지 영역 - 고정 크기 */}
-              <div className="relative h-48 w-full overflow-hidden">
+              {/* 이미지 영역 - 3:4 비율 세로형 */}
+              <div className="relative aspect-[3/4] w-full overflow-hidden">
                 {program.imageUrl ? (
-                  <Image
-                    src={program.imageUrl}
-                    alt={program.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  <div className="relative w-full h-full">
+                    {/* 흐림 배경 */}
+                    <div 
+                      className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-sm scale-110"
+                      style={{ backgroundImage: `url(${program.imageUrl})` }}
+                    />
+                    {/* 메인 이미지 */}
+                    <Image
+                      src={program.imageUrl}
+                      alt={program.title}
+                      fill
+                      className="relative z-10 object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
                 ) : (
                   <div className={`w-full h-full bg-gradient-to-br ${gradientColor} flex items-center justify-center`}>
                     <div className="text-white text-center">
@@ -176,14 +184,14 @@ export default function ProgramsPage() {
                   </div>
                 )}
                 {/* 상태 배지 */}
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-3 right-3 z-20">
                   <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium shadow-lg`}>
                     {statusLabels[program.status]}
                   </Badge>
                 </div>
                 {/* D-Day 배지 */}
                 {program.status === 'open' && program.daysUntilDeadline !== undefined && (
-                  <div className="absolute top-3 left-3">
+                  <div className="absolute top-3 left-3 z-20">
                     <Badge 
                       className={`px-2 py-1 rounded-full text-xs font-bold shadow-lg ${
                         program.daysUntilDeadline <= 3 
@@ -204,7 +212,7 @@ export default function ProgramsPage() {
                 )}
                 {/* 신청 가능 여부 오버레이 */}
                 {isApplicationOpen(program) && program.status === 'open' && (
-                  <div className="absolute bottom-3 left-3">
+                  <div className="absolute bottom-3 left-3 z-20">
                     <Badge className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                       신청 가능
                     </Badge>
