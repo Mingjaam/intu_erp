@@ -232,7 +232,7 @@ export class UsersService {
     }
 
     // 날짜 필드 처리
-    const updateData = { ...updateUserDto };
+    const updateData: any = { ...updateUserDto };
     if (updateUserDto.hireDate) {
       updateData.hireDate = new Date(updateUserDto.hireDate);
     }
