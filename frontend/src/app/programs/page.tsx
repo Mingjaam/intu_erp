@@ -144,7 +144,7 @@ export default function ProgramsPage() {
             </div>
 
 
-      <div className="space-y-6">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {programs && programs.length > 0 ? programs.map((program, index) => {
           const gradientColors = [
             'from-blue-500 to-blue-600',
@@ -158,9 +158,7 @@ export default function ProgramsPage() {
           
           return (
             <Card key={program.id} className="group hover:shadow-xl transition-all duration-300 bg-white border-0 overflow-hidden">
-              <div className="flex">
-                {/* 이미지 영역 - 왼쪽 */}
-                <div className="relative w-48 h-48 flex-shrink-0 overflow-hidden">
+              <div className="relative aspect-[3/4] w-full overflow-hidden">
                 {program.imageUrl ? (
                   <div className="relative w-full h-full">
                     {/* 흐림 배경 */}
@@ -219,88 +217,84 @@ export default function ProgramsPage() {
                     </Badge>
                   </div>
                 )}
+              </div>
+              
+              <CardContent className="p-6">
+                {/* 태그들 */}
+                <div className="flex gap-2 mb-3">
+                  <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium`}>
+                    {statusLabels[program.status]}
+                  </Badge>
+                  {program.status === 'open' && program.daysUntilDeadline !== undefined && (
+                    <Badge 
+                      className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        program.daysUntilDeadline <= 3 
+                          ? 'bg-red-500 text-white' 
+                          : program.daysUntilDeadline <= 7 
+                          ? 'bg-orange-500 text-white' 
+                          : 'bg-blue-500 text-white'
+                      }`}
+                    >
+                      {program.daysUntilDeadline > 0 
+                        ? `D-${program.daysUntilDeadline}` 
+                        : program.daysUntilDeadline === 0 
+                        ? 'D-Day' 
+                        : '마감됨'
+                      }
+                    </Badge>
+                  )}
                 </div>
                 
-                {/* 정보 영역 - 오른쪽 */}
-                <div className="flex-1 p-6 flex flex-col justify-between">
-                  <div>
-                    {/* 태그들 */}
-                    <div className="flex gap-2 mb-3">
-                      <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium`}>
-                        {statusLabels[program.status]}
-                      </Badge>
-                      {program.status === 'open' && program.daysUntilDeadline !== undefined && (
-                        <Badge 
-                          className={`px-2 py-1 rounded-full text-xs font-bold ${
-                            program.daysUntilDeadline <= 3 
-                              ? 'bg-red-500 text-white' 
-                              : program.daysUntilDeadline <= 7 
-                              ? 'bg-orange-500 text-white' 
-                              : 'bg-blue-500 text-white'
-                          }`}
-                        >
-                          {program.daysUntilDeadline > 0 
-                            ? `D-${program.daysUntilDeadline}` 
-                            : program.daysUntilDeadline === 0 
-                            ? 'D-Day' 
-                            : '마감됨'
-                          }
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    {/* 제목 */}
-                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                      {program.title}
-                    </h3>
-                    
-                    {/* 한줄 설명 */}
-                    {program.summary && (
-                      <p className="text-gray-600 mb-3 line-clamp-2">
-                        {program.summary}
-                      </p>
-                    )}
-                    
-                    {/* 조직 정보 */}
-                    <div className="flex items-center gap-1 text-sm text-gray-500 mb-3">
-                      <MapPin className="h-4 w-4" />
-                      {program.organizer.name}
-                    </div>
-                    
-                    {/* 신청기간, 활동기간 */}
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>신청기간: {formatDate(program.applyStart)} ~ {formatDate(program.applyEnd)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>활동기간: {formatDate(program.programStart)} ~ {formatDate(program.programEnd)}</span>
-                      </div>
-                    </div>
+                {/* 제목 */}
+                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
+                  {program.title}
+                </h3>
+                
+                {/* 한줄 설명 */}
+                {program.summary && (
+                  <p className="text-gray-600 mb-3 line-clamp-2">
+                    {program.summary}
+                  </p>
+                )}
+                
+                {/* 조직 정보 */}
+                <div className="flex items-center gap-1 text-sm text-gray-500 mb-3">
+                  <MapPin className="h-4 w-4" />
+                  {program.organizer.name}
+                </div>
+                
+                {/* 신청기간, 활동기간 */}
+                <div className="space-y-2 text-sm text-gray-600 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>신청기간: {formatDate(program.applyStart)} ~ {formatDate(program.applyEnd)}</span>
                   </div>
-                  
-                  {/* 버튼들 */}
-                  <div className="flex gap-3 mt-4">
-                    <Link href={`/programs/${program.id}`}>
-                      <Button variant="outline" className="flex-1">
-                        상세보기
-                      </Button>
-                    </Link>
-                    {program.status === 'open' ? (
-                      <Link href={`/programs/${program.id}/apply`}>
-                        <Button className="flex-1">
-                          신청하기
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Button disabled className="flex-1">
-                        {statusLabels[program.status]}
-                      </Button>
-                    )}
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>활동기간: {formatDate(program.programStart)} ~ {formatDate(program.programEnd)}</span>
                   </div>
                 </div>
-              </div>
+                
+                {/* 버튼들 */}
+                <div className="flex gap-3">
+                  <Link href={`/programs/${program.id}`}>
+                    <Button variant="outline" className="flex-1">
+                      상세보기
+                    </Button>
+                  </Link>
+                  {program.status === 'open' ? (
+                    <Link href={`/programs/${program.id}/apply`}>
+                      <Button className="flex-1">
+                        신청하기
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button disabled className="flex-1">
+                      {statusLabels[program.status]}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
             </Card>
           );
         }) : null}
