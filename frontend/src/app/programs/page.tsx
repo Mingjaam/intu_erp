@@ -275,7 +275,7 @@ export default function ProgramsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        <span>활동기간: {formatDate(program.activityStart)} ~ {formatDate(program.activityEnd)}</span>
+                        <span>활동기간: {formatDate(program.programStart)} ~ {formatDate(program.programEnd)}</span>
                       </div>
                     </div>
                   </div>
