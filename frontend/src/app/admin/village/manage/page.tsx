@@ -265,9 +265,11 @@ export default function VillageManagePage() {
     try {
       const updateData = { ...memberEditForm };
       
-      // 퇴사일이 있으면 자동으로 퇴사 처리
+      // 퇴사일이 있으면 퇴사 처리, 없으면 재직 처리
       if (memberEditForm.resignationDate) {
         updateData.isActive = false;
+      } else {
+        updateData.isActive = true;
       }
       
       await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), updateData);
