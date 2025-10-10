@@ -73,6 +73,13 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 12);
 
+    console.log('회원가입 데이터:', {
+      email: registerDto.email,
+      name: registerDto.name,
+      phone: registerDto.phone,
+      organizationId: registerDto.organizationId,
+    });
+
     const user = this.userRepository.create({
       email: registerDto.email,
       passwordHash: hashedPassword,
@@ -83,6 +90,14 @@ export class AuthService {
     });
 
     const savedUser = await this.userRepository.save(user);
+    
+    console.log('저장된 사용자 데이터:', {
+      id: savedUser.id,
+      email: savedUser.email,
+      name: savedUser.name,
+      phone: savedUser.phone,
+      role: savedUser.role,
+    });
 
     const payload = { email: savedUser.email, sub: savedUser.id };
     const accessToken = this.jwtService.sign(payload);
@@ -118,7 +133,20 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...result } = user;
-    return result;
+    return {
+      id: result.id,
+      email: result.email,
+      name: result.name,
+      phone: result.phone,
+      role: result.role,
+      organizationId: result.organizationId,
+      organization: result.organization,
+      isActive: result.isActive,
+      lastLoginAt: result.lastLoginAt,
+      memo: result.memo,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    };
   }
 
   async changePassword(
