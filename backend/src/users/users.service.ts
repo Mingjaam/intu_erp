@@ -233,11 +233,15 @@ export class UsersService {
 
     // 날짜 필드 처리
     const updateData: any = { ...updateUserDto };
-    if (updateUserDto.hireDate) {
+    if (updateUserDto.hireDate && updateUserDto.hireDate.trim() !== '') {
       updateData.hireDate = new Date(updateUserDto.hireDate);
+    } else if (updateUserDto.hireDate === '') {
+      updateData.hireDate = null;
     }
-    if (updateUserDto.resignationDate) {
+    if (updateUserDto.resignationDate && updateUserDto.resignationDate.trim() !== '') {
       updateData.resignationDate = new Date(updateUserDto.resignationDate);
+    } else if (updateUserDto.resignationDate === '') {
+      updateData.resignationDate = null;
     }
 
     await this.userRepository.update(id, updateData);
