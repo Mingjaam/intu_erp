@@ -355,91 +355,62 @@ function ApplyPageContent() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {program.title} {isEditing ? '신청서 수정' : '신청'}
               </h1>
-              <p className="text-gray-600">{program.description}</p>
-            </div>
-
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{isEditing ? '신청서 수정' : '신청서 작성'}</CardTitle>
-              </CardHeader>
-            <CardContent>
-              <form 
-                onSubmit={handleSubmit} 
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.target instanceof HTMLInputElement && e.target.type !== 'textarea') {
-                    e.preventDefault();
-                  }
-                }}
-                className="space-y-6"
-              >
-                {fields.map((field) => renderFormField(field))}
-                
-                <div className="pt-6 border-t">
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting 
-                      ? (isEditing ? '수정 중...' : '제출 중...') 
-                      : (isEditing ? '신청서 수정' : '신청 제출')
-                    }
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>프로그램 정보</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-2" />
-                <span>{program.organizer.name}</span>
-              </div>
               
-              <div className="flex items-center text-sm text-gray-600">
-                <Calendar className="h-4 w-4 mr-2" />
-                <span>
-                  {new Date(program.applyStart).toLocaleDateString()} -{' '}
-                  {new Date(program.applyEnd).toLocaleDateString()}
-                </span>
-              </div>
-              
-              {program.metadata && (
-                <div className="space-y-2">
-                  {Object.entries(program.metadata).map(([key, value]) => (
-                    <div key={key} className="flex items-center text-sm text-gray-600">
-                      <Users className="h-4 w-4 mr-2" />
-                      <span>
-                        <strong>{key}:</strong> {String(value)}
-                      </span>
+              {/* 프로그램 이미지만 표시 */}
+              {program.imageUrl && (
+                <div className="max-w-md mx-auto mb-6">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl shadow-lg">
+                    <div className="relative w-full h-full">
+                      {/* 흐림 배경 */}
+                      <div 
+                        className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-sm scale-110"
+                        style={{ backgroundImage: `url(${program.imageUrl})` }}
+                      />
+                      {/* 메인 이미지 */}
+                      <img
+                        src={program.imageUrl}
+                        alt={program.title}
+                        className="relative z-10 w-full h-full object-contain"
+                      />
                     </div>
-                  ))}
+                  </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>신청 안내</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-gray-600 space-y-2">
-              <p>• 신청 후 수정이 불가능하니 신중히 작성해주세요.</p>
-              <p>• 필수 항목은 반드시 입력해주세요.</p>
-              <p>• 신청 결과는 이메일로 안내드립니다.</p>
-            </CardContent>
-            </Card>
-          </div>
-        </div>
-          </div>
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>{isEditing ? '신청서 수정' : '신청서 작성'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form 
+              onSubmit={handleSubmit} 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.target instanceof HTMLInputElement && e.target.type !== 'textarea') {
+                  e.preventDefault();
+                }
+              }}
+              className="space-y-6"
+            >
+              {fields.map((field) => renderFormField(field))}
+              
+              <div className="pt-6 border-t">
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting 
+                    ? (isEditing ? '수정 중...' : '제출 중...') 
+                    : (isEditing ? '신청서 수정' : '신청 제출')
+                  }
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
         </div>
       </div>
     </div>
