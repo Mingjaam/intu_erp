@@ -116,7 +116,6 @@ export default function VillageManagePage() {
     contractType: '',
     hireDate: '',
     resignationDate: '',
-    isActive: true,
   });
 
   const fetchVillageInfo = useCallback(async () => {
@@ -240,7 +239,6 @@ export default function VillageManagePage() {
       contractType: member.contractType || '',
       hireDate: member.hireDate ? member.hireDate.split('T')[0] : '',
       resignationDate: member.resignationDate ? member.resignationDate.split('T')[0] : '',
-      isActive: true,
     });
   };
 
@@ -255,7 +253,6 @@ export default function VillageManagePage() {
       contractType: '',
       hireDate: '',
       resignationDate: '',
-      isActive: true,
     });
   };
 
@@ -265,12 +262,7 @@ export default function VillageManagePage() {
     try {
       const updateData = { ...memberEditForm };
       
-      // 퇴사일이 있으면 퇴사 처리, 없으면 재직 처리
-      if (memberEditForm.resignationDate) {
-        updateData.isActive = false;
-      } else {
-        updateData.isActive = true;
-      }
+      // isActive 필드 제거 - resignationDate만으로 퇴사 여부 판단
       
       await apiClient.patch(API_ENDPOINTS.USERS.UPDATE(editDialog.member.id), updateData);
       toast.success('직원 정보가 수정되었습니다.');
