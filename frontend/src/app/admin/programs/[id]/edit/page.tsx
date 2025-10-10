@@ -59,6 +59,7 @@ interface Program {
   location: string;
   fee: number;
   organizerId: string;
+  imageUrl?: string;
   applicationForm?: FormField[];
   metadata?: Record<string, unknown>;
 }
@@ -120,6 +121,7 @@ export default function EditProgramPage() {
       // 폼 데이터 설정
       reset({
         title: data.title,
+        summary: data.summary,  // 한줄 설명 추가
         description: data.description,
         status: data.status,
         maxParticipants: data.maxParticipants,
@@ -130,6 +132,7 @@ export default function EditProgramPage() {
         location: data.location,
         fee: data.fee,
         organizerId: data.organizerId,
+        imageUrl: data.imageUrl,  // 이미지 URL 추가
       });
 
       // 신청서 양식 설정
