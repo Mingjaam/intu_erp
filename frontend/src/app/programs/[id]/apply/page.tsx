@@ -378,39 +378,40 @@ function ApplyPageContent() {
               )}
             </div>
 
-      <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>{isEditing ? '신청서 수정' : '신청서 작성'}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form 
-              onSubmit={handleSubmit} 
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.target instanceof HTMLInputElement && e.target.type !== 'textarea') {
-                  e.preventDefault();
-                }
-              }}
-              className="space-y-6"
-            >
-              {fields.map((field) => renderFormField(field))}
-              
-              <div className="pt-6 border-t">
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting 
-                    ? (isEditing ? '수정 중...' : '제출 중...') 
-                    : (isEditing ? '신청서 수정' : '신청 제출')
-                  }
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="max-w-2xl mx-auto">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{isEditing ? '신청서 수정' : '신청서 작성'}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form 
+                    onSubmit={handleSubmit} 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && e.target instanceof HTMLInputElement && e.target.type !== 'textarea') {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="space-y-6"
+                  >
+                    {fields.map((field) => renderFormField(field))}
+                    
+                    <div className="pt-6 border-t">
+                      <Button 
+                        type="submit" 
+                        className="w-full" 
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting 
+                          ? (isEditing ? '수정 중...' : '제출 중...') 
+                          : (isEditing ? '신청서 수정' : '신청 제출')
+                        }
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>
