@@ -22,6 +22,7 @@ export class ProgramsService {
 
     const program = this.programRepository.create({
       title: createProgramDto.title,
+      summary: createProgramDto.summary,
       description: createProgramDto.description,
       organizerId: createProgramDto.organizerId || user.organizationId,
       status: createProgramDto.status,
@@ -32,6 +33,7 @@ export class ProgramsService {
       programEnd: new Date(createProgramDto.programEnd),
       location: createProgramDto.location,
       fee: createProgramDto.fee,
+      imageUrl: createProgramDto.imageUrl,
       applicationForm: createProgramDto.applicationForm,
       metadata: createProgramDto.metadata,
     });
