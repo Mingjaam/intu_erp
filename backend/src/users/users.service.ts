@@ -231,7 +231,16 @@ export class UsersService {
       }
     }
 
-    await this.userRepository.update(id, updateUserDto);
+    // 날짜 필드 처리
+    const updateData = { ...updateUserDto };
+    if (updateUserDto.hireDate) {
+      updateData.hireDate = new Date(updateUserDto.hireDate);
+    }
+    if (updateUserDto.resignationDate) {
+      updateData.resignationDate = new Date(updateUserDto.resignationDate);
+    }
+
+    await this.userRepository.update(id, updateData);
     const updatedUser = await this.userRepository.findOne({
       where: { id },
       relations: ['organization'],
@@ -383,6 +392,10 @@ export class UsersService {
       isActive: user.isActive,
       lastLoginAt: user.lastLoginAt,
       memo: user.memo,
+      position: user.position,
+      contractType: user.contractType,
+      hireDate: user.hireDate,
+      resignationDate: user.resignationDate,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

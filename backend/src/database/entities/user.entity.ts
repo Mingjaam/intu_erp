@@ -57,6 +57,18 @@ export class User {
   @Column({ nullable: true, type: 'text' })
   memo: string;
 
+  @Column({ nullable: true })
+  position: string;
+
+  @Column({ nullable: true })
+  contractType: string;
+
+  @Column({ nullable: true, type: 'date' })
+  hireDate: Date;
+
+  @Column({ nullable: true, type: 'date' })
+  resignationDate: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -61,6 +61,26 @@ export class UpdateUserDto {
   @IsString()
   memo?: string;
 
+  @ApiProperty({ example: '팀장', required: false })
+  @IsOptional()
+  @IsString()
+  position?: string;
+
+  @ApiProperty({ example: '정규직', required: false })
+  @IsOptional()
+  @IsString()
+  contractType?: string;
+
+  @ApiProperty({ example: '2024-01-01', required: false })
+  @IsOptional()
+  @IsString()
+  hireDate?: string;
+
+  @ApiProperty({ example: '2024-12-31', required: false })
+  @IsOptional()
+  @IsString()
+  resignationDate?: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsBoolean()
@@ -104,6 +124,18 @@ export class UserResponseDto {
 
   @ApiProperty({ required: false })
   memo?: string;
+
+  @ApiProperty({ required: false })
+  position?: string;
+
+  @ApiProperty({ required: false })
+  contractType?: string;
+
+  @ApiProperty({ required: false })
+  hireDate?: Date;
+
+  @ApiProperty({ required: false })
+  resignationDate?: Date;
 
   @ApiProperty()
   createdAt: Date;
