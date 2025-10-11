@@ -135,15 +135,23 @@ export default function ProgramDetailPage() {
                 {/* 왼쪽: 이미지 */}
                 <div className="flex justify-center lg:justify-start">
                   {program.imageUrl ? (
-                    <div className="relative aspect-[4/3] w-full max-w-md overflow-hidden rounded-2xl shadow-lg">
-                      <img
-                        src={program.imageUrl}
-                        alt={program.title}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-lg">
+                      <div className="relative w-full h-full">
+                        {/* 흐림 배경 */}
+                        <div 
+                          className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-sm scale-110"
+                          style={{ backgroundImage: `url(${program.imageUrl})` }}
+                        />
+                        {/* 메인 이미지 */}
+                        <img
+                          src={program.imageUrl}
+                          alt={program.title}
+                          className="relative z-10 w-full h-full object-cover"
+                        />
+                      </div>
                     </div>
                   ) : (
-                    <div className="aspect-[4/3] w-full max-w-md bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
+                    <div className="aspect-[3/4] w-full max-w-sm bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
                       <div className="text-white text-center">
                         <FolderOpen className="h-16 w-16 mx-auto mb-4 opacity-80" />
                         <p className="text-lg font-medium">프로그램 이미지</p>
