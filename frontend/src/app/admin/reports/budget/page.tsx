@@ -7,7 +7,7 @@ import { DollarSign, Calendar, FileSpreadsheet } from 'lucide-react';
 export default function BudgetReportPage() {
   const { user } = useAuth();
 
-  // 권한 확인
+  // 권한 확인을 훅들보다 먼저 실행
   if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
       <div className="container mx-auto px-4 py-8">

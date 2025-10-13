@@ -30,13 +30,8 @@ interface ParticipantReportResponse {
 
 export default function ParticipantReportPage() {
   const { user } = useAuth();
-  const [reportData, setReportData] = useState<ParticipantReportItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [year, setYear] = useState(new Date().getFullYear().toString());
-  const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
-  const [total, setTotal] = useState(0);
-
-  // 권한 확인
+  
+  // 권한 확인을 훅들보다 먼저 실행
   if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -47,6 +42,12 @@ export default function ParticipantReportPage() {
       </div>
     );
   }
+
+  const [reportData, setReportData] = useState<ParticipantReportItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [year, setYear] = useState(new Date().getFullYear().toString());
+  const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
+  const [total, setTotal] = useState(0);
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
