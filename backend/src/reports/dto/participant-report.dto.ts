@@ -31,3 +31,20 @@ export class ParticipantReportResponseDto {
   year: string;
   month: string;
 }
+
+export class StaffReportItemDto {
+  연번: number;
+  계약형태: string;
+  직책: string;
+  성명: string;
+  입사일: string;
+  퇴사일: string;
+  참여율: string;
+}
+
+export class StaffReportResponseDto {
+  data: StaffReportItemDto[];
+  total: number;
+  year: string;
+  month: string;
+}

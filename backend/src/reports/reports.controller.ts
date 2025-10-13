@@ -5,7 +5,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { UserRole } from '../database/entities/user.entity';
 import { ReportsService } from './reports.service';
-import { ParticipantReportQueryDto, ParticipantReportResponseDto } from './dto/participant-report.dto';
+import { ParticipantReportQueryDto, ParticipantReportResponseDto, StaffReportResponseDto } from './dto/participant-report.dto';
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -28,15 +28,42 @@ export class ReportsController {
     @Res() res: Response
   ): Promise<void> {
     const buffer = await this.reportsService.exportParticipantReportToExcel(query, req.user);
-    
+
     const filename = `참여자현황_${query.year || new Date().getFullYear()}_${query.month || new Date().getMonth() + 1}.xlsx`;
-    
+
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
       'Content-Length': buffer.length.toString(),
     });
-    
+
+    res.send(buffer);
+  }
+
+  @Get('staff')
+  async getStaffReport(
+    @Query() query: ParticipantReportQueryDto,
+    @Req() req: any
+  ): Promise<StaffReportResponseDto> {
+    return this.reportsService.getStaffReport(query, req.user);
+  }
+
+  @Get('staff/excel')
+  async exportStaffReport(
+    @Query() query: ParticipantReportQueryDto,
+    @Req() req: any,
+    @Res() res: Response
+  ): Promise<void> {
+    const buffer = await this.reportsService.exportStaffReportToExcel(query, req.user);
+
+    const filename = `사업참여인력현황_${query.year || new Date().getFullYear()}_${query.month || new Date().getMonth() + 1}.xlsx`;
+
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+      'Content-Length': buffer.length.toString(),
+    });
+
     res.send(buffer);
   }
 }
