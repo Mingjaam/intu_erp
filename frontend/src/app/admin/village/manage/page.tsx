@@ -640,7 +640,7 @@ export default function VillageManagePage() {
                       )}
                     </div>
                     {/* 직원 상세 정보 표시 */}
-                    {(member.role === 'staff' || member.role === 'operator') && (
+                    {(member.role === 'admin' || member.role === 'staff' || member.role === 'operator') && (
                       <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600">
                         {member.position && (
                           <span>직책: {member.position}</span>
@@ -695,7 +695,7 @@ export default function VillageManagePage() {
                             )}
                           </div>
                           {/* 직원 상세 정보 표시 */}
-                          {(member.role === 'staff' || member.role === 'operator') && (
+                          {(member.role === 'admin' || member.role === 'staff' || member.role === 'operator') && (
                             <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600">
                               {member.position && (
                                 <span>직책: {member.position}</span>

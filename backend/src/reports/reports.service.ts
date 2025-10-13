@@ -173,11 +173,11 @@ export class ReportsService {
       userOrgId: user.organizationId
     });
 
-    // 사용자 테이블에서 직원 데이터 조회 (role이 staff인 사용자들)
+    // 사용자 테이블에서 직원 데이터 조회 (role이 admin, operator, staff인 사용자들)
     const queryBuilder = this.userRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.organization', 'organization')
-      .where('user.role = :role', { role: UserRole.STAFF })
+      .where('user.role IN (:...roles)', { roles: [UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF] })
       .andWhere('user.isActive = :isActive', { isActive: true });
 
     // 관리자는 모든 조직, 직원/운영자는 자신의 조직만 볼 수 있음
