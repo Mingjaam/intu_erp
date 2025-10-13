@@ -53,8 +53,8 @@ export class ReportsService {
       .leftJoinAndSelect('application.selection', 'selection')
       .where('program.isActive = :isActive', { isActive: true })
       .andWhere(
-        // 프로그램이 해당 월에 진행되는 경우 (시작일이 해당 월 이전이고 종료일이 해당 월 이후)
-        '(program.programStart <= :endDate AND program.programEnd >= :startDate)',
+        // 프로그램이 해당 월에 시작되거나 진행되는 경우
+        '(program.programStart >= :startDate AND program.programStart <= :endDate)',
         { startDate, endDate }
       )
       .andWhere(
