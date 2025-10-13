@@ -29,7 +29,7 @@ docker-compose -f docker-compose.prod.yml --env-file .env.production ps
 # 헬스 체크
 echo "🏥 헬스 체크 중..."
 for i in {1..30}; do
-    if curl -f http://localhost:3001/api/health > /dev/null 2>&1; then
+    if curl -f https://nuvio.kr/api/docs > /dev/null 2>&1; then
         echo "✅ 백엔드 서비스가 정상적으로 시작되었습니다."
         break
     fi
@@ -39,8 +39,8 @@ done
 
 echo "🎉 프로덕션 배포 완료!"
 echo "🌐 서비스 접속:"
-echo "- 프론트엔드: http://localhost:3000"
-echo "- 백엔드 API: http://localhost:3001/api"
+echo "- 프론트엔드: https://nuvio.kr"
+echo "- 백엔드 API: https://nuvio.kr/api"
 echo ""
 echo "🔧 유용한 명령어:"
 echo "- 로그 확인: docker-compose -f docker-compose.prod.yml --env-file .env.production logs -f"
