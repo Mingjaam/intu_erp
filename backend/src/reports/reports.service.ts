@@ -202,11 +202,11 @@ export class ReportsService {
     const reportData: StaffReportItemDto[] = staffUsers.map((user, index) => {
       return {
         연번: index + 1,
-        계약형태: '정규직', // 기본값, 실제로는 사용자 정보에서 가져와야 함
-        직책: '직원', // 기본값, 실제로는 사용자 정보에서 가져와야 함
+        계약형태: user.contractType || '정규직', // 사용자 정보에서 가져오거나 기본값
+        직책: user.position || '직원', // 사용자 정보에서 가져오거나 기본값
         성명: user.name,
-        입사일: this.formatDate(user.createdAt),
-        퇴사일: user.isActive ? '-' : this.formatDate(user.updatedAt), // 퇴사일은 비활성화된 경우에만
+        입사일: user.hireDate ? this.formatDate(new Date(user.hireDate)) : this.formatDate(user.createdAt),
+        퇴사일: user.resignationDate ? this.formatDate(new Date(user.resignationDate)) : (user.isActive ? '-' : this.formatDate(user.updatedAt)),
         참여율: '', // 빈칸으로 설정
       };
     });
