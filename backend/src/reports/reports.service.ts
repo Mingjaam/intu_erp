@@ -39,9 +39,11 @@ export class ReportsService {
       program: {
         programStart: Between(startDate, endDate),
         isActive: true
-      },
-      status: 'selected' // 선정된 신청만
+      }
     };
+
+    // Selection 테이블과 조인하여 선정된 신청만 조회
+    // status가 'selected'이거나 Selection 테이블에 선정 기록이 있는 경우
 
     // 직원/운영자는 자신의 조직만 볼 수 있음
     if (user.role === UserRole.STAFF || user.role === UserRole.OPERATOR) {
@@ -55,15 +57,45 @@ export class ReportsService {
       whereCondition.program.organizerId = organizationId;
     }
 
-    // 데이터 조회
-    const applications = await this.applicationRepository.find({
-      where: whereCondition,
-      relations: ['program', 'applicant', 'selection'],
-      order: {
-        program: { programStart: 'ASC' },
-        applicant: { name: 'ASC' }
+    // 데이터 조회 - QueryBuilder 사용하여 Selection 테이블과 조인
+    console.log('참여자 현황 조회 조건:', JSON.stringify(whereCondition, null, 2));
+    
+    const queryBuilder = this.applicationRepository
+      .createQueryBuilder('application')
+      .leftJoinAndSelect('application.program', 'program')
+      .leftJoinAndSelect('application.applicant', 'applicant')
+      .leftJoinAndSelect('application.selection', 'selection')
+      .where('program.programStart BETWEEN :startDate AND :endDate', { startDate, endDate })
+      .andWhere('program.isActive = :isActive', { isActive: true });
+
+    // 권한별 조직 필터링
+    if (user.role === UserRole.STAFF || user.role === UserRole.OPERATOR) {
+      if (user.organizationId) {
+        queryBuilder.andWhere('program.organizerId = :organizationId', { organizationId: user.organizationId });
       }
-    });
+    }
+
+    if (organizationId) {
+      queryBuilder.andWhere('program.organizerId = :organizationId', { organizationId });
+    }
+
+    // 선정된 신청만 조회 (status가 'selected'이거나 Selection 테이블에 선정 기록이 있는 경우)
+    queryBuilder.andWhere(
+      '(application.status = :selectedStatus OR (selection.id IS NOT NULL AND selection.selected = :selected))',
+      { selectedStatus: 'selected', selected: true }
+    );
+
+    queryBuilder
+      .orderBy('program.programStart', 'ASC')
+      .addOrderBy('applicant.name', 'ASC');
+
+    const applications = await queryBuilder.getMany();
+
+    console.log(`조회된 신청 수: ${applications.length}`);
+    console.log('신청 상태별 분포:', applications.reduce((acc, app) => {
+      acc[app.status] = (acc[app.status] || 0) + 1;
+      return acc;
+    }, {}));
 
     // 데이터 변환
     const reportData: ParticipantReportItemDto[] = applications.map((app, index) => {
