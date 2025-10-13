@@ -51,9 +51,7 @@ export default function ParticipantReportPage() {
   const fetchReport = async () => {
     setLoading(true);
     try {
-      const response = await apiClient.get<ParticipantReportResponse>('/reports/participants', {
-        params: { year, month }
-      });
+      const response = await apiClient.get<ParticipantReportResponse>(`/reports/participants?year=${year}&month=${month}`);
       setReportData(response.data);
       setTotal(response.total);
     } catch (error) {
