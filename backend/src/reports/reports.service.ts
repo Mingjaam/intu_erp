@@ -172,10 +172,12 @@ export class ReportsService {
   }
 
   private formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('ko-KR', {
+    // 한국 시간대로 정확히 변환
+    return new Intl.DateTimeFormat('ko-KR', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
-    });
+      day: '2-digit',
+      timeZone: 'Asia/Seoul'
+    }).format(new Date(date));
   }
 }
