@@ -52,7 +52,9 @@ export default function ParticipantReportPage() {
   const fetchReport = useCallback(async () => {
     setLoading(true);
     try {
+      console.log('참여자 현황 조회:', { year, month });
       const response = await apiClient.get<ParticipantReportResponse>(`/reports/participants?year=${year}&month=${month}`);
+      console.log('조회 결과:', response);
       setReportData(response.data);
       setTotal(response.total);
     } catch (error) {
@@ -60,7 +62,7 @@ export default function ParticipantReportPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [year, month]);
 
   const exportToExcel = async () => {
     try {
@@ -95,7 +97,7 @@ export default function ParticipantReportPage() {
 
   useEffect(() => {
     fetchReport();
-  }, [year, month]);
+  }, [fetchReport]);
 
   const months = [
     { value: '1', label: '1월' },
