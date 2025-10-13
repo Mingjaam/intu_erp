@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,7 +48,7 @@ export default function ParticipantReportPage() {
     );
   }
 
-  const fetchReport = async () => {
+  const fetchReport = useCallback(async () => {
     setLoading(true);
     try {
       const response = await apiClient.get<ParticipantReportResponse>(`/reports/participants?year=${year}&month=${month}`);
@@ -59,7 +59,7 @@ export default function ParticipantReportPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [year, month]);
 
   const exportToExcel = async () => {
     try {
@@ -94,7 +94,7 @@ export default function ParticipantReportPage() {
 
   useEffect(() => {
     fetchReport();
-  }, [year, month]);
+  }, [year, month, fetchReport]);
 
   const months = [
     { value: '1', label: '1월' },
