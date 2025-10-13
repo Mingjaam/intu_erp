@@ -221,10 +221,6 @@ export default function ParticipantReportPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">데이터를 불러오는 중...</p>
             </div>
-          ) : reportData.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">해당 기간에 참여자가 없습니다.</p>
-            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-gray-300">
@@ -241,18 +237,26 @@ export default function ParticipantReportPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {reportData.map((item, index) => (
-                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="border border-gray-300 px-4 py-2">{item.연번}</td>
-                      <td className="border border-gray-300 px-4 py-2">{item.프로그램명}</td>
-                      <td className="border border-gray-300 px-4 py-2">{item.운영기간}</td>
-                      <td className="border border-gray-300 px-4 py-2">{item.성명}</td>
-                      <td className="border border-gray-300 px-4 py-2">{item.성별 || '-'}</td>
-                      <td className="border border-gray-300 px-4 py-2">{item.출생년도 || '-'}</td>
-                      <td className="border border-gray-300 px-4 py-2">{item.출신지역 || '-'}</td>
-                      <td className="border border-gray-300 px-4 py-2">{item.참여전거주지 || '-'}</td>
+                  {reportData.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="border border-gray-300 px-4 py-8 text-center text-gray-500">
+                        해당 기간에 참여자가 없습니다.
+                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    reportData.map((item, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="border border-gray-300 px-4 py-2">{item.연번}</td>
+                        <td className="border border-gray-300 px-4 py-2">{item.프로그램명}</td>
+                        <td className="border border-gray-300 px-4 py-2">{item.운영기간}</td>
+                        <td className="border border-gray-300 px-4 py-2">{item.성명}</td>
+                        <td className="border border-gray-300 px-4 py-2">{item.성별 || '-'}</td>
+                        <td className="border border-gray-300 px-4 py-2">{item.출생년도 || '-'}</td>
+                        <td className="border border-gray-300 px-4 py-2">{item.출신지역 || '-'}</td>
+                        <td className="border border-gray-300 px-4 py-2">{item.참여전거주지 || '-'}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
