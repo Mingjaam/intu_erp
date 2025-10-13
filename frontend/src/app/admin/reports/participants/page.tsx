@@ -59,7 +59,7 @@ export default function ParticipantReportPage() {
     } finally {
       setLoading(false);
     }
-  }, [year, month]);
+  }, []);
 
   const exportToExcel = async () => {
     try {
@@ -94,7 +94,7 @@ export default function ParticipantReportPage() {
 
   useEffect(() => {
     fetchReport();
-  }, [year, month, fetchReport]);
+  }, [year, month]);
 
   const months = [
     { value: '1', label: '1월' },
