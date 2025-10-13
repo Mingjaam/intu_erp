@@ -30,19 +30,6 @@ interface ParticipantReportResponse {
 
 export default function ParticipantReportPage() {
   const { user } = useAuth();
-  
-  // 권한 확인을 훅들보다 먼저 실행
-  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">접근 권한이 없습니다</h1>
-          <p className="text-gray-600">관리자, 운영자, 직원 권한이 필요한 페이지입니다.</p>
-        </div>
-      </div>
-    );
-  }
-
   const [reportData, setReportData] = useState<ParticipantReportItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [year, setYear] = useState(new Date().getFullYear().toString());
@@ -55,8 +42,8 @@ export default function ParticipantReportPage() {
       console.log('참여자 현황 조회:', { year, month });
       const response = await apiClient.get<ParticipantReportResponse>(`/reports/participants?year=${year}&month=${month}`);
       console.log('조회 결과:', response);
-      setReportData(response.data);
-      setTotal(response.total);
+      setReportData(response.data.data);
+      setTotal(response.data.total);
     } catch (error) {
       console.error('보고서 조회 오류:', error);
     } finally {
@@ -98,6 +85,18 @@ export default function ParticipantReportPage() {
   useEffect(() => {
     fetchReport();
   }, [fetchReport]);
+
+  // 권한 확인
+  if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">접근 권한이 없습니다</h1>
+          <p className="text-gray-600">관리자, 운영자, 직원 권한이 필요한 페이지입니다.</p>
+        </div>
+      </div>
+    );
+  }
 
   const months = [
     { value: '1', label: '1월' },
