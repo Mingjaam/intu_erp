@@ -214,8 +214,8 @@ export class ReportsService {
     return {
       data: reportData,
       total: reportData.length,
-      year: year || new Date().getFullYear().toString(),
-      month: month || (new Date().getMonth() + 1).toString()
+      year: new Date().getFullYear().toString(),
+      month: (new Date().getMonth() + 1).toString()
     };
   }
 
