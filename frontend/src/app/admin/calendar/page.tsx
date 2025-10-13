@@ -583,7 +583,13 @@ function CalendarPageContent() {
           {!showAddForm ? (
             <div className="text-center py-4">
             <Button 
-              onClick={() => setShowCreateDialog(true)}
+              onClick={() => {
+                // 선택된 날짜가 있으면 newTodo에 설정
+                if (selectedDate) {
+                  setNewTodo(prev => ({ ...prev, date: selectedDate }));
+                }
+                setShowCreateDialog(true);
+              }}
               className="w-full"
             >
               <Plus className="h-4 w-4 mr-2" />
