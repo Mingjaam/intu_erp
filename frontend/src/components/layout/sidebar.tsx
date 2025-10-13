@@ -12,7 +12,8 @@ import {
   FolderOpen,
   Calendar,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  BarChart3
 } from 'lucide-react';
 
 const getNavigation = (userRole: string) => {
@@ -46,6 +47,16 @@ const getNavigation = (userRole: string) => {
         { name: '전체 회원', href: '/admin/users' },
         { name: '불량회원 관리', href: '/admin/users/reports' },
       ]
+    },
+    { 
+      name: '보고서', 
+      href: '/admin/reports', 
+      icon: BarChart3,
+      children: [
+        { name: '참여자 현황', href: '/admin/reports/participants' },
+        { name: '사업참여인력 현황', href: '/admin/reports/staff' },
+        { name: '사업 진행비 현황', href: '/admin/reports/budget' },
+      ]
     }
   ];
 
@@ -78,7 +89,7 @@ const getNavigation = (userRole: string) => {
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['대시보드', '프로그램', '회원', '마을 관리', '관리자 전용']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['대시보드', '프로그램', '회원', '보고서', '마을 관리', '관리자 전용']);
   
   const navigation = getNavigation(user?.role || '');
 
