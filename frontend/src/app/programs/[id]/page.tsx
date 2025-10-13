@@ -130,8 +130,8 @@ export default function ProgramDetailPage() {
                 </div>
               </div>
 
-              {/* 3열 레이아웃: 이미지 왼쪽, 정보 카드들 중앙, 신청 버튼 오른쪽 */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* 2열 레이아웃: 이미지 왼쪽, 정보 카드들 오른쪽 */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* 왼쪽: 이미지 */}
                 <div className="flex justify-center lg:justify-start">
                   {program.imageUrl ? (
@@ -160,55 +160,56 @@ export default function ProgramDetailPage() {
                   )}
                 </div>
 
-                {/* 중앙: 프로그램 기본 정보 (1열 4줄) */}
-                <div className="space-y-3">
-                  <Card>
-                    <CardContent className="p-3 text-center">
-                      <Calendar className="h-5 w-5 mx-auto mb-1 text-blue-500" />
-                      <h3 className="font-semibold text-xs text-gray-700 mb-1">신청기간</h3>
-                      <p className="text-xs text-gray-600">
-                        {new Date(program.applyStart).toLocaleDateString('ko-KR')} ~ {new Date(program.applyEnd).toLocaleDateString('ko-KR')}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-3 text-center">
-                      <Calendar className="h-5 w-5 mx-auto mb-1 text-green-500" />
-                      <h3 className="font-semibold text-xs text-gray-700 mb-1">활동기간</h3>
-                      <p className="text-xs text-gray-600">
-                        {new Date(program.programStart).toLocaleDateString('ko-KR')} ~ {new Date(program.programEnd).toLocaleDateString('ko-KR')}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-3 text-center">
-                      <div className="h-5 w-5 mx-auto mb-1 bg-yellow-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">₩</span>
-                      </div>
-                      <h3 className="font-semibold text-xs text-gray-700 mb-1">참가비</h3>
-                      <p className="text-xs text-gray-600">
-                        {program.fee === 0 ? '무료' : `₩${program.fee.toLocaleString()}`}
-                      </p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-3 text-center">
-                      <div className="h-5 w-5 mx-auto mb-1 bg-purple-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">👥</span>
-                      </div>
-                      <h3 className="font-semibold text-xs text-gray-700 mb-1">최대참가자</h3>
-                      <p className="text-xs text-gray-600">
-                        {program.maxParticipants}명
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
+                {/* 오른쪽: 프로그램 기본 정보 + 신청 버튼 */}
+                <div className="space-y-4">
+                  {/* 정보 카드들 */}
+                  <div className="space-y-3">
+                    <Card>
+                      <CardContent className="p-3 text-center">
+                        <Calendar className="h-5 w-5 mx-auto mb-1 text-blue-500" />
+                        <h3 className="font-semibold text-xs text-gray-700 mb-1">신청기간</h3>
+                        <p className="text-xs text-gray-600">
+                          {new Date(program.applyStart).toLocaleDateString('ko-KR')} ~ {new Date(program.applyEnd).toLocaleDateString('ko-KR')}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-3 text-center">
+                        <Calendar className="h-5 w-5 mx-auto mb-1 text-green-500" />
+                        <h3 className="font-semibold text-xs text-gray-700 mb-1">활동기간</h3>
+                        <p className="text-xs text-gray-600">
+                          {new Date(program.programStart).toLocaleDateString('ko-KR')} ~ {new Date(program.programEnd).toLocaleDateString('ko-KR')}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-3 text-center">
+                        <div className="h-5 w-5 mx-auto mb-1 bg-yellow-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">₩</span>
+                        </div>
+                        <h3 className="font-semibold text-xs text-gray-700 mb-1">참가비</h3>
+                        <p className="text-xs text-gray-600">
+                          {program.fee === 0 ? '무료' : `₩${program.fee.toLocaleString()}`}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardContent className="p-3 text-center">
+                        <div className="h-5 w-5 mx-auto mb-1 bg-purple-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">👥</span>
+                        </div>
+                        <h3 className="font-semibold text-xs text-gray-700 mb-1">최대참가자</h3>
+                        <p className="text-xs text-gray-600">
+                          {program.maxParticipants}명
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
 
-                {/* 오른쪽: 신청 버튼 */}
-                <div className="flex items-center justify-center lg:justify-start">
+                  {/* 신청 버튼 */}
                   {program.status === 'open' && (
                     <div className="text-center">
                       {user ? (
