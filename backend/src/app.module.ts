@@ -13,6 +13,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { UploadModule } from './upload/upload.module';
 import { UserReportsModule } from './user-reports/user-reports.module';
 import { TodosModule } from './todos/todos.module';
+import { ReportsModule } from './reports/reports.module';
 import { User } from './database/entities/user.entity';
 import { Organization } from './database/entities/organization.entity';
 import { Program } from './database/entities/program.entity';
@@ -68,6 +69,7 @@ import { Todo } from './database/entities/todo.entity';
     UploadModule,
     UserReportsModule,
     TodosModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}
