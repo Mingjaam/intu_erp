@@ -168,23 +168,9 @@ export class ReportsService {
     query: ParticipantReportQueryDto,
     user: any
   ): Promise<StaffReportResponseDto> {
-    const { year, month, organizationId } = query;
-    
-    // 날짜 범위 설정 - 해당 월의 시작일과 마지막일
-    const targetYear = parseInt(year || new Date().getFullYear().toString());
-    const targetMonth = parseInt(month || '1');
-    
-    const startDate = new Date(targetYear, targetMonth - 1, 1);
-    const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59);
-
     console.log('사업참여인력 현황 조회 조건:', {
-      year: targetYear,
-      month: targetMonth,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
       userRole: user.role,
-      userOrgId: user.organizationId,
-      queryOrgId: organizationId
+      userOrgId: user.organizationId
     });
 
     // 사용자 테이블에서 직원 데이터 조회 (role이 staff인 사용자들)
@@ -194,18 +180,13 @@ export class ReportsService {
       .where('user.role = :role', { role: UserRole.STAFF })
       .andWhere('user.isActive = :isActive', { isActive: true });
 
-    // 직원/운영자는 자신의 조직만 볼 수 있음
+    // 관리자는 모든 조직, 직원/운영자는 자신의 조직만 볼 수 있음
     if (user.role === UserRole.STAFF || user.role === UserRole.OPERATOR) {
       if (user.organizationId) {
         queryBuilder.andWhere('user.organizationId = :userOrganizationId', { 
           userOrganizationId: user.organizationId 
         });
       }
-    }
-
-    // 특정 조직 필터
-    if (organizationId) {
-      queryBuilder.andWhere('user.organizationId = :organizationId', { organizationId });
     }
 
     // 정렬 및 조회
@@ -226,7 +207,7 @@ export class ReportsService {
         성명: user.name,
         입사일: this.formatDate(user.createdAt),
         퇴사일: user.isActive ? '-' : this.formatDate(user.updatedAt), // 퇴사일은 비활성화된 경우에만
-        참여율: '100%', // 기본값, 실제로는 계산해야 함
+        참여율: '', // 빈칸으로 설정
       };
     });
 

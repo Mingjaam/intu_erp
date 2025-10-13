@@ -4,10 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download, FileSpreadsheet, Calendar, Users } from 'lucide-react';
+import { Download, FileSpreadsheet, Users } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 
 interface StaffReportItem {
@@ -31,15 +28,13 @@ export default function StaffReportPage() {
   const { user } = useAuth();
   const [reportData, setReportData] = useState<StaffReportItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [year, setYear] = useState(new Date().getFullYear().toString());
-  const [month, setMonth] = useState((new Date().getMonth() + 1).toString());
   const [total, setTotal] = useState(0);
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
     try {
-      console.log('사업참여인력 현황 조회:', { year, month });
-      const response = await apiClient.get<StaffReportResponse>(`/reports/staff?year=${year}&month=${month}`);
+      console.log('사업참여인력 현황 조회');
+      const response = await apiClient.get<StaffReportResponse>(`/reports/staff`);
       console.log('조회 결과:', response);
       console.log('response.data:', response.data);
       setReportData(response.data as unknown as StaffReportItem[]);
@@ -49,12 +44,12 @@ export default function StaffReportPage() {
     } finally {
       setLoading(false);
     }
-  }, [year, month]);
+  }, []);
 
   const exportToExcel = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'https://nuvio.kr/api'}/reports/staff/excel?year=${year}&month=${month}`,
+        `${process.env.NEXT_PUBLIC_API_URL || 'https://nuvio.kr/api'}/reports/staff/excel`,
         {
           method: 'GET',
           headers: {
@@ -71,7 +66,7 @@ export default function StaffReportPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `사업참여인력현황_${year}_${month}.xlsx`;
+      a.download = `사업참여인력현황.xlsx`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -98,75 +93,17 @@ export default function StaffReportPage() {
     );
   }
 
-  const months = [
-    { value: '1', label: '1월' },
-    { value: '2', label: '2월' },
-    { value: '3', label: '3월' },
-    { value: '4', label: '4월' },
-    { value: '5', label: '5월' },
-    { value: '6', label: '6월' },
-    { value: '7', label: '7월' },
-    { value: '8', label: '8월' },
-    { value: '9', label: '9월' },
-    { value: '10', label: '10월' },
-    { value: '11', label: '11월' },
-    { value: '12', label: '12월' },
-  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">사업참여인력 현황</h1>
-        <p className="text-gray-600">월별 사업참여인력 현황을 조회하고 엑셀로 다운로드할 수 있습니다.</p>
+        <p className="text-gray-600">조직별 사업참여인력 현황을 조회하고 엑셀로 다운로드할 수 있습니다.</p>
       </div>
 
-      {/* 필터 섹션 */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Calendar className="h-5 w-5 mr-2" />
-            조회 조건
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="year">연도</Label>
-              <Input
-                id="year"
-                type="number"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                min="2020"
-                max="2030"
-              />
-            </div>
-            <div>
-              <Label htmlFor="month">월</Label>
-              <Select value={month} onValueChange={setMonth}>
-                <SelectTrigger>
-                  <SelectValue placeholder="월 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((m) => (
-                    <SelectItem key={m.value} value={m.value}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end">
-              <Button onClick={fetchReport} disabled={loading} className="w-full">
-                {loading ? '조회 중...' : '조회'}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center">
@@ -174,17 +111,6 @@ export default function StaffReportPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">총 인력</p>
                 <p className="text-2xl font-bold text-gray-900">{total || 0}명</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <Calendar className="h-8 w-8 text-green-500" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">조회 기간</p>
-                <p className="text-2xl font-bold text-gray-900">{year}년 {month}월</p>
               </div>
             </div>
           </CardContent>
@@ -213,7 +139,7 @@ export default function StaffReportPage() {
       {/* 사업참여인력 현황 테이블 */}
       <Card>
         <CardHeader>
-          <CardTitle>사업참여인력 현황 ({year}년 {month}월)</CardTitle>
+          <CardTitle>사업참여인력 현황</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
