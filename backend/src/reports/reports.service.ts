@@ -28,63 +28,56 @@ export class ReportsService {
   ): Promise<ParticipantReportResponseDto> {
     const { year, month, organizationId } = query;
     
-    // 날짜 범위 설정
-    const startDate = new Date(parseInt(year || new Date().getFullYear().toString()), 
-                              parseInt(month || '1') - 1, 1);
-    const endDate = new Date(parseInt(year || new Date().getFullYear().toString()), 
-                            parseInt(month || '12'), 31, 23, 59, 59);
-
-    // 권한에 따른 조직 필터링
-    let whereCondition: any = {
-      program: {
-        programStart: Between(startDate, endDate),
-        isActive: true
-      }
-    };
-
-    // Selection 테이블과 조인하여 선정된 신청만 조회
-    // status가 'selected'이거나 Selection 테이블에 선정 기록이 있는 경우
-
-    // 직원/운영자는 자신의 조직만 볼 수 있음
-    if (user.role === UserRole.STAFF || user.role === UserRole.OPERATOR) {
-      if (user.organizationId) {
-        whereCondition.program.organizerId = user.organizationId;
-      }
-    }
-
-    // 특정 조직 필터
-    if (organizationId) {
-      whereCondition.program.organizerId = organizationId;
-    }
-
-    // 데이터 조회 - QueryBuilder 사용하여 Selection 테이블과 조인
-    console.log('참여자 현황 조회 조건:', JSON.stringify(whereCondition, null, 2));
+    // 날짜 범위 설정 - 해당 월의 시작일과 마지막일
+    const targetYear = parseInt(year || new Date().getFullYear().toString());
+    const targetMonth = parseInt(month || '1');
     
+    const startDate = new Date(targetYear, targetMonth - 1, 1);
+    const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59); // 해당 월의 마지막 날
+
+    console.log('참여자 현황 조회 조건:', {
+      year: targetYear,
+      month: targetMonth,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      userRole: user.role,
+      userOrgId: user.organizationId,
+      queryOrgId: organizationId
+    });
+
+    // QueryBuilder를 사용하여 복잡한 조인과 조건 처리
     const queryBuilder = this.applicationRepository
       .createQueryBuilder('application')
       .leftJoinAndSelect('application.program', 'program')
       .leftJoinAndSelect('application.applicant', 'applicant')
       .leftJoinAndSelect('application.selection', 'selection')
-      .where('program.programStart BETWEEN :startDate AND :endDate', { startDate, endDate })
-      .andWhere('program.isActive = :isActive', { isActive: true });
+      .where('program.isActive = :isActive', { isActive: true })
+      .andWhere(
+        // 프로그램이 해당 월에 진행되는 경우 (시작일이 해당 월 이전이고 종료일이 해당 월 이후)
+        '(program.programStart <= :endDate AND program.programEnd >= :startDate)',
+        { startDate, endDate }
+      )
+      .andWhere(
+        // 선정된 신청만 조회
+        '(application.status = :selectedStatus OR (selection.id IS NOT NULL AND selection.selected = :selected))',
+        { selectedStatus: 'selected', selected: true }
+      );
 
-    // 권한별 조직 필터링
+    // 직원/운영자는 자신의 조직만 볼 수 있음
     if (user.role === UserRole.STAFF || user.role === UserRole.OPERATOR) {
       if (user.organizationId) {
-        queryBuilder.andWhere('program.organizerId = :organizationId', { organizationId: user.organizationId });
+        queryBuilder.andWhere('program.organizerId = :userOrganizationId', { 
+          userOrganizationId: user.organizationId 
+        });
       }
     }
 
+    // 특정 조직 필터
     if (organizationId) {
       queryBuilder.andWhere('program.organizerId = :organizationId', { organizationId });
     }
 
-    // 선정된 신청만 조회 (status가 'selected'이거나 Selection 테이블에 선정 기록이 있는 경우)
-    queryBuilder.andWhere(
-      '(application.status = :selectedStatus OR (selection.id IS NOT NULL AND selection.selected = :selected))',
-      { selectedStatus: 'selected', selected: true }
-    );
-
+    // 정렬 및 조회
     queryBuilder
       .orderBy('program.programStart', 'ASC')
       .addOrderBy('applicant.name', 'ASC');
