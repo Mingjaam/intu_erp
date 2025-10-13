@@ -42,8 +42,8 @@ export default function ParticipantReportPage() {
       console.log('참여자 현황 조회:', { year, month });
       const response = await apiClient.get<ParticipantReportResponse>(`/reports/participants?year=${year}&month=${month}`);
       console.log('조회 결과:', response);
-      setReportData(response.data.data);
-      setTotal(response.data.total);
+      setReportData(response.data);
+      setTotal(response.total);
     } catch (error) {
       console.error('보고서 조회 오류:', error);
     } finally {
@@ -199,7 +199,7 @@ export default function ParticipantReportPage() {
                   size="sm" 
                   onClick={exportToExcel}
                   className="mt-2"
-                  disabled={reportData.length === 0}
+                  disabled={!reportData || reportData.length === 0}
                 >
                   <Download className="h-4 w-4 mr-2" />
                   다운로드
@@ -237,7 +237,7 @@ export default function ParticipantReportPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {reportData.length === 0 ? (
+                  {!reportData || reportData.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="border border-gray-300 px-4 py-8 text-center text-gray-500">
                         해당 기간에 참여자가 없습니다.
