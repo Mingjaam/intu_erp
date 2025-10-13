@@ -43,9 +43,8 @@ export default function ParticipantReportPage() {
       const response = await apiClient.get<ParticipantReportResponse>(`/reports/participants?year=${year}&month=${month}`);
       console.log('조회 결과:', response);
       console.log('response.data:', response.data);
-      console.log('response.data.data:', response.data.data);
-      setReportData(response.data.data);
-      setTotal(response.data.total);
+      setReportData(response.data);
+      setTotal(response.total);
     } catch (error) {
       console.error('보고서 조회 오류:', error);
     } finally {
