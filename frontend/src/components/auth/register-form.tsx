@@ -8,13 +8,16 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
+import { PasswordValidator } from './password-validator';
 
 const registerSchema = z.object({
   email: z.string().email('올바른 이메일 주소를 입력해주세요'),
-  password: z.string().min(6, '비밀번호는 최소 6자 이상이어야 합니다'),
+  password: z.string()
+    .min(8, '비밀번호는 최소 8자 이상이어야 합니다')
+    .regex(/[A-Z]/, '비밀번호는 대문자를 포함해야 합니다')
+    .regex(/[~!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, '비밀번호는 특수문자를 포함해야 합니다'),
   name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다'),
   phone: z.string().min(1, '전화번호는 필수입니다').regex(/^[0-9]+$/, '전화번호는 숫자만 입력해주세요 (하이픈 제외)'),
 });
@@ -30,9 +33,12 @@ export function RegisterForm() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
+
+  const watchedPassword = watch('password', '');
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -123,10 +129,11 @@ export function RegisterForm() {
           <Input
             id="password"
             type="password"
-            placeholder="6자 이상 입력하세요"
+            placeholder="8자 이상, 대문자, 특수문자 포함"
             className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
             {...register('password')}
           />
+          {watchedPassword && <PasswordValidator password={watchedPassword} />}
           {errors.password && (
             <p className="text-sm text-red-500 flex items-center gap-1">
               <span>⚠️</span>
