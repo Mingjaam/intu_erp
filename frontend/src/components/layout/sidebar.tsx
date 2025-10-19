@@ -13,7 +13,8 @@ import {
   Calendar,
   ChevronDown,
   ChevronRight,
-  BarChart3
+  BarChart3,
+  Calculator
 } from 'lucide-react';
 
 const getNavigation = (userRole: string) => {
