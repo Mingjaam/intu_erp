@@ -18,6 +18,7 @@ export default function BudgetReportPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string>('');
   const [selectedOrganizationName, setSelectedOrganizationName] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
   // 권한 확인
   if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
@@ -32,11 +33,21 @@ export default function BudgetReportPage() {
   }
 
   useEffect(() => {
-    fetchOrganizations();
-  }, []);
+    initializePage();
+  }, [user]);
 
-  const fetchOrganizations = async () => {
+  const initializePage = async () => {
+    setLoading(true);
     try {
+      // 관리자가 아닌 경우 사용자의 조직을 바로 설정
+      if (user.role !== 'admin' && user.organizationId) {
+        setSelectedOrganizationId(user.organizationId);
+        setSelectedOrganizationName(user.organization?.name || '');
+        setLoading(false);
+        return;
+      }
+
+      // 관리자인 경우 모든 조직 목록을 가져옴
       const response = await fetch('/api/organizations');
       if (response.ok) {
         const data = await response.json();
@@ -53,6 +64,8 @@ export default function BudgetReportPage() {
       }
     } catch (error) {
       console.error('조직 목록을 불러오는데 실패했습니다:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -64,31 +77,46 @@ export default function BudgetReportPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container mx-auto py-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">사업 진행비 현황을 불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-6 space-y-6">
-      {/* 조직 선택 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
-            조직 선택
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={selectedOrganizationId} onValueChange={handleOrganizationChange}>
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="조직을 선택하세요" />
-            </SelectTrigger>
-            <SelectContent>
-              {organizations.map((org) => (
-                <SelectItem key={org.id} value={org.id}>
-                  {org.name} ({org.type})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+      {/* 관리자만 조직 선택 UI 표시 */}
+      {user.role === 'admin' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              조직 선택
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={selectedOrganizationId} onValueChange={handleOrganizationChange}>
+              <SelectTrigger className="w-full max-w-md">
+                <SelectValue placeholder="조직을 선택하세요" />
+              </SelectTrigger>
+              <SelectContent>
+                {organizations.map((org) => (
+                  <SelectItem key={org.id} value={org.id}>
+                    {org.name} ({org.type})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 예산 관리 페이지 */}
       {selectedOrganizationId && (
