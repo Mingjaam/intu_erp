@@ -100,7 +100,7 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
   const totalExecution = expenses.reduce((sum, expense) => sum + (expense.executionAmount || 0), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       {/* 헤더 */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">사업진행비 현황</h1>
