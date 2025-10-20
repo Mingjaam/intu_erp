@@ -36,6 +36,7 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
         organizationId,
         year,
         month,
+        content: '',
         usageDate: '',
         paymentDate: '',
         vendor: '',
@@ -144,6 +145,7 @@ interface ExpenseRowProps {
 
 function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: ExpenseRowProps) {
   const [editData, setEditData] = useState<Partial<BudgetExpense>>({
+    content: expense.content,
     usageDate: expense.usageDate,
     paymentDate: expense.paymentDate,
     vendor: expense.vendor,
@@ -170,8 +172,8 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
       <tr className="bg-blue-50">
         <td className="px-4 py-2 border border-gray-200">
           <Input
-            value={editData.details || ''}
-            onChange={(e) => setEditData({ ...editData, details: e.target.value })}
+            value={editData.content || ''}
+            onChange={(e) => setEditData({ ...editData, content: e.target.value })}
             placeholder="내용"
             className="w-full"
           />
@@ -270,7 +272,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
 
   return (
     <tr className="hover:bg-gray-50">
-      <td className="px-4 py-2 text-sm border border-gray-200">{expense.details || '-'}</td>
+      <td className="px-4 py-2 text-sm border border-gray-200">{expense.content || '-'}</td>
       <td className="px-4 py-2 text-sm border border-gray-200">{expense.usageDate || '-'}</td>
       <td className="px-4 py-2 text-sm border border-gray-200">{expense.paymentDate || '-'}</td>
       <td className="px-4 py-2 text-sm font-medium border border-gray-200">{expense.vendor || '-'}</td>

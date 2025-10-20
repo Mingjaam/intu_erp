@@ -3,6 +3,7 @@ export interface BudgetExpense {
   organizationId: string;
   year: number;
   month: number;
+  content: string;
   usageDate: string;
   paymentDate: string;
   vendor: string;
@@ -19,6 +20,7 @@ export interface CreateBudgetExpenseRequest {
   organizationId: string;
   year: number;
   month: number;
+  content: string;
   usageDate: string;
   paymentDate: string;
   vendor: string;
@@ -30,6 +32,7 @@ export interface CreateBudgetExpenseRequest {
 }
 
 export interface UpdateBudgetExpenseRequest {
+  content?: string;
   usageDate?: string;
   paymentDate?: string;
   vendor?: string;
