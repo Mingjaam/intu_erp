@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Budget, BudgetQuery } from '@/types/budget';
+import { BudgetExpense } from '@/types/budget';
 import { BudgetTable } from './budget-table';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,7 +15,7 @@ interface BudgetPageProps {
 }
 
 export function BudgetPage({ organizationId, organizationName }: BudgetPageProps) {
-  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [expenses, setExpenses] = useState<BudgetExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -24,58 +24,65 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   useEffect(() => {
-    fetchBudgets();
+    fetchExpenses();
   }, [organizationId, selectedYear, selectedMonth]);
 
-  const fetchBudgets = async () => {
+  const fetchExpenses = async () => {
     setLoading(true);
     try {
-      const query = new URLSearchParams({
-        organizationId,
-        year: selectedYear.toString(),
-        month: selectedMonth.toString(),
-      });
-
-      const response = await fetch(`/api/budgets?${query}`);
-      if (response.ok) {
-        const data = await response.json();
-        setBudgets(data);
+      // 실제 API 호출 대신 로컬 스토리지에서 데이터 가져오기
+      const storageKey = `budget_expenses_${organizationId}_${selectedYear}_${selectedMonth}`;
+      const storedData = localStorage.getItem(storageKey);
+      
+      if (storedData) {
+        setExpenses(JSON.parse(storedData));
       } else {
-        throw new Error('예산 데이터를 불러오는데 실패했습니다.');
+        setExpenses([]);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '예산 데이터를 불러오는데 실패했습니다.');
+      toast.error('사업진행비 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBudgetChange = (updatedBudgets: Budget[]) => {
-    setBudgets(updatedBudgets);
+  const handleExpenseChange = (updatedExpenses: BudgetExpense[]) => {
+    setExpenses(updatedExpenses);
+    
+    // 로컬 스토리지에 저장
+    const storageKey = `budget_expenses_${organizationId}_${selectedYear}_${selectedMonth}`;
+    localStorage.setItem(storageKey, JSON.stringify(updatedExpenses));
   };
 
   const handleExportExcel = async () => {
     try {
-      const response = await fetch(`/api/budgets/export?organizationId=${organizationId}&year=${selectedYear}&month=${selectedMonth}`, {
-        method: 'GET',
-      });
+      // 간단한 CSV 형태로 내보내기
+      const csvContent = [
+        ['사용일자', '지출일자', '지급처', '공급가액', '부가가치세', '집행금액', '세부 내용', '지출구분'],
+        ...expenses.map(expense => [
+          expense.usageDate || '',
+          expense.paymentDate || '',
+          expense.vendor || '',
+          expense.supplyAmount || 0,
+          expense.vatAmount || 0,
+          expense.executionAmount || 0,
+          expense.details || '',
+          expense.expenseType || ''
+        ])
+      ].map(row => row.join(',')).join('\n');
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${organizationName}_${selectedYear}년_${selectedMonth}월_예산현황.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        toast.success('엑셀 파일이 다운로드되었습니다.');
-      } else {
-        throw new Error('엑셀 파일 다운로드에 실패했습니다.');
-      }
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${organizationName}_${selectedYear}년_${selectedMonth}월_사업진행비현황.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('사업진행비 현황 파일이 다운로드되었습니다.');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : '엑셀 파일 다운로드에 실패했습니다.');
+      toast.error('파일 다운로드에 실패했습니다.');
     }
   };
 
@@ -84,7 +91,7 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">예산 데이터를 불러오는 중...</p>
+          <p className="text-gray-600">사업진행비 데이터를 불러오는 중...</p>
         </div>
       </div>
     );
@@ -98,7 +105,7 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
           <Building2 className="w-6 h-6 text-blue-600" />
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{organizationName}</h1>
-            <p className="text-gray-600">사업 진행비 현황 관리</p>
+            <p className="text-gray-600">사업진행비 현황 관리</p>
           </div>
         </div>
         
@@ -155,13 +162,13 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
         </CardContent>
       </Card>
 
-      {/* 예산 테이블 */}
+      {/* 사업진행비 테이블 */}
       <BudgetTable
         organizationId={organizationId}
         year={selectedYear}
         month={selectedMonth}
-        budgets={budgets}
-        onBudgetChange={handleBudgetChange}
+        expenses={expenses}
+        onExpenseChange={handleExpenseChange}
       />
     </div>
   );
