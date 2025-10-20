@@ -101,15 +101,15 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
           <table className="w-full border-collapse">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border border-gray-200">사용일자</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border border-gray-200">지출일자</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border border-gray-200">지급처</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 border border-gray-200">공급가액</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 border border-gray-200">부가가치세</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 border border-gray-200">집행금액</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border border-gray-200">세부 내용</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 border border-gray-200">지출구분</th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 border border-gray-200">작업</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">사용일자</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">지출일자</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">지급처</th>
+                <th className="px-4 py-2 text-right text-sm font-medium text-gray-700 border border-gray-200">공급가액</th>
+                <th className="px-4 py-2 text-right text-sm font-medium text-gray-700 border border-gray-200">부가가치세</th>
+                <th className="px-4 py-2 text-right text-sm font-medium text-gray-700 border border-gray-200">집행금액</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">세부 내용</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">지출구분</th>
+                <th className="px-4 py-2 text-center text-sm font-medium text-gray-700 border border-gray-200">작업</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -167,7 +167,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
   if (isEditing) {
     return (
       <tr className="bg-blue-50">
-        <td className="px-4 py-3 border border-gray-200">
+        <td className="px-4 py-2 border border-gray-200">
           <Input
             type="date"
             value={editData.usageDate || ''}
@@ -176,7 +176,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             className="w-full"
           />
         </td>
-        <td className="px-4 py-3 border border-gray-200">
+        <td className="px-4 py-2 border border-gray-200">
           <Input
             type="date"
             value={editData.paymentDate || ''}
@@ -185,7 +185,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             className="w-full"
           />
         </td>
-        <td className="px-4 py-3 border border-gray-200">
+        <td className="px-4 py-2 border border-gray-200">
           <Input
             value={editData.vendor || ''}
             onChange={(e) => setEditData({ ...editData, vendor: e.target.value })}
@@ -193,7 +193,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             className="w-full"
           />
         </td>
-        <td className="px-4 py-3 border border-gray-200">
+        <td className="px-4 py-2 border border-gray-200">
           <Input
             type="number"
             value={editData.supplyAmount || ''}
@@ -202,7 +202,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             className="w-full"
           />
         </td>
-        <td className="px-4 py-3 border border-gray-200">
+        <td className="px-4 py-2 border border-gray-200">
           <Input
             type="number"
             value={editData.vatAmount || ''}
@@ -211,7 +211,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             className="w-full"
           />
         </td>
-        <td className="px-4 py-3 border border-gray-200">
+        <td className="px-4 py-2 border border-gray-200">
           <Input
             type="number"
             value={editData.executionAmount || ''}
@@ -220,7 +220,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             className="w-full"
           />
         </td>
-        <td className="px-4 py-3 border border-gray-200">
+        <td className="px-4 py-2 border border-gray-200">
           <Input
             value={editData.details || ''}
             onChange={(e) => setEditData({ ...editData, details: e.target.value })}
@@ -228,7 +228,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             className="w-full"
           />
         </td>
-        <td className="px-4 py-3 border border-gray-200">
+        <td className="px-4 py-2 border border-gray-200">
           <Select
             value={editData.expenseType}
             onValueChange={(value) => setEditData({ ...editData, expenseType: value })}
@@ -245,7 +245,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             </SelectContent>
           </Select>
         </td>
-        <td className="px-4 py-3 text-center border border-gray-200">
+        <td className="px-4 py-2 text-center border border-gray-200">
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSave}>
               <Save className="w-4 h-4" />
@@ -261,17 +261,17 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
 
   return (
     <tr className="hover:bg-gray-50">
-      <td className="px-4 py-3 text-sm border border-gray-200">{expense.usageDate || '-'}</td>
-      <td className="px-4 py-3 text-sm border border-gray-200">{expense.paymentDate || '-'}</td>
-      <td className="px-4 py-3 text-sm font-medium border border-gray-200">{expense.vendor || '-'}</td>
-      <td className="px-4 py-3 text-sm text-right border border-gray-200">{formatCurrency(expense.supplyAmount || 0)}</td>
-      <td className="px-4 py-3 text-sm text-right border border-gray-200">{formatCurrency(expense.vatAmount || 0)}</td>
-      <td className="px-4 py-3 text-sm text-right font-medium border border-gray-200">
+      <td className="px-4 py-2 text-sm border border-gray-200">{expense.usageDate || '-'}</td>
+      <td className="px-4 py-2 text-sm border border-gray-200">{expense.paymentDate || '-'}</td>
+      <td className="px-4 py-2 text-sm font-medium border border-gray-200">{expense.vendor || '-'}</td>
+      <td className="px-4 py-2 text-sm text-right border border-gray-200">{formatCurrency(expense.supplyAmount || 0)}</td>
+      <td className="px-4 py-2 text-sm text-right border border-gray-200">{formatCurrency(expense.vatAmount || 0)}</td>
+      <td className="px-4 py-2 text-sm text-right font-medium border border-gray-200">
         {formatCurrency(expense.executionAmount || 0)}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600 border border-gray-200">{expense.details || '-'}</td>
-      <td className="px-4 py-3 text-sm border border-gray-200">{expense.expenseType || '-'}</td>
-      <td className="px-4 py-3 text-center border border-gray-200">
+      <td className="px-4 py-2 text-sm text-gray-600 border border-gray-200">{expense.details || '-'}</td>
+      <td className="px-4 py-2 text-sm border border-gray-200">{expense.expenseType || '-'}</td>
+      <td className="px-4 py-2 text-center border border-gray-200">
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={onEdit}>
             <Edit2 className="w-4 h-4" />
