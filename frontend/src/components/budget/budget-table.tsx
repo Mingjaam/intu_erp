@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { BudgetExpense } from '@/types/budget';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, Save, X, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -81,67 +82,53 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ko-KR', {
-      style: 'currency',
-      currency: 'KRW',
-    }).format(amount);
-  };
-
-  const totalExecution = expenses.reduce((sum, expense) => sum + (expense.executionAmount || 0), 0);
 
   return (
-    <div className="space-y-4">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          {year}년 {month}월 사업진행비 현황
-        </h3>
-        <div className="text-sm text-gray-600">
-          총 집행금액: {formatCurrency(totalExecution)}
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>
+            {year}년 {month}월 사업진행비 현황
+          </CardTitle>
+          <Button onClick={handleAddExpense}>
+            <Plus className="w-4 h-4 mr-2" />
+            행 추가
+          </Button>
         </div>
-      </div>
-
-      {/* 추가 버튼 */}
-      <div className="flex justify-end">
-        <Button onClick={handleAddExpense}>
-          <Plus className="w-4 h-4 mr-2" />
-          행 추가
-        </Button>
-      </div>
-
-      {/* 사업진행비 테이블 */}
-      <div className="border rounded-lg overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">사용일자</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지출일자</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지급처</th>
-              <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">공급가액</th>
-              <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">부가가치세</th>
-              <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">집행금액</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">세부 내용</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지출구분</th>
-              <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">작업</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {expenses.map((expense) => (
-              <ExpenseRow
-                key={expense.id}
-                expense={expense}
-                isEditing={editingId === expense.id}
-                onEdit={() => setEditingId(expense.id)}
-                onSave={(updates) => handleUpdateExpense(expense.id, updates)}
-                onCancel={() => setEditingId(null)}
-                onDelete={() => handleDeleteExpense(expense.id)}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      </CardHeader>
+      <CardContent>
+        <div className="border rounded-lg overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">사용일자</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지출일자</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지급처</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">공급가액</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">부가가치세</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">집행금액</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">세부 내용</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지출구분</th>
+                <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">작업</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {expenses.map((expense) => (
+                <ExpenseRow
+                  key={expense.id}
+                  expense={expense}
+                  isEditing={editingId === expense.id}
+                  onEdit={() => setEditingId(expense.id)}
+                  onSave={(updates) => handleUpdateExpense(expense.id, updates)}
+                  onCancel={() => setEditingId(null)}
+                  onDelete={() => handleDeleteExpense(expense.id)}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BudgetExpense } from '@/types/budget';
 import { BudgetTable } from './budget-table';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, Building2 } from 'lucide-react';
+import { Download, Calendar, Building2, FileSpreadsheet, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BudgetPageProps {
@@ -23,11 +23,7 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
-  useEffect(() => {
-    fetchExpenses();
-  }, [organizationId, selectedYear, selectedMonth]);
-
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
       // 실제 API 호출 대신 로컬 스토리지에서 데이터 가져오기
@@ -39,12 +35,16 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
       } else {
         setExpenses([]);
       }
-    } catch (error) {
+    } catch {
       toast.error('사업진행비 데이터를 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [organizationId, selectedYear, selectedMonth]);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
 
   const handleExpenseChange = (updatedExpenses: BudgetExpense[]) => {
     setExpenses(updatedExpenses);
@@ -81,7 +81,7 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast.success('사업진행비 현황 파일이 다운로드되었습니다.');
-    } catch (error) {
+    } catch {
       toast.error('파일 다운로드에 실패했습니다.');
     }
   };
@@ -97,24 +97,67 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
     );
   }
 
+  const totalExecution = expenses.reduce((sum, expense) => sum + (expense.executionAmount || 0), 0);
+
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Building2 className="w-6 h-6 text-blue-600" />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{organizationName}</h1>
-            <p className="text-gray-600">사업진행비 현황 관리</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <Building2 className="w-6 h-6 text-blue-600" />
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{organizationName}</h1>
+          <p className="text-gray-600">사업진행비 현황 관리</p>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <Button onClick={handleExportExcel} variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            엑셀 다운로드
-          </Button>
-        </div>
+      </div>
+
+      {/* 통계 카드 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <DollarSign className="h-8 w-8 text-green-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">총 집행금액</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {new Intl.NumberFormat('ko-KR', {
+                    style: 'currency',
+                    currency: 'KRW',
+                  }).format(totalExecution)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <Calendar className="h-8 w-8 text-blue-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">조회 기간</p>
+                <p className="text-2xl font-bold text-gray-900">{selectedYear}년 {selectedMonth}월</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <FileSpreadsheet className="h-8 w-8 text-purple-500" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">엑셀 다운로드</p>
+                <Button 
+                  size="sm" 
+                  onClick={handleExportExcel}
+                  className="mt-2"
+                  disabled={!expenses || expenses.length === 0}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  다운로드
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* 필터 */}
