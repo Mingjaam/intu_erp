@@ -92,7 +92,13 @@ export class BudgetsService {
       totalPlanned: 0,
       totalActual: 0,
       totalRemaining: 0,
-      byCategory: {},
+      byCategory: {
+        personnel: { planned: 0, actual: 0, remaining: 0 },
+        operation: { planned: 0, actual: 0, remaining: 0 },
+        equipment: { planned: 0, actual: 0, remaining: 0 },
+        material: { planned: 0, actual: 0, remaining: 0 },
+        other: { planned: 0, actual: 0, remaining: 0 },
+      },
     };
 
     budgets.forEach(budget => {
@@ -100,17 +106,11 @@ export class BudgetsService {
       summary.totalActual += Number(budget.actualAmount);
       summary.totalRemaining += Number(budget.remainingAmount);
 
-      if (!summary.byCategory[budget.category]) {
-        summary.byCategory[budget.category] = {
-          planned: 0,
-          actual: 0,
-          remaining: 0,
-        };
+      if (summary.byCategory[budget.category]) {
+        summary.byCategory[budget.category].planned += Number(budget.plannedAmount);
+        summary.byCategory[budget.category].actual += Number(budget.actualAmount);
+        summary.byCategory[budget.category].remaining += Number(budget.remainingAmount);
       }
-
-      summary.byCategory[budget.category].planned += Number(budget.plannedAmount);
-      summary.byCategory[budget.category].actual += Number(budget.actualAmount);
-      summary.byCategory[budget.category].remaining += Number(budget.remainingAmount);
     });
 
     return summary;
