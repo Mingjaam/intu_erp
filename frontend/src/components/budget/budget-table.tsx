@@ -5,8 +5,7 @@ import { BudgetExpense } from '@/types/budget';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Save, X, Edit2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BudgetTableProps {
@@ -17,16 +16,8 @@ interface BudgetTableProps {
   onExpenseChange: (expenses: BudgetExpense[]) => void;
 }
 
-const EXPENSE_TYPES = [
-  '인건비',
-  '운영비',
-  '장비비',
-  '재료비',
-  '기타'
-];
 
 export function BudgetTable({ organizationId, year, month, expenses, onExpenseChange }: BudgetTableProps) {
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   const handleAddExpense = async () => {
     try {
@@ -50,18 +41,13 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
       // 빈 행 추가
       onExpenseChange([...expenses, expenseData]);
       
-      // 바로 편집 모드로 설정
-      setEditingId(newId);
-      
-      toast.success('새 행이 추가되었습니다. 편집하세요.');
+      toast.success('새 행이 추가되었습니다. 더블클릭하여 편집하세요.');
     } catch {
       toast.error('사업진행비 항목 추가에 실패했습니다.');
     }
   };
 
   const handleUpdateExpense = async (id: string, updates: Partial<BudgetExpense>) => {
-    setEditingId(null);
-    
     try {
       onExpenseChange(expenses.map(expense => 
         expense.id === id ? { ...expense, ...updates } : expense
@@ -119,10 +105,7 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
                 <ExpenseRow
                   key={expense.id}
                   expense={expense}
-                  isEditing={editingId === expense.id}
-                  onEdit={() => setEditingId(expense.id)}
                   onSave={(updates) => handleUpdateExpense(expense.id, updates)}
-                  onCancel={() => setEditingId(null)}
                   onDelete={() => handleDeleteExpense(expense.id)}
                 />
               ))}
@@ -136,25 +119,13 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
 
 interface ExpenseRowProps {
   expense: BudgetExpense;
-  isEditing: boolean;
-  onEdit: () => void;
   onSave: (updates: Partial<BudgetExpense>) => void;
-  onCancel: () => void;
   onDelete: () => void;
 }
 
-function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: ExpenseRowProps) {
-  const [editData, setEditData] = useState<Partial<BudgetExpense>>({
-    content: expense.content,
-    usageDate: expense.usageDate,
-    paymentDate: expense.paymentDate,
-    vendor: expense.vendor,
-    supplyAmount: expense.supplyAmount,
-    vatAmount: expense.vatAmount,
-    executionAmount: expense.executionAmount,
-    details: expense.details,
-    expenseType: expense.expenseType,
-  });
+function ExpenseRow({ expense, onSave, onDelete }: ExpenseRowProps) {
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ko-KR', {
@@ -163,131 +134,106 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
     }).format(amount);
   };
 
-  const handleSave = () => {
-    onSave(editData);
+  const handleDoubleClick = (field: string, currentValue: string | number) => {
+    setEditingField(field);
+    setEditValue(String(currentValue || ''));
   };
 
-  if (isEditing) {
+  const handleSave = (field: string) => {
+    const updates: Partial<BudgetExpense> = {};
+    if (field === 'supplyAmount') {
+      updates.supplyAmount = Number(editValue) || 0;
+    } else if (field === 'vatAmount') {
+      updates.vatAmount = Number(editValue) || 0;
+    } else if (field === 'executionAmount') {
+      updates.executionAmount = Number(editValue) || 0;
+    } else if (field === 'content') {
+      updates.content = editValue;
+    } else if (field === 'usageDate') {
+      updates.usageDate = editValue;
+    } else if (field === 'paymentDate') {
+      updates.paymentDate = editValue;
+    } else if (field === 'vendor') {
+      updates.vendor = editValue;
+    } else if (field === 'details') {
+      updates.details = editValue;
+    } else if (field === 'expenseType') {
+      updates.expenseType = editValue;
+    }
+    onSave(updates);
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  const handleCancel = () => {
+    setEditingField(null);
+    setEditValue('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, field: string) => {
+    if (e.key === 'Enter') {
+      handleSave(field);
+    } else if (e.key === 'Escape') {
+      handleCancel();
+    }
+  };
+
+  const renderCell = (field: string, value: string | number, type: string = 'text', className: string = '') => {
+    if (editingField === field) {
+      return (
+        <Input
+          type={type}
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={() => handleSave(field)}
+          onKeyDown={(e) => handleKeyDown(e, field)}
+          className={`w-full h-full border-0 p-0 focus:ring-2 focus:ring-blue-500 ${className}`}
+          autoFocus
+        />
+      );
+    }
+
     return (
-      <tr className="bg-blue-50">
-        <td className="px-4 py-2 border border-gray-200">
-          <Input
-            value={editData.content || ''}
-            onChange={(e) => setEditData({ ...editData, content: e.target.value })}
-            placeholder="내용"
-            className="w-full"
-          />
-        </td>
-        <td className="px-4 py-2 border border-gray-200">
-          <Input
-            type="date"
-            value={editData.usageDate || ''}
-            onChange={(e) => setEditData({ ...editData, usageDate: e.target.value })}
-            placeholder="사용일자"
-            className="w-full"
-          />
-        </td>
-        <td className="px-4 py-2 border border-gray-200">
-          <Input
-            type="date"
-            value={editData.paymentDate || ''}
-            onChange={(e) => setEditData({ ...editData, paymentDate: e.target.value })}
-            placeholder="지출일자"
-            className="w-full"
-          />
-        </td>
-        <td className="px-4 py-2 border border-gray-200">
-          <Input
-            value={editData.vendor || ''}
-            onChange={(e) => setEditData({ ...editData, vendor: e.target.value })}
-            placeholder="지급처"
-            className="w-full"
-          />
-        </td>
-        <td className="px-4 py-2 border border-gray-200">
-          <Input
-            type="number"
-            value={editData.supplyAmount || ''}
-            onChange={(e) => setEditData({ ...editData, supplyAmount: Number(e.target.value) })}
-            placeholder="0"
-            className="w-full"
-          />
-        </td>
-        <td className="px-4 py-2 border border-gray-200">
-          <Input
-            type="number"
-            value={editData.vatAmount || ''}
-            onChange={(e) => setEditData({ ...editData, vatAmount: Number(e.target.value) })}
-            placeholder="0"
-            className="w-full"
-          />
-        </td>
-        <td className="px-4 py-2 border border-gray-200">
-          <Input
-            type="number"
-            value={editData.executionAmount || ''}
-            onChange={(e) => setEditData({ ...editData, executionAmount: Number(e.target.value) })}
-            placeholder="0"
-            className="w-full"
-          />
-        </td>
-        <td className="px-4 py-2 border border-gray-200">
-          <Input
-            value={editData.details || ''}
-            onChange={(e) => setEditData({ ...editData, details: e.target.value })}
-            placeholder="세부내용및 품목"
-            className="w-full"
-          />
-        </td>
-        <td className="px-4 py-2 border border-gray-200">
-          <Select
-            value={editData.expenseType}
-            onValueChange={(value) => setEditData({ ...editData, expenseType: value })}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EXPENSE_TYPES.map((type) => (
-                <SelectItem key={type} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </td>
-        <td className="px-4 py-2 text-center border border-gray-200">
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleSave}>
-              <Save className="w-4 h-4" />
-            </Button>
-            <Button size="sm" variant="outline" onClick={onCancel}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-        </td>
-      </tr>
+      <div
+        className={`w-full h-full cursor-pointer hover:bg-blue-50 p-1 rounded ${className}`}
+        onDoubleClick={() => handleDoubleClick(field, value)}
+      >
+        {type === 'number' ? formatCurrency(Number(value) || 0) : (value || '-')}
+      </div>
     );
-  }
+  };
 
   return (
     <tr className="hover:bg-gray-50">
-      <td className="px-4 py-2 text-sm border border-gray-200">{expense.content || '-'}</td>
-      <td className="px-4 py-2 text-sm border border-gray-200">{expense.usageDate || '-'}</td>
-      <td className="px-4 py-2 text-sm border border-gray-200">{expense.paymentDate || '-'}</td>
-      <td className="px-4 py-2 text-sm font-medium border border-gray-200">{expense.vendor || '-'}</td>
-      <td className="px-4 py-2 text-sm text-right border border-gray-200">{formatCurrency(expense.supplyAmount || 0)}</td>
-      <td className="px-4 py-2 text-sm text-right border border-gray-200">{formatCurrency(expense.vatAmount || 0)}</td>
-      <td className="px-4 py-2 text-sm text-right font-medium border border-gray-200">
-        {formatCurrency(expense.executionAmount || 0)}
+      <td className="px-4 py-2 text-sm border border-gray-200 min-w-[150px]">
+        {renderCell('content', expense.content || '')}
       </td>
-      <td className="px-4 py-2 text-sm text-gray-600 border border-gray-200">{expense.details || '-'}</td>
-      <td className="px-4 py-2 text-sm border border-gray-200">{expense.expenseType || '-'}</td>
-      <td className="px-4 py-2 text-center border border-gray-200">
+      <td className="px-4 py-2 text-sm border border-gray-200 min-w-[120px]">
+        {renderCell('usageDate', expense.usageDate || '', 'date')}
+      </td>
+      <td className="px-4 py-2 text-sm border border-gray-200 min-w-[120px]">
+        {renderCell('paymentDate', expense.paymentDate || '', 'date')}
+      </td>
+      <td className="px-4 py-2 text-sm font-medium border border-gray-200 min-w-[120px]">
+        {renderCell('vendor', expense.vendor || '')}
+      </td>
+      <td className="px-4 py-2 text-sm text-right border border-gray-200 min-w-[100px]">
+        {renderCell('supplyAmount', expense.supplyAmount || 0, 'number')}
+      </td>
+      <td className="px-4 py-2 text-sm text-right border border-gray-200 min-w-[100px]">
+        {renderCell('vatAmount', expense.vatAmount || 0, 'number')}
+      </td>
+      <td className="px-4 py-2 text-sm text-right font-medium border border-gray-200 min-w-[100px]">
+        {renderCell('executionAmount', expense.executionAmount || 0, 'number')}
+      </td>
+      <td className="px-4 py-2 text-sm text-gray-600 border border-gray-200 min-w-[200px]">
+        {renderCell('details', expense.details || '')}
+      </td>
+      <td className="px-4 py-2 text-sm border border-gray-200 min-w-[100px]">
+        {renderCell('expenseType', expense.expenseType || '')}
+      </td>
+      <td className="px-4 py-2 text-center border border-gray-200 min-w-[80px]">
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={onEdit}>
-            <Edit2 className="w-4 h-4" />
-          </Button>
           <Button size="sm" variant="outline" onClick={onDelete}>
             <Trash2 className="w-4 h-4" />
           </Button>
