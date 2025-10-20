@@ -88,7 +88,7 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>
-            {year}년 {month}월 사업진행비 현황
+            {year}년 {month}월 사업진행비 내역
           </CardTitle>
           <Button onClick={handleAddExpense}>
             <Plus className="w-4 h-4 mr-2" />

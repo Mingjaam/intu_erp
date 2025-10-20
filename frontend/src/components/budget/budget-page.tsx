@@ -6,7 +6,7 @@ import { BudgetTable } from './budget-table';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Calendar, Building2, FileSpreadsheet, DollarSign } from 'lucide-react';
+import { Download, Calendar, FileSpreadsheet, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface BudgetPageProps {
@@ -102,12 +102,9 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex items-center gap-3">
-        <Building2 className="w-6 h-6 text-blue-600" />
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{organizationName}</h1>
-          <p className="text-gray-600">사업진행비 현황 관리</p>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">사업진행비 현황</h1>
+        <p className="text-gray-600">조직별 사업진행비 현황을 조회하고 엑셀로 다운로드할 수 있습니다.</p>
       </div>
 
       {/* 통계 카드 */}
