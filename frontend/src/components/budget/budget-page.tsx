@@ -104,7 +104,7 @@ export function BudgetPage({ organizationId, organizationName }: BudgetPageProps
       {/* 헤더 */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">사업진행비 현황</h1>
-        <p className="text-gray-600">조직별 사업진행비 현황을 조회하고 엑셀로 다운로드할 수 있습니다.</p>
+        <p className="text-gray-600">사업진행비 현황을 조회하고 엑셀로 다운로드할 수 있습니다.</p>
       </div>
 
       {/* 통계 카드 */}

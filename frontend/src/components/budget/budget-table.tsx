@@ -101,13 +101,14 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
           <table className="w-full border-collapse">
             <thead className="bg-gray-50">
               <tr>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">내용</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">사용일자</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">지출일자</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">지급처</th>
                 <th className="px-4 py-2 text-right text-sm font-medium text-gray-700 border border-gray-200">공급가액</th>
                 <th className="px-4 py-2 text-right text-sm font-medium text-gray-700 border border-gray-200">부가가치세</th>
                 <th className="px-4 py-2 text-right text-sm font-medium text-gray-700 border border-gray-200">집행금액</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">세부 내용</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">세부내용 및 품목</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">지출구분</th>
                 <th className="px-4 py-2 text-center text-sm font-medium text-gray-700 border border-gray-200">작업</th>
               </tr>
@@ -169,6 +170,14 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
       <tr className="bg-blue-50">
         <td className="px-4 py-2 border border-gray-200">
           <Input
+            value={editData.details || ''}
+            onChange={(e) => setEditData({ ...editData, details: e.target.value })}
+            placeholder="내용"
+            className="w-full"
+          />
+        </td>
+        <td className="px-4 py-2 border border-gray-200">
+          <Input
             type="date"
             value={editData.usageDate || ''}
             onChange={(e) => setEditData({ ...editData, usageDate: e.target.value })}
@@ -224,7 +233,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
           <Input
             value={editData.details || ''}
             onChange={(e) => setEditData({ ...editData, details: e.target.value })}
-            placeholder="세부 내용"
+            placeholder="세부내용및 품목"
             className="w-full"
           />
         </td>
@@ -261,6 +270,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
 
   return (
     <tr className="hover:bg-gray-50">
+      <td className="px-4 py-2 text-sm border border-gray-200">{expense.details || '-'}</td>
       <td className="px-4 py-2 text-sm border border-gray-200">{expense.usageDate || '-'}</td>
       <td className="px-4 py-2 text-sm border border-gray-200">{expense.paymentDate || '-'}</td>
       <td className="px-4 py-2 text-sm font-medium border border-gray-200">{expense.vendor || '-'}</td>
