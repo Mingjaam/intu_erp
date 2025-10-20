@@ -97,35 +97,37 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
         </div>
       </CardHeader>
       <CardContent>
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">사용일자</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지출일자</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지급처</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">공급가액</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">부가가치세</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">집행금액</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">세부 내용</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">지출구분</th>
-                <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">작업</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {expenses.map((expense) => (
-                <ExpenseRow
-                  key={expense.id}
-                  expense={expense}
-                  isEditing={editingId === expense.id}
-                  onEdit={() => setEditingId(expense.id)}
-                  onSave={(updates) => handleUpdateExpense(expense.id, updates)}
-                  onCancel={() => setEditingId(null)}
-                  onDelete={() => handleDeleteExpense(expense.id)}
-                />
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-x-auto">
+          <div className="border rounded-lg overflow-hidden min-w-full">
+            <table className="w-full min-w-[1000px]">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 whitespace-nowrap">사용일자</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 whitespace-nowrap">지출일자</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 whitespace-nowrap">지급처</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 whitespace-nowrap">공급가액</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 whitespace-nowrap">부가가치세</th>
+                  <th className="px-4 py-3 text-right text-sm font-medium text-gray-700 whitespace-nowrap">집행금액</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 whitespace-nowrap">세부 내용</th>
+                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 whitespace-nowrap">지출구분</th>
+                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap">작업</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {expenses.map((expense) => (
+                  <ExpenseRow
+                    key={expense.id}
+                    expense={expense}
+                    isEditing={editingId === expense.id}
+                    onEdit={() => setEditingId(expense.id)}
+                    onSave={(updates) => handleUpdateExpense(expense.id, updates)}
+                    onCancel={() => setEditingId(null)}
+                    onDelete={() => handleDeleteExpense(expense.id)}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -167,66 +169,73 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
   if (isEditing) {
     return (
       <tr className="bg-blue-50">
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 whitespace-nowrap">
           <Input
             type="date"
             value={editData.usageDate || ''}
             onChange={(e) => setEditData({ ...editData, usageDate: e.target.value })}
             placeholder="사용일자"
+            className="w-full min-w-[120px]"
           />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 whitespace-nowrap">
           <Input
             type="date"
             value={editData.paymentDate || ''}
             onChange={(e) => setEditData({ ...editData, paymentDate: e.target.value })}
             placeholder="지출일자"
+            className="w-full min-w-[120px]"
           />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 min-w-[120px]">
           <Input
             value={editData.vendor || ''}
             onChange={(e) => setEditData({ ...editData, vendor: e.target.value })}
             placeholder="지급처"
+            className="w-full"
           />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 whitespace-nowrap">
           <Input
             type="number"
             value={editData.supplyAmount || ''}
             onChange={(e) => setEditData({ ...editData, supplyAmount: Number(e.target.value) })}
             placeholder="0"
+            className="w-full min-w-[100px]"
           />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 whitespace-nowrap">
           <Input
             type="number"
             value={editData.vatAmount || ''}
             onChange={(e) => setEditData({ ...editData, vatAmount: Number(e.target.value) })}
             placeholder="0"
+            className="w-full min-w-[100px]"
           />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 whitespace-nowrap">
           <Input
             type="number"
             value={editData.executionAmount || ''}
             onChange={(e) => setEditData({ ...editData, executionAmount: Number(e.target.value) })}
             placeholder="0"
+            className="w-full min-w-[100px]"
           />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 min-w-[200px] max-w-[300px]">
           <Input
             value={editData.details || ''}
             onChange={(e) => setEditData({ ...editData, details: e.target.value })}
             placeholder="세부 내용"
+            className="w-full"
           />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 whitespace-nowrap">
           <Select
             value={editData.expenseType}
             onValueChange={(value) => setEditData({ ...editData, expenseType: value })}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full min-w-[100px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -238,7 +247,7 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
             </SelectContent>
           </Select>
         </td>
-        <td className="px-4 py-3 text-center">
+        <td className="px-4 py-3 text-center whitespace-nowrap">
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSave}>
               <Save className="w-4 h-4" />
@@ -254,17 +263,17 @@ function ExpenseRow({ expense, isEditing, onEdit, onSave, onCancel, onDelete }: 
 
   return (
     <tr className="hover:bg-gray-50">
-      <td className="px-4 py-3 text-sm">{expense.usageDate || '-'}</td>
-      <td className="px-4 py-3 text-sm">{expense.paymentDate || '-'}</td>
-      <td className="px-4 py-3 text-sm font-medium">{expense.vendor || '-'}</td>
-      <td className="px-4 py-3 text-sm text-right">{formatCurrency(expense.supplyAmount || 0)}</td>
-      <td className="px-4 py-3 text-sm text-right">{formatCurrency(expense.vatAmount || 0)}</td>
-      <td className="px-4 py-3 text-sm text-right font-medium">
+      <td className="px-4 py-3 text-sm whitespace-nowrap">{expense.usageDate || '-'}</td>
+      <td className="px-4 py-3 text-sm whitespace-nowrap">{expense.paymentDate || '-'}</td>
+      <td className="px-4 py-3 text-sm font-medium min-w-[120px]">{expense.vendor || '-'}</td>
+      <td className="px-4 py-3 text-sm text-right whitespace-nowrap">{formatCurrency(expense.supplyAmount || 0)}</td>
+      <td className="px-4 py-3 text-sm text-right whitespace-nowrap">{formatCurrency(expense.vatAmount || 0)}</td>
+      <td className="px-4 py-3 text-sm text-right font-medium whitespace-nowrap">
         {formatCurrency(expense.executionAmount || 0)}
       </td>
-      <td className="px-4 py-3 text-sm text-gray-600">{expense.details || '-'}</td>
-      <td className="px-4 py-3 text-sm">{expense.expenseType || '-'}</td>
-      <td className="px-4 py-3 text-center">
+      <td className="px-4 py-3 text-sm text-gray-600 min-w-[200px] max-w-[300px]">{expense.details || '-'}</td>
+      <td className="px-4 py-3 text-sm whitespace-nowrap">{expense.expenseType || '-'}</td>
+      <td className="px-4 py-3 text-center whitespace-nowrap">
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={onEdit}>
             <Edit2 className="w-4 h-4" />
