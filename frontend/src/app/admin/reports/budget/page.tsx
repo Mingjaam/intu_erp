@@ -33,41 +33,43 @@ export default function BudgetReportPage() {
   }
 
   useEffect(() => {
-    initializePage();
-  }, [user]);
+    const initializePage = async () => {
+      setLoading(true);
+      try {
+        // 관리자가 아닌 경우 사용자의 조직을 바로 설정
+        if (user && user.role !== 'admin' && user.organizationId) {
+          setSelectedOrganizationId(user.organizationId);
+          setSelectedOrganizationName(user.organization?.name || '');
+          setLoading(false);
+          return;
+        }
 
-  const initializePage = async () => {
-    setLoading(true);
-    try {
-      // 관리자가 아닌 경우 사용자의 조직을 바로 설정
-      if (user.role !== 'admin' && user.organizationId) {
-        setSelectedOrganizationId(user.organizationId);
-        setSelectedOrganizationName(user.organization?.name || '');
-        setLoading(false);
-        return;
-      }
-
-      // 관리자인 경우 모든 조직 목록을 가져옴
-      const response = await fetch('/api/organizations');
-      if (response.ok) {
-        const data = await response.json();
-        setOrganizations(data);
-        
-        // 사용자의 조직이 있으면 기본 선택
-        if (user?.organizationId) {
-          const userOrg = data.find((org: Organization) => org.id === user.organizationId);
-          if (userOrg) {
-            setSelectedOrganizationId(userOrg.id);
-            setSelectedOrganizationName(userOrg.name);
+        // 관리자인 경우 모든 조직 목록을 가져옴
+        const response = await fetch('/api/organizations');
+        if (response.ok) {
+          const data = await response.json();
+          setOrganizations(data);
+          
+          // 사용자의 조직이 있으면 기본 선택
+          if (user?.organizationId) {
+            const userOrg = data.find((org: Organization) => org.id === user.organizationId);
+            if (userOrg) {
+              setSelectedOrganizationId(userOrg.id);
+              setSelectedOrganizationName(userOrg.name);
+            }
           }
         }
+      } catch (error) {
+        console.error('조직 목록을 불러오는데 실패했습니다:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('조직 목록을 불러오는데 실패했습니다:', error);
-    } finally {
-      setLoading(false);
+    };
+
+    if (user) {
+      initializePage();
     }
-  };
+  }, [user?.id, user?.role, user?.organizationId]);
 
   const handleOrganizationChange = (organizationId: string) => {
     const organization = organizations.find(org => org.id === organizationId);
