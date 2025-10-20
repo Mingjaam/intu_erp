@@ -97,7 +97,7 @@ export function BudgetTable({ organizationId, year, month, expenses, onExpenseCh
                 <th className="px-4 py-2 text-right text-sm font-medium text-gray-700 border border-gray-200">집행금액</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">세부내용 및 품목</th>
                 <th className="px-4 py-2 text-left text-sm font-medium text-gray-700 border border-gray-200">지출구분</th>
-                <th className="px-4 py-2 text-center text-sm font-medium text-gray-700 border border-gray-200">작업</th>
+                <th className="px-4 py-2 text-center text-sm font-medium text-gray-700 border border-gray-200">삭제</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
