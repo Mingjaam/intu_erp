@@ -54,12 +54,10 @@ export class ProgramsController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '프로그램 상세 조회' })
   @ApiResponse({ status: 200, description: '프로그램 상세 정보를 성공적으로 조회했습니다.' })
   @ApiResponse({ status: 404, description: '프로그램을 찾을 수 없습니다.' })
   @ApiResponse({ status: 403, description: '접근 권한이 없습니다.' })
-  @ApiBearerAuth()
   findOne(@Param('id') id: string, @Request() req) {
     console.log('프로그램 상세 조회 요청:', { id, user: req.user });
     return this.programsService.findOne(id, req.user);
