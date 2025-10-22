@@ -67,7 +67,7 @@ export default function ProgramDetailPage() {
     if (programId) {
       fetchProgram();
     }
-  }, [programId, user, router]);
+  }, [programId, router]);
 
   if (isLoading) {
     return (
@@ -228,6 +228,19 @@ export default function ProgramDetailPage() {
                         )
                       ) : (
                         <div className="text-center">
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <p className="text-sm text-blue-700 mb-3">
+                              💡 프로그램에 신청하려면 로그인이 필요합니다
+                            </p>
+                            <div className="flex justify-center space-x-2">
+                              <Link href="/auth/login">
+                                <Button size="sm" variant="outline">로그인</Button>
+                              </Link>
+                              <Link href="/auth/register">
+                                <Button size="sm">회원가입</Button>
+                              </Link>
+                            </div>
+                          </div>
                           <Button 
                             size="lg"
                             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
