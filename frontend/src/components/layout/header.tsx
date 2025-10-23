@@ -34,6 +34,9 @@ export function Header() {
               <h1 className="text-xl font-bold text-gray-900">Intu ERP</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/programs">
+                <Button variant="ghost">프로그램 보기</Button>
+              </Link>
               <Link href="/auth/login">
                 <Button variant="outline">로그인</Button>
               </Link>
