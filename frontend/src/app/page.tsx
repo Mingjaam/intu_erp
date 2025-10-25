@@ -39,7 +39,7 @@ export default function HomePage() {
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Intu ERP에 오신 것을 환영합니다
+          Nuvio에 오신 것을 환영합니다
         </h1>
         <p className="text-gray-600">
           페이지를 이동하고 있습니다...

@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Intu ERP',
+  title: 'Nuvio',
   description: '신청자, 수혜자, 프로그램, 후속 활동을 관리하는 ERP 시스템',
 };
 
