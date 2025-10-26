@@ -17,7 +17,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
-import { getKoreanDateTimeString, calculateProgramStatus } from '@/lib/date-utils';
+import { getKoreanDateTimeString, calculateProgramStatus, koreanDateTimeStringToUTC } from '@/lib/date-utils';
 
 const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
@@ -144,6 +144,11 @@ export default function NewProgramPage() {
     try {
       const programData = {
         ...data,
+        // 한국 시간을 UTC로 변환
+        applyStart: koreanDateTimeStringToUTC(data.applyStart).toISOString(),
+        applyEnd: koreanDateTimeStringToUTC(data.applyEnd).toISOString(),
+        programStart: koreanDateTimeStringToUTC(data.programStart).toISOString(),
+        programEnd: koreanDateTimeStringToUTC(data.programEnd).toISOString(),
         applicationForm: { fields: formFields },
         metadata: {
           createdBy: 'admin',

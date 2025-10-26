@@ -721,7 +721,7 @@ export default function AdminDashboard() {
                             {statusLabels[program.status as keyof typeof statusLabels] || (program.status as string)}
                           </Badge>
                           <span className="text-xs text-gray-500">
-                            {new Date(program.createdAt as string).toLocaleDateString()}
+                            {new Date(program.createdAt as string).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}
                           </span>
                         </div>
                       </div>
@@ -741,11 +741,11 @@ export default function AdminDashboard() {
                     <div className="space-y-1 text-xs text-gray-600 mb-3">
                       <div className="flex items-center">
                         <Calendar className="h-3 w-3 mr-1" />
-                        <span>신청: {program.applyStart ? new Date(program.applyStart as string).toLocaleDateString() : '미정'} ~ {program.applyEnd ? new Date(program.applyEnd as string).toLocaleDateString() : '미정'}</span>
+                        <span>신청: {program.applyStart ? new Date(program.applyStart as string).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }) : '미정'} ~ {program.applyEnd ? new Date(program.applyEnd as string).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }) : '미정'}</span>
                       </div>
                       <div className="flex items-center">
                         <Calendar className="h-3 w-3 mr-1" />
-                        <span>활동: {program.programStart ? new Date(program.programStart as string).toLocaleDateString() : '미정'} ~ {program.programEnd ? new Date(program.programEnd as string).toLocaleDateString() : '미정'}</span>
+                        <span>활동: {program.programStart ? new Date(program.programStart as string).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }) : '미정'} ~ {program.programEnd ? new Date(program.programEnd as string).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' }) : '미정'}</span>
                       </div>
                     </div>
 
@@ -906,8 +906,8 @@ export default function AdminDashboard() {
                         </div>
                         <div className="text-xs text-gray-600 mt-1">
                           {isApplicationPeriod 
-                            ? `신청: ${appStart.toLocaleDateString()} ~ ${appEnd.toLocaleDateString()}`
-                            : `활동: ${actStart.toLocaleDateString()} ~ ${actEnd.toLocaleDateString()}`
+                            ? `신청: ${appStart.toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })} ~ ${appEnd.toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}`
+                            : `활동: ${new Date(program.programStart).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })} ~ ${new Date(program.programEnd).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}`
                           }
                         </div>
                       </div>

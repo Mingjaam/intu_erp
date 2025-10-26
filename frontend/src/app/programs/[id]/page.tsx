@@ -172,7 +172,7 @@ export default function ProgramDetailPage() {
                         <Calendar className="h-5 w-5 mx-auto mb-1 text-blue-500" />
                         <h3 className="font-semibold text-xs text-gray-700 mb-1">신청기간</h3>
                         <p className="text-xs text-gray-600">
-                          {new Date(program.applyStart).toLocaleDateString('ko-KR')} ~ {new Date(program.applyEnd).toLocaleDateString('ko-KR')}
+                          {new Date(program.applyStart).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })} ~ {new Date(program.applyEnd).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}
                         </p>
                       </CardContent>
                     </Card>
@@ -182,7 +182,7 @@ export default function ProgramDetailPage() {
                         <Calendar className="h-5 w-5 mx-auto mb-1 text-green-500" />
                         <h3 className="font-semibold text-xs text-gray-700 mb-1">활동기간</h3>
                         <p className="text-xs text-gray-600">
-                          {new Date(program.programStart).toLocaleDateString('ko-KR')} ~ {new Date(program.programEnd).toLocaleDateString('ko-KR')}
+                          {new Date(program.programStart).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })} ~ {new Date(program.programEnd).toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })}
                         </p>
                       </CardContent>
                     </Card>
