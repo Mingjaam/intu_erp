@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 // import { Checkbox } from '@/components/ui/checkbox';
 // import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowLeft, Calendar, MapPin, Users } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Program } from '@/types/program';
@@ -40,6 +41,11 @@ function ApplyPageContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
+  const [loginDialog, setLoginDialog] = useState<{
+    isOpen: boolean;
+  }>({
+    isOpen: false,
+  });
 
   const programId = params.id as string;
   const editApplicationId = searchParams.get('edit');
@@ -103,8 +109,7 @@ function ApplyPageContent() {
     e.preventDefault();
     
     if (!user) {
-      toast.error('로그인이 필요합니다.');
-      router.push('/auth/login');
+      setLoginDialog({ isOpen: true });
       return;
     }
 
@@ -138,6 +143,11 @@ function ApplyPageContent() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // 로그인 다이얼로그 닫기
+  const closeLoginDialog = () => {
+    setLoginDialog({ isOpen: false });
   };
 
   const renderFormField = (field: FormField) => {
@@ -393,6 +403,61 @@ function ApplyPageContent() {
           </div>
         </div>
       </div>
+
+      {/* 로그인 다이얼로그 */}
+      <Dialog open={loginDialog.isOpen} onOpenChange={closeLoginDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-semibold">
+              로그인이 필요한 서비스입니다
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            {/* 프로그램 정보 */}
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <UserPlus className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900">
+                {program?.title}
+              </h3>
+              <p className="text-sm text-gray-600">
+                프로그램에 신청하려면 로그인이 필요합니다.
+              </p>
+            </div>
+
+            {/* 안내 메시지 */}
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-blue-700 text-center">
+                로그인 후 프로그램 신청이 가능합니다.
+              </p>
+            </div>
+
+            {/* 버튼 그룹 */}
+            <div className="space-y-3">
+              <Button
+                asChild
+                className="w-full"
+              >
+                <Link href="/auth/login">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  로그인하기
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                asChild
+                className="w-full"
+              >
+                <Link href="/auth/register">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  회원가입하기
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

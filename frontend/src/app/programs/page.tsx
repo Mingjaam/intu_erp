@@ -141,23 +141,6 @@ export default function ProgramsPage() {
                   <span className="text-sm font-medium text-gray-700">지금 신청 가능</span>
                 </div>
               </div>
-              
-              {/* 로그인하지 않은 사용자를 위한 안내 */}
-              {!user && (
-                <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
-                  <p className="text-sm text-blue-700 mb-2">
-                    💡 프로그램에 신청하려면 로그인이 필요합니다
-                  </p>
-                  <div className="flex justify-center space-x-2">
-                    <Link href="/auth/login">
-                      <Button size="sm" variant="outline">로그인</Button>
-                    </Link>
-                    <Link href="/auth/register">
-                      <Button size="sm">회원가입</Button>
-                    </Link>
-                  </div>
-                </div>
-              )}
             </div>
 
 
