@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Program } from '@/database/entities/program.entity';
+import { Program, ProgramStatus } from '@/database/entities/program.entity';
 import { User, UserRole } from '@/database/entities/user.entity';
 import { CreateProgramDto, UpdateProgramDto, ProgramQueryDto } from './dto/program.dto';
 
