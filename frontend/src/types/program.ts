@@ -9,7 +9,7 @@ export interface Program {
     name: string;
     type: string;
   };
-  status: 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived';
+  status: 'before_application' | 'application_open' | 'in_progress' | 'completed' | 'archived';
   applyStart: string;
   applyEnd: string;
   programStart: string;
@@ -35,7 +35,7 @@ export interface CreateProgramData {
   description?: string;
   summary?: string;
   organizerId: string;
-  status: 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived';
+  status: 'before_application' | 'application_open' | 'in_progress' | 'completed' | 'archived';
   applyStart: string;
   applyEnd: string;
   programStart: string;
@@ -52,7 +52,7 @@ export interface UpdateProgramData {
   title?: string;
   description?: string;
   summary?: string;
-  status?: 'draft' | 'open' | 'closed' | 'archived';
+  status?: 'before_application' | 'application_open' | 'in_progress' | 'completed' | 'archived';
   applyStart?: string;
   applyEnd?: string;
   programStart?: string;
@@ -67,7 +67,7 @@ export interface UpdateProgramData {
 }
 
 export interface ProgramQuery {
-  status?: 'draft' | 'open' | 'closed' | 'archived';
+  status?: 'before_application' | 'application_open' | 'in_progress' | 'completed' | 'archived';
   organizerId?: string;
   page?: number;
   limit?: number;

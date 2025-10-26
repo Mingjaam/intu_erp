@@ -467,17 +467,20 @@ export class DashboardService {
     const organizationId = user?.organizationId;
 
     switch (type) {
-      case 'users':
+      case 'users': {
         const users = await this.getUsersForExport(organizationId);
         return this.excelService.exportUsers(users);
+      }
       
-      case 'programs':
+      case 'programs': {
         const programs = await this.getProgramsForExport(organizationId);
         return this.excelService.exportPrograms(programs);
+      }
       
-      case 'applications':
+      case 'applications': {
         const applications = await this.getApplicationsForExport(organizationId);
         return this.excelService.exportApplications(applications);
+      }
       
       default:
         throw new Error(`지원하지 않는 데이터 타입입니다: ${type}`);

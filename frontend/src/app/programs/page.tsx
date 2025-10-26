@@ -1,20 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Calendar, MapPin, Users, LogIn, UserPlus } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Program } from '@/types/program';
 import { Header } from '@/components/layout/header';
 import { UserSidebar } from '@/components/layout/user-sidebar';
-
-// Program interface는 이미 types/program.ts에서 import하므로 제거
 
 const statusLabels = {
   before_application: '신청전',
@@ -33,7 +30,6 @@ const statusColors = {
 };
 
 export default function ProgramsPage() {
-  const { user } = useAuth();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,15 +74,6 @@ export default function ProgramsPage() {
   const isApplicationOpen = (program: Program) => {
     // 상태가 'application_open'인 경우에만 신청 가능
     return program.status === 'application_open';
-  };
-
-  // 로그인 다이얼로그 열기
-  const openLoginDialog = (programId: string, programTitle: string) => {
-    setLoginDialog({
-      isOpen: true,
-      programId,
-      programTitle,
-    });
   };
 
   // 로그인 다이얼로그 닫기
@@ -191,7 +178,7 @@ export default function ProgramsPage() {
                     </Badge>
                   </div>
                   {/* D-Day 배지 */}
-                  {program.status === 'open' && program.daysUntilDeadline !== undefined && (
+                  {program.status === 'application_open' && program.daysUntilDeadline !== undefined && (
                     <div className="absolute top-3 left-3 z-20">
                       <Badge 
                         className={`px-2 py-1 rounded-full text-xs font-bold shadow-lg ${
@@ -229,7 +216,7 @@ export default function ProgramsPage() {
                       <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium`}>
                         {statusLabels[program.status]}
                       </Badge>
-                      {program.status === 'open' && program.daysUntilDeadline !== undefined && (
+                      {program.status === 'application_open' && program.daysUntilDeadline !== undefined && (
                         <Badge 
                           className={`px-2 py-1 rounded-full text-xs font-bold ${
                             program.daysUntilDeadline <= 3 
