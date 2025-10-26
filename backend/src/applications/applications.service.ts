@@ -29,8 +29,8 @@ export class ApplicationsService {
       throw new NotFoundException('프로그램을 찾을 수 없습니다.');
     }
 
-    // 프로그램이 모집 중인지 확인
-    if (program.status !== ProgramStatus.APPLICATION_OPEN) {
+    // 프로그램이 모집 중인지 확인 (기존 상태와 새로운 상태 모두 지원)
+    if (program.status !== ProgramStatus.APPLICATION_OPEN && program.status !== ProgramStatus.OPEN) {
       throw new ForbiddenException('현재 모집 중이 아닌 프로그램입니다.');
     }
 

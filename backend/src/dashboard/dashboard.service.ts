@@ -110,12 +110,16 @@ export class DashboardService {
 
   private async getActiveProgramCount(organizationId?: string) {
     if (!organizationId) {
-      return this.programRepository.count({ where: { status: ProgramStatus.APPLICATION_OPEN } });
+      return this.programRepository.count({ 
+        where: { 
+          status: ProgramStatus.APPLICATION_OPEN || ProgramStatus.OPEN 
+        } 
+      });
     }
     return this.programRepository.count({ 
       where: { 
         organizerId: organizationId,
-        status: ProgramStatus.APPLICATION_OPEN 
+        status: ProgramStatus.APPLICATION_OPEN || ProgramStatus.OPEN 
       } 
     });
   }
@@ -415,7 +419,11 @@ export class DashboardService {
       this.userRepository.count(),
       this.programRepository.count(),
       this.applicationRepository.count(),
-      this.programRepository.count({ where: { status: ProgramStatus.APPLICATION_OPEN } }),
+      this.programRepository.count({ 
+        where: { 
+          status: ProgramStatus.APPLICATION_OPEN || ProgramStatus.OPEN 
+        } 
+      }),
       this.getRecentErrors(),
     ]);
 
