@@ -4,12 +4,22 @@ import { useAuth } from '@/hooks/use-auth';
 import { LoginForm } from '@/components/auth/login-form';
 import { RegisterForm } from '@/components/auth/register-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState('login');
+
+  // URL 파라미터에서 탭 설정 확인
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'register') {
+      setActiveTab('register');
+    }
+  }, [searchParams]);
 
   // 이미 로그인된 사용자는 역할별 페이지로 리다이렉트
   useEffect(() => {
@@ -77,7 +87,7 @@ export default function LoginPage() {
         
         {/* 로그인/회원가입 탭 */}
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-lg p-1">
               <TabsTrigger value="login" className="rounded-md">로그인</TabsTrigger>
               <TabsTrigger value="register" className="rounded-md">회원가입</TabsTrigger>

@@ -449,7 +449,7 @@ function ApplyPageContent() {
                 asChild
                 className="w-full"
               >
-                <Link href="/auth/register">
+                <Link href="/auth/login?tab=register">
                   <UserPlus className="h-4 w-4 mr-2" />
                   회원가입하기
                 </Link>

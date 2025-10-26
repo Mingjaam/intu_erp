@@ -40,7 +40,7 @@ export function Header() {
               <Link href="/auth/login">
                 <Button variant="outline">로그인</Button>
               </Link>
-              <Link href="/auth/login">
+              <Link href="/auth/login?tab=register">
                 <Button>회원가입</Button>
               </Link>
             </div>
