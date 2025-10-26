@@ -21,9 +21,10 @@ export class CreateProgramDto {
   @IsString()
   organizerId: string;
 
-  @ApiProperty({ example: 'open', enum: ProgramStatus })
+  @ApiProperty({ example: 'open', enum: ProgramStatus, required: false })
   @IsEnum(ProgramStatus)
-  status: ProgramStatus;
+  @IsOptional()
+  status?: ProgramStatus;
 
   @ApiProperty({ example: 50 })
   @IsNumber()

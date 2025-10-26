@@ -25,7 +25,7 @@ export class ProgramsService {
       summary: createProgramDto.summary,
       description: createProgramDto.description,
       organizerId: createProgramDto.organizerId || user.organizationId,
-      status: createProgramDto.status,
+      status: createProgramDto.status || ProgramStatus.DRAFT, // 제공된 상태가 있으면 사용, 없으면 기본값
       maxParticipants: createProgramDto.maxParticipants,
       applyStart: new Date(createProgramDto.applyStart),
       applyEnd: new Date(createProgramDto.applyEnd),
@@ -38,12 +38,16 @@ export class ProgramsService {
       metadata: createProgramDto.metadata,
     });
 
-    return await this.programRepository.save(program);
+    const savedProgram = await this.programRepository.save(program);
+    
+    // 저장 후 상태를 자동으로 계산하여 업데이트
+    return await this.updateProgramStatus(savedProgram);
   }
 
   // 프로그램 상태를 자동으로 계산하는 메서드
   private calculateProgramStatus(program: Program): string {
-    const now = new Date();
+    // 한국 시간 기준 현재 시간
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
     const applyStart = new Date(program.applyStart);
     const applyEnd = new Date(program.applyEnd);
     const programStart = program.programStart ? new Date(program.programStart) : null;

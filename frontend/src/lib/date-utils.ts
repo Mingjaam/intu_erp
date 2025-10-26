@@ -44,7 +44,8 @@ export function calculateProgramStatus(
   programStart: string,
   programEnd: string
 ): 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' {
-  const now = new Date();
+  // 한국 시간 기준 현재 시간
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
   const applyStartDate = new Date(applyStart);
   const applyEndDate = new Date(applyEnd);
   const programStartDate = new Date(programStart);
