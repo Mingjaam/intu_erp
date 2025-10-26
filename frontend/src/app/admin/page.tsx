@@ -37,6 +37,8 @@ interface Todo {
 // 작은 캘린더 컴포넌트
 function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: string) => void; todos?: Todo[]; programs?: any[] }) {
   console.log('MiniCalendar 렌더링됨, programs:', programs?.length || 0);
+  console.log('MiniCalendar todos:', todos?.length || 0);
+  console.log('MiniCalendar 전체 props:', { onDateClick, todos, programs });
   
   const today = new Date();
   const currentMonth = today.getMonth();
@@ -197,6 +199,9 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
 
   return (
     <div className="w-full">
+      {/* 디버깅용 텍스트 */}
+      <div className="text-xs text-red-500 mb-2">미니캘린더 렌더링됨</div>
+      
       {/* 월/년도 헤더 */}
       <div className="text-center mb-4">
         <h3 className="text-lg font-semibold text-gray-900">
