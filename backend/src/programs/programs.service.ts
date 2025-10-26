@@ -25,7 +25,7 @@ export class ProgramsService {
       summary: createProgramDto.summary,
       description: createProgramDto.description,
       organizerId: createProgramDto.organizerId || user.organizationId,
-      status: createProgramDto.status || ProgramStatus.DRAFT, // 제공된 상태가 있으면 사용, 없으면 기본값
+      status: createProgramDto.status || ProgramStatus.BEFORE_APPLICATION, // 제공된 상태가 있으면 사용, 없으면 기본값
       maxParticipants: createProgramDto.maxParticipants,
       applyStart: new Date(createProgramDto.applyStart),
       applyEnd: new Date(createProgramDto.applyEnd),
@@ -45,7 +45,7 @@ export class ProgramsService {
   }
 
   // 프로그램 상태를 자동으로 계산하는 메서드
-  private calculateProgramStatus(program: Program): string {
+  private calculateProgramStatus(program: Program): ProgramStatus {
     // 한국 시간 기준 현재 시간
     const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
     const applyStart = new Date(program.applyStart);
@@ -61,50 +61,50 @@ export class ProgramsService {
     console.log(`활동 종료: ${programEnd?.toISOString() || 'null'}`);
     console.log(`현재 상태: ${program.status}`);
 
-    // 수동으로 설정된 상태가 'draft' 또는 'archived'인 경우 그대로 유지
-    if (program.status === 'draft' || program.status === 'archived') {
+    // 수동으로 설정된 상태가 'archived'인 경우 그대로 유지
+    if (program.status === ProgramStatus.ARCHIVED) {
       console.log(`수동 설정 상태 유지: ${program.status}`);
       return program.status;
     }
 
     // 신청 기간 전
     if (now < applyStart) {
-      console.log('상태: 신청 전 (draft)');
-      return 'draft'; // 신청 시작 전
+      console.log('상태: 신청 전 (before_application)');
+      return ProgramStatus.BEFORE_APPLICATION;
     }
     
     // 신청 기간 중
     if (now >= applyStart && now <= applyEnd) {
-      console.log('상태: 모집중 (open)');
-      return 'open'; // 모집 중
+      console.log('상태: 신청 중 (application_open)');
+      return ProgramStatus.APPLICATION_OPEN;
     }
     
     // 신청 기간 종료 후, 활동 시작 전
     if (now > applyEnd && programStart && now < programStart) {
-      console.log('상태: 신청마감 (closed)');
-      return 'closed'; // 신청 마감, 활동 시작 전
+      console.log('상태: 진행 중 (in_progress) - 신청 마감 후 활동 시작 전');
+      return ProgramStatus.IN_PROGRESS;
     }
     
     // 활동 기간 중
     if (programStart && programEnd && now >= programStart && now <= programEnd) {
-      console.log('상태: 진행중 (ongoing)');
-      return 'ongoing'; // 진행 중
+      console.log('상태: 진행 중 (in_progress)');
+      return ProgramStatus.IN_PROGRESS;
     }
     
     // 활동 종료 후
     if (programEnd && now > programEnd) {
       console.log('상태: 완료 (completed)');
-      return 'completed'; // 완료
+      return ProgramStatus.COMPLETED;
     }
     
     // 활동 기간이 설정되지 않은 경우
     if (!programStart && !programEnd) {
-      console.log('상태: 신청마감 (closed) - 활동 기간 미설정');
-      return 'closed'; // 신청 마감
+      console.log('상태: 진행 중 (in_progress) - 활동 기간 미설정');
+      return ProgramStatus.IN_PROGRESS;
     }
     
-    console.log('상태: 신청마감 (closed) - 기본값');
-    return 'closed';
+    console.log('상태: 진행 중 (in_progress) - 기본값');
+    return ProgramStatus.IN_PROGRESS;
   }
 
   // 프로그램 상태를 업데이트하는 메서드
@@ -115,7 +115,7 @@ export class ProgramsService {
     
     if (calculatedStatus !== program.status) {
       console.log(`상태 변경: ${program.status} -> ${calculatedStatus}`);
-      program.status = calculatedStatus as any;
+      program.status = calculatedStatus;
       const savedProgram = await this.programRepository.save(program);
       console.log(`상태 업데이트 완료: ${savedProgram.status}`);
       return savedProgram;
@@ -140,7 +140,7 @@ export class ProgramsService {
 
     // 일반 사용자는 공개된 프로그램만 조회 가능
     if (user && user.role === UserRole.APPLICANT) {
-      queryBuilder.andWhere('program.status = :status', { status: 'open' });
+      queryBuilder.andWhere('program.status = :status', { status: ProgramStatus.APPLICATION_OPEN });
     }
 
     // 관리자/운영자/직원은 자신의 기관 프로그램만 조회
@@ -195,13 +195,13 @@ export class ProgramsService {
 
     // 모집 마감까지 남은 일수 기준으로 정렬 (마감 임박한 것이 위에)
     const sortedPrograms = programsWithStats.sort((a, b) => {
-      // 모집 중인 프로그램만 마감일 기준으로 정렬
-      if (a.status === 'open' && b.status === 'open') {
+      // 신청 중인 프로그램만 마감일 기준으로 정렬
+      if (a.status === ProgramStatus.APPLICATION_OPEN && b.status === ProgramStatus.APPLICATION_OPEN) {
         return a.daysUntilDeadline - b.daysUntilDeadline;
       }
-      // 모집 중인 프로그램이 우선
-      if (a.status === 'open' && b.status !== 'open') return -1;
-      if (a.status !== 'open' && b.status === 'open') return 1;
+      // 신청 중인 프로그램이 우선
+      if (a.status === ProgramStatus.APPLICATION_OPEN && b.status !== ProgramStatus.APPLICATION_OPEN) return -1;
+      if (a.status !== ProgramStatus.APPLICATION_OPEN && b.status === ProgramStatus.APPLICATION_OPEN) return 1;
       // 같은 상태면 생성일 기준 내림차순
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });

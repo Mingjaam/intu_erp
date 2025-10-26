@@ -460,28 +460,25 @@ export default function NewProgramPage() {
                     <Badge 
                       variant="outline" 
                       className={`px-3 py-1 ${
-                        calculatedStatus === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-300' :
-                        calculatedStatus === 'open' ? 'bg-green-100 text-green-800 border-green-300' :
-                        calculatedStatus === 'closed' ? 'bg-orange-100 text-orange-800 border-orange-300' :
-                        calculatedStatus === 'ongoing' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                        calculatedStatus === 'before_application' ? 'bg-gray-100 text-gray-800 border-gray-300' :
+                        calculatedStatus === 'application_open' ? 'bg-green-100 text-green-800 border-green-300' :
+                        calculatedStatus === 'in_progress' ? 'bg-blue-100 text-blue-800 border-blue-300' :
                         calculatedStatus === 'completed' ? 'bg-purple-100 text-purple-800 border-purple-300' :
                         'bg-gray-100 text-gray-800 border-gray-300'
                       }`}
                     >
-                      {calculatedStatus === 'draft' ? '기획중' :
-                       calculatedStatus === 'open' ? '모집중' :
-                       calculatedStatus === 'closed' ? '신청마감' :
-                       calculatedStatus === 'ongoing' ? '진행중' :
+                      {calculatedStatus === 'before_application' ? '신청전' :
+                       calculatedStatus === 'application_open' ? '신청중' :
+                       calculatedStatus === 'in_progress' ? '진행중' :
                        calculatedStatus === 'completed' ? '완료' :
                        '알 수 없음'}
                     </Badge>
                   </div>
                   
                   <div className="text-xs text-gray-600 space-y-1">
-                    <p>• 신청일 전: 기획중 (draft)</p>
-                    <p>• 신청 기간: 모집중 (open)</p>
-                    <p>• 신청 마감 후: 신청마감 (closed)</p>
-                    <p>• 프로그램 진행 중: 진행중 (ongoing)</p>
+                    <p>• 신청일 전: 신청전 (before_application)</p>
+                    <p>• 신청 기간: 신청중 (application_open)</p>
+                    <p>• 신청 마감 후: 진행중 (in_progress)</p>
                     <p>• 프로그램 종료 후: 완료 (completed)</p>
                   </div>
                 </div>

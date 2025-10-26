@@ -43,7 +43,7 @@ export function calculateProgramStatus(
   applyEnd: string,
   programStart: string,
   programEnd: string
-): 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' {
+): 'before_application' | 'application_open' | 'in_progress' | 'completed' {
   // 한국 시간 기준 현재 시간
   const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
   const applyStartDate = new Date(applyStart);
@@ -53,22 +53,22 @@ export function calculateProgramStatus(
 
   // 신청 기간 전
   if (now < applyStartDate) {
-    return 'draft';
+    return 'before_application';
   }
   
   // 신청 기간 중
   if (now >= applyStartDate && now <= applyEndDate) {
-    return 'open';
+    return 'application_open';
   }
   
   // 신청 기간 종료 후, 활동 시작 전
   if (now > applyEndDate && programStartDate && now < programStartDate) {
-    return 'closed';
+    return 'in_progress';
   }
   
   // 활동 기간 중
   if (programStartDate && programEndDate && now >= programStartDate && now <= programEndDate) {
-    return 'ongoing';
+    return 'in_progress';
   }
   
   // 활동 종료 후
@@ -78,8 +78,8 @@ export function calculateProgramStatus(
   
   // 활동 기간이 설정되지 않은 경우
   if (!programStartDate && !programEndDate) {
-    return 'closed';
+    return 'in_progress';
   }
   
-  return 'closed';
+  return 'in_progress';
 }

@@ -17,19 +17,17 @@ import { UserSidebar } from '@/components/layout/user-sidebar';
 // Program interface는 이미 types/program.ts에서 import하므로 제거
 
 const statusLabels = {
-  draft: '신청 전',
-  open: '모집중',
-  closed: '신청마감',
-  ongoing: '진행중',
+  before_application: '신청전',
+  application_open: '신청중',
+  in_progress: '진행중',
   completed: '완료',
   archived: '보관',
 };
 
 const statusColors = {
-  draft: 'bg-gray-100 text-gray-800',
-  open: 'bg-green-100 text-green-800',
-  closed: 'bg-orange-100 text-orange-800',
-  ongoing: 'bg-blue-100 text-blue-800',
+  before_application: 'bg-gray-100 text-gray-800',
+  application_open: 'bg-green-100 text-green-800',
+  in_progress: 'bg-blue-100 text-blue-800',
   completed: 'bg-purple-100 text-purple-800',
   archived: 'bg-yellow-100 text-yellow-800',
 };
@@ -78,8 +76,8 @@ export default function ProgramsPage() {
   };
 
   const isApplicationOpen = (program: Program) => {
-    // 상태가 'open'인 경우에만 신청 가능
-    return program.status === 'open';
+    // 상태가 'application_open'인 경우에만 신청 가능
+    return program.status === 'application_open';
   };
 
   // 로그인 다이얼로그 열기
@@ -214,7 +212,7 @@ export default function ProgramsPage() {
                     </div>
                   )}
                   {/* 신청 가능 여부 오버레이 */}
-                  {isApplicationOpen(program) && program.status === 'open' && (
+                  {isApplicationOpen(program) && program.status === 'application_open' && (
                     <div className="absolute bottom-3 left-3 z-20">
                       <Badge className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium shadow-lg">
                         신청 가능

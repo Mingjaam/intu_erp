@@ -17,19 +17,17 @@ import { Header } from '@/components/layout/header';
 import { UserSidebar } from '@/components/layout/user-sidebar';
 
 const statusLabels: Record<string, string> = {
-  draft: '신청 전',
-  open: '모집중',
-  closed: '신청마감',
-  ongoing: '진행중',
+  before_application: '신청전',
+  application_open: '신청중',
+  in_progress: '진행중',
   completed: '완료',
   archived: '보관',
 };
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-800',
-  open: 'bg-green-100 text-green-800',
-  closed: 'bg-orange-100 text-orange-800',
-  ongoing: 'bg-blue-100 text-blue-800',
+  before_application: 'bg-gray-100 text-gray-800',
+  application_open: 'bg-green-100 text-green-800',
+  in_progress: 'bg-blue-100 text-blue-800',
   completed: 'bg-purple-100 text-purple-800',
   archived: 'bg-yellow-100 text-yellow-800',
 };
@@ -220,11 +218,11 @@ export default function ProgramDetailPage() {
                           size="lg" 
                           className="px-6 py-3" 
                           asChild
-                          disabled={program.status !== 'open'}
+                          disabled={program.status !== 'application_open'}
                         >
                           <Link href={`/programs/${program.id}/apply`}>
                             <UserPlus className="h-5 w-5 mr-2" />
-                            {program.status === 'open' ? '신청하기' : '신청 불가'}
+                            {program.status === 'application_open' ? '신청하기' : '신청 불가'}
                           </Link>
                         </Button>
                       ) : (
@@ -239,13 +237,13 @@ export default function ProgramDetailPage() {
                           size="lg"
                           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
                           onClick={openLoginDialog}
-                          disabled={program.status !== 'open'}
+                          disabled={program.status !== 'application_open'}
                         >
                           <LogIn className="h-5 w-5 mr-2" />
-                          {program.status === 'open' ? '로그인 후 신청하기' : '신청 불가'}
+                          {program.status === 'application_open' ? '로그인 후 신청하기' : '신청 불가'}
                         </Button>
                         <p className="text-xs text-gray-500 mt-2">
-                          {program.status === 'open' ? '신청하려면 로그인이 필요합니다.' : '현재 신청 기간이 아닙니다.'}
+                          {program.status === 'application_open' ? '신청하려면 로그인이 필요합니다.' : '현재 신청 기간이 아닙니다.'}
                         </p>
                       </div>
                     )}

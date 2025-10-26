@@ -11,12 +11,11 @@ import {
 import { Organization } from '@/database/entities/organization.entity';
 
 export enum ProgramStatus {
-  DRAFT = 'draft',
-  OPEN = 'open',
-  CLOSED = 'closed',
-  ONGOING = 'ongoing',
-  COMPLETED = 'completed',
-  ARCHIVED = 'archived',
+  BEFORE_APPLICATION = 'before_application', // 신청전
+  APPLICATION_OPEN = 'application_open',     // 신청중
+  IN_PROGRESS = 'in_progress',              // 진행중
+  COMPLETED = 'completed',                  // 완료
+  ARCHIVED = 'archived',                   // 보관
 }
 
 @Entity('programs')
@@ -43,7 +42,7 @@ export class Program {
   @Column({
     type: 'enum',
     enum: ProgramStatus,
-    default: ProgramStatus.DRAFT,
+    default: ProgramStatus.BEFORE_APPLICATION,
   })
   status: ProgramStatus;
 
