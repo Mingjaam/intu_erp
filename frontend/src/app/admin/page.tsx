@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { Program } from '@/types/program';
 
 interface Todo {
   id: string;
@@ -35,7 +36,7 @@ interface Todo {
 }
 
 // 작은 캘린더 컴포넌트
-function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: string) => void; todos?: Todo[]; programs?: any[] }) {
+function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: string) => void; todos?: Todo[]; programs?: Program[] }) {
   console.log('MiniCalendar 렌더링됨, programs:', programs?.length || 0);
   console.log('MiniCalendar todos:', todos?.length || 0);
   console.log('MiniCalendar 전체 props:', { onDateClick, todos, programs });
@@ -127,11 +128,12 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
     return filteredPrograms;
   };
 
-  // 프로그램 기간을 연속된 날짜로 표시하는 함수
-  // const getProgramPeriods = () => {
+  // 프로그램 기간을 연속된 날짜로 표시하는 함수 (현재 사용하지 않음)
+  /*
+  const getProgramPeriods = () => {
     if (!programs || programs.length === 0) return [];
     
-    const periods = [];
+    const periods: Array<{ start: Date; end: Date; type: string; program: Program }> = [];
     
     programs.forEach(program => {
       if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
@@ -195,7 +197,8 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
     });
     
     return periods;
-  // };
+  };
+  */
 
   return (
     <div className="w-full">
@@ -256,11 +259,8 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
                   const targetDate = new Date(dateStr);
                   const appStart = new Date(program.applyStart);
                   const appEnd = new Date(program.applyEnd);
-                  const actStart = new Date(program.programStart);
-                  const actEnd = new Date(program.programEnd);
                   
                   const isApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
-                  const isActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
                   
                   return (
                     <div
@@ -418,10 +418,10 @@ export default function AdminDashboard() {
       let programsData: Program[] = [];
       if (Array.isArray(response)) {
         programsData = response;
-      } else if (response && Array.isArray(response.data)) {
-        programsData = response.data;
-      } else if (response && response.programs && Array.isArray(response.programs)) {
-        programsData = response.programs;
+      } else if (response && Array.isArray((response as unknown as { data: Program[] }).data)) {
+        programsData = (response as unknown as { data: Program[] }).data;
+      } else if (response && (response as unknown as { programs: Program[] }).programs && Array.isArray((response as unknown as { programs: Program[] }).programs)) {
+        programsData = (response as unknown as { programs: Program[] }).programs;
       }
       
       // 삭제된 프로그램(isActive: false) 필터링
@@ -901,11 +901,8 @@ export default function AdminDashboard() {
                   const targetDate = new Date(selectedDate);
                   const appStart = new Date(program.applyStart);
                   const appEnd = new Date(program.applyEnd);
-                  const actStart = new Date(program.programStart);
-                  const actEnd = new Date(program.programEnd);
                   
                   const isApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
-                  const isActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
                   
                   return (
                     <div key={program.id} className="flex items-center justify-between p-2 bg-white rounded border">
