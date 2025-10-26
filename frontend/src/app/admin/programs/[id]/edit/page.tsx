@@ -21,7 +21,7 @@ const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
   summary: z.string().min(1, '한줄 설명을 입력해주세요'),
   description: z.string().min(1, '프로그램 설명을 입력해주세요'),
-  status: z.enum(['draft', 'open', 'closed', 'ongoing', 'completed', 'archived']),
+  status: z.enum(['draft', 'open', 'closed', 'ongoing', 'completed', 'archived', 'before_application', 'application_open', 'in_progress']),
   maxParticipants: z.number().min(1, '최대 참여자 수를 입력해주세요'),
   applyStart: z.string().min(1, '신청 시작일을 입력해주세요'),
   applyEnd: z.string().min(1, '신청 마감일을 입력해주세요'),
@@ -327,16 +327,21 @@ export default function EditProgramPage() {
                 <Label htmlFor="status">상태 *</Label>
                 <Select 
                   value={watch('status') || ''} 
-                  onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived')}
+                  onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived' | 'before_application' | 'application_open' | 'in_progress')}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="상태를 선택해주세요" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">기획중</SelectItem>
-                    <SelectItem value="open">모집중</SelectItem>
-                    <SelectItem value="closed">종료</SelectItem>
+                    <SelectItem value="draft">신청전</SelectItem>
+                    <SelectItem value="open">신청중</SelectItem>
+                    <SelectItem value="closed">진행중</SelectItem>
+                    <SelectItem value="ongoing">진행중</SelectItem>
+                    <SelectItem value="completed">완료</SelectItem>
                     <SelectItem value="archived">보관</SelectItem>
+                    <SelectItem value="before_application">신청전</SelectItem>
+                    <SelectItem value="application_open">신청중</SelectItem>
+                    <SelectItem value="in_progress">진행중</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.status && (
