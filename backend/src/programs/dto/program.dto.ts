@@ -21,7 +21,7 @@ export class CreateProgramDto {
   @IsString()
   organizerId: string;
 
-  @ApiProperty({ example: 'open', enum: ProgramStatus, required: false })
+  @ApiProperty({ example: 'application_open', enum: ProgramStatus, required: false })
   @IsEnum(ProgramStatus)
   @IsOptional()
   status?: ProgramStatus;
@@ -88,7 +88,7 @@ export class UpdateProgramDto {
 
   // organizerId는 업데이트에서 제외 (보안상의 이유)
 
-  @ApiProperty({ example: 'open', enum: ProgramStatus, required: false })
+  @ApiProperty({ example: 'application_open', enum: ProgramStatus, required: false })
   @IsEnum(ProgramStatus)
   @IsOptional()
   status?: ProgramStatus;
@@ -150,7 +150,7 @@ export class UpdateProgramDto {
 }
 
 export class ProgramQueryDto {
-  @ApiProperty({ example: 'open', enum: ProgramStatus, required: false })
+  @ApiProperty({ example: 'application_open', enum: ProgramStatus, required: false })
   @IsEnum(ProgramStatus)
   @IsOptional()
   status?: ProgramStatus;
