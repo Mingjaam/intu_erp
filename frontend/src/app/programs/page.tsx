@@ -14,19 +14,33 @@ import { Header } from '@/components/layout/header';
 import { UserSidebar } from '@/components/layout/user-sidebar';
 
 const statusLabels = {
+  // 기존 상태들
+  draft: '신청전',
+  open: '신청중',
+  closed: '진행중',
+  ongoing: '진행중',
+  completed: '완료',
+  archived: '보관',
+  
+  // 새로운 상태들
   before_application: '신청전',
   application_open: '신청중',
   in_progress: '진행중',
-  completed: '완료',
-  archived: '보관',
 };
 
 const statusColors = {
+  // 기존 상태들
+  draft: 'bg-gray-100 text-gray-800',
+  open: 'bg-green-100 text-green-800',
+  closed: 'bg-blue-100 text-blue-800',
+  ongoing: 'bg-blue-100 text-blue-800',
+  completed: 'bg-purple-100 text-purple-800',
+  archived: 'bg-yellow-100 text-yellow-800',
+  
+  // 새로운 상태들
   before_application: 'bg-gray-100 text-gray-800',
   application_open: 'bg-green-100 text-green-800',
   in_progress: 'bg-blue-100 text-blue-800',
-  completed: 'bg-purple-100 text-purple-800',
-  archived: 'bg-yellow-100 text-yellow-800',
 };
 
 export default function ProgramsPage() {
@@ -72,8 +86,8 @@ export default function ProgramsPage() {
   };
 
   const isApplicationOpen = (program: Program) => {
-    // 상태가 'application_open'인 경우에만 신청 가능
-    return program.status === 'application_open';
+    // 기존 상태와 새로운 상태 모두 지원
+    return program.status === 'application_open' || program.status === 'open';
   };
 
   // 로그인 다이얼로그 닫기
@@ -173,7 +187,7 @@ export default function ProgramsPage() {
                   )}
                   {/* 상태 배지 */}
                   <div className="absolute top-3 right-3 z-20">
-                    <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium shadow-lg`}>
+                    <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium shadow-lg border-0`}>
                       {statusLabels[program.status]}
                     </Badge>
                   </div>
@@ -213,7 +227,7 @@ export default function ProgramsPage() {
                   <div>
                     {/* 태그들 */}
                     <div className="flex gap-2 mb-3">
-                      <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium`}>
+                      <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium border-0`}>
                         {statusLabels[program.status]}
                       </Badge>
                       {program.status === 'application_open' && program.daysUntilDeadline !== undefined && (

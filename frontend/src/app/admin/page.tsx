@@ -12,7 +12,6 @@ import {
   Users, 
   FolderOpen, 
   FileText, 
-  BarChart3,
   Download,
   Activity,
   RefreshCw,
@@ -127,7 +126,7 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
   };
 
   // 프로그램 기간을 연속된 날짜로 표시하는 함수
-  const getProgramPeriods = () => {
+  // const getProgramPeriods = () => {
     if (!programs || programs.length === 0) return [];
     
     const periods = [];
@@ -194,7 +193,7 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
     });
     
     return periods;
-  };
+  // };
 
   return (
     <div className="w-full">
@@ -355,7 +354,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [programs, setPrograms] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [showTodoDialog, setShowTodoDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
 
@@ -399,7 +398,7 @@ export default function AdminDashboard() {
       console.log('프로그램 목록 응답:', response);
       
       // API 응답 구조 확인
-      let programsData = [];
+      let programsData: Program[] = [];
       if (Array.isArray(response)) {
         programsData = response;
       } else if (response && Array.isArray(response.data)) {
@@ -409,7 +408,7 @@ export default function AdminDashboard() {
       }
       
       // 삭제된 프로그램(isActive: false) 필터링
-      const activePrograms = programsData.filter(program => program.isActive !== false);
+      const activePrograms = programsData.filter((program: Program) => program.isActive !== false);
       
       setPrograms(activePrograms);
       console.log('프로그램 목록 설정됨:', activePrograms);
@@ -717,7 +716,7 @@ export default function AdminDashboard() {
                           </Link>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge className={`text-xs ${statusColors[program.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+                          <Badge className={`text-xs border-0 ${statusColors[program.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
                             {statusLabels[program.status as keyof typeof statusLabels] || (program.status as string)}
                           </Badge>
                           <span className="text-xs text-gray-500">
