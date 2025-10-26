@@ -11,12 +11,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
-import { getKoreanDateTimeString } from '@/lib/date-utils';
+import { getKoreanDateTimeString, calculateProgramStatus } from '@/lib/date-utils';
 
 const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
@@ -50,6 +51,8 @@ export default function NewProgramPage() {
   const router = useRouter();
   const { user, refreshUserProfile, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [calculatedStatus, setCalculatedStatus] = useState<string>('');
   const [formFields, setFormFields] = useState<FormField[]>([
     {
       name: 'name',
@@ -111,6 +114,30 @@ export default function NewProgramPage() {
       setValue('organizerId', user.organizationId);
     }
   }, [user?.organizationId, setValue]);
+
+  // 현재 시간 업데이트 (1초마다)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // 날짜 변경 시 실시간 상태 계산
+  useEffect(() => {
+    const subscription = watch((value) => {
+      if (value.applyStart && value.applyEnd && value.programStart && value.programEnd) {
+        const status = calculateProgramStatus(
+          value.applyStart,
+          value.applyEnd,
+          value.programStart,
+          value.programEnd
+        );
+        setCalculatedStatus(status);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   const onSubmit = async (data: ProgramFormData) => {
     setIsLoading(true);
@@ -404,6 +431,62 @@ export default function NewProgramPage() {
                   <p className="text-sm text-red-600">{errors.programEnd.message}</p>
                 )}
               </div>
+            </div>
+            
+            {/* 실시간 상태 표시 */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-blue-800">실시간 상태 계산</h3>
+                <div className="text-sm text-blue-600">
+                  현재 시간: {currentTime.toLocaleString('ko-KR', { 
+                    timeZone: 'Asia/Seoul',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                  })}
+                </div>
+              </div>
+              
+              {calculatedStatus ? (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm font-medium text-gray-700">계산된 상태:</span>
+                    <Badge 
+                      variant="outline" 
+                      className={`px-3 py-1 ${
+                        calculatedStatus === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-300' :
+                        calculatedStatus === 'open' ? 'bg-green-100 text-green-800 border-green-300' :
+                        calculatedStatus === 'closed' ? 'bg-orange-100 text-orange-800 border-orange-300' :
+                        calculatedStatus === 'ongoing' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                        calculatedStatus === 'completed' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                        'bg-gray-100 text-gray-800 border-gray-300'
+                      }`}
+                    >
+                      {calculatedStatus === 'draft' ? '기획중' :
+                       calculatedStatus === 'open' ? '모집중' :
+                       calculatedStatus === 'closed' ? '신청마감' :
+                       calculatedStatus === 'ongoing' ? '진행중' :
+                       calculatedStatus === 'completed' ? '완료' :
+                       '알 수 없음'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-xs text-gray-600 space-y-1">
+                    <p>• 신청일 전: 기획중 (draft)</p>
+                    <p>• 신청 기간: 모집중 (open)</p>
+                    <p>• 신청 마감 후: 신청마감 (closed)</p>
+                    <p>• 프로그램 진행 중: 진행중 (ongoing)</p>
+                    <p>• 프로그램 종료 후: 완료 (completed)</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">
+                  모든 날짜를 입력하면 실시간 상태가 표시됩니다.
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
