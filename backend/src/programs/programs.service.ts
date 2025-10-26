@@ -218,16 +218,6 @@ export class ProgramsService {
     // 프로그램 상태를 자동으로 업데이트
     const updatedProgram = await this.updateProgramStatus(program);
 
-    // 로그인되지 않은 사용자는 공개된 프로그램만 조회 가능
-    if (!user && updatedProgram.status !== 'open') {
-      throw new ForbiddenException('접근 권한이 없습니다.');
-    }
-
-    // 일반 사용자(신청자)는 공개된 프로그램만 조회 가능
-    if (user && user.role === UserRole.APPLICANT && updatedProgram.status !== 'open') {
-      throw new ForbiddenException('접근 권한이 없습니다.');
-    }
-
     // 관리자는 모든 프로그램 조회 가능, 운영자/직원은 자신의 기관 프로그램만 조회 가능
     if (user && (user.role === UserRole.OPERATOR || user.role === UserRole.STAFF) && user.organizationId) {
       if (updatedProgram.organizerId !== user.organizationId) {

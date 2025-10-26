@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
@@ -143,9 +144,11 @@ export default function ProgramDetailPage() {
                           style={{ backgroundImage: `url(${program.imageUrl})` }}
                         />
                         {/* 메인 이미지 */}
-                        <img
+                        <Image
                           src={program.imageUrl}
                           alt={program.title}
+                          width={800}
+                          height={400}
                           className="relative z-10 w-full h-full object-cover"
                         />
                       </div>
@@ -210,37 +213,43 @@ export default function ProgramDetailPage() {
                   </div>
 
                   {/* 신청 버튼 */}
-                  {program.status === 'open' && (
-                    <div className="text-center">
-                      {user ? (
-                        user.role === 'applicant' ? (
-                          <Button size="lg" className="px-6 py-3" asChild>
-                            <Link href={`/programs/${program.id}/apply`}>
-                              <UserPlus className="h-5 w-5 mr-2" />
-                              신청하기
-                            </Link>
-                          </Button>
-                        ) : (
-                          <div className="text-center text-gray-600">
-                            <p className="mb-2 text-sm">신청은 신청자(applicant) 역할의 사용자만 가능합니다.</p>
-                            <p className="text-xs">현재 역할: {user.role}</p>
-                          </div>
-                        )
+                  <div className="text-center">
+                    {user ? (
+                      user.role === 'applicant' ? (
+                        <Button 
+                          size="lg" 
+                          className="px-6 py-3" 
+                          asChild
+                          disabled={program.status !== 'open'}
+                        >
+                          <Link href={`/programs/${program.id}/apply`}>
+                            <UserPlus className="h-5 w-5 mr-2" />
+                            {program.status === 'open' ? '신청하기' : '신청 불가'}
+                          </Link>
+                        </Button>
                       ) : (
-                        <div className="text-center">
-                          <Button 
-                            size="lg"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
-                            onClick={openLoginDialog}
-                          >
-                            <LogIn className="h-5 w-5 mr-2" />
-                            로그인 후 신청하기
-                          </Button>
-                          <p className="text-xs text-gray-500 mt-2">신청하려면 로그인이 필요합니다.</p>
+                        <div className="text-center text-gray-600">
+                          <p className="mb-2 text-sm">신청은 신청자(applicant) 역할의 사용자만 가능합니다.</p>
+                          <p className="text-xs">현재 역할: {user.role}</p>
                         </div>
-                      )}
-                    </div>
-                  )}
+                      )
+                    ) : (
+                      <div className="text-center">
+                        <Button 
+                          size="lg"
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
+                          onClick={openLoginDialog}
+                          disabled={program.status !== 'open'}
+                        >
+                          <LogIn className="h-5 w-5 mr-2" />
+                          {program.status === 'open' ? '로그인 후 신청하기' : '신청 불가'}
+                        </Button>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {program.status === 'open' ? '신청하려면 로그인이 필요합니다.' : '현재 신청 기간이 아닙니다.'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

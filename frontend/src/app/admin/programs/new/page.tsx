@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { getKoreanDateTimeString } from '@/lib/date-utils';
 
 const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
@@ -244,21 +245,18 @@ export default function NewProgramPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">상태 *</Label>
-                <Select onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived')}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="상태를 선택해주세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">기획중</SelectItem>
-                    <SelectItem value="open">모집중</SelectItem>
-                    <SelectItem value="closed">종료</SelectItem>
-                    <SelectItem value="archived">보관</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.status && (
-                  <p className="text-sm text-red-600">{errors.status.message}</p>
-                )}
+                <Label htmlFor="status">상태 (날짜 기준 자동 계산)</Label>
+                <div className="p-3 bg-blue-50 rounded-lg border">
+                  <p className="text-sm text-blue-700 font-medium">
+                    상태는 입력한 날짜에 따라 자동으로 계산됩니다
+                  </p>
+                  <div className="mt-2 text-xs text-blue-600">
+                    <p>• 신청일 전: 기획중</p>
+                    <p>• 신청 기간: 모집중</p>
+                    <p>• 프로그램 진행 중: 진행중</p>
+                    <p>• 프로그램 종료 후: 완료</p>
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -356,11 +354,12 @@ export default function NewProgramPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="applyStart">신청 시작일 *</Label>
+                <Label htmlFor="applyStart">신청 시작일</Label>
                 <Input
                   id="applyStart"
                   type="datetime-local"
                   {...register('applyStart')}
+                  defaultValue={getKoreanDateTimeString()}
                 />
                 {errors.applyStart && (
                   <p className="text-sm text-red-600">{errors.applyStart.message}</p>
@@ -368,11 +367,12 @@ export default function NewProgramPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="applyEnd">신청 마감일 *</Label>
+                <Label htmlFor="applyEnd">신청 마감일</Label>
                 <Input
                   id="applyEnd"
                   type="datetime-local"
                   {...register('applyEnd')}
+                  defaultValue={getKoreanDateTimeString()}
                 />
                 {errors.applyEnd && (
                   <p className="text-sm text-red-600">{errors.applyEnd.message}</p>
@@ -380,11 +380,12 @@ export default function NewProgramPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="programStart">프로그램 시작일 *</Label>
+                <Label htmlFor="programStart">프로그램 시작일</Label>
                 <Input
                   id="programStart"
                   type="datetime-local"
                   {...register('programStart')}
+                  defaultValue={getKoreanDateTimeString()}
                 />
                 {errors.programStart && (
                   <p className="text-sm text-red-600">{errors.programStart.message}</p>
@@ -392,11 +393,12 @@ export default function NewProgramPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="programEnd">프로그램 종료일 *</Label>
+                <Label htmlFor="programEnd">프로그램 종료일</Label>
                 <Input
                   id="programEnd"
                   type="datetime-local"
                   {...register('programEnd')}
+                  defaultValue={getKoreanDateTimeString()}
                 />
                 {errors.programEnd && (
                   <p className="text-sm text-red-600">{errors.programEnd.message}</p>
