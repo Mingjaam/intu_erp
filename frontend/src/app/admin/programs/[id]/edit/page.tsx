@@ -16,12 +16,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2, Loader2 } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { calculateProgramStatus, koreanDateTimeStringToUTC } from '@/lib/date-utils';
+import { Badge } from '@/components/ui/badge';
 
 const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
   summary: z.string().min(1, '한줄 설명을 입력해주세요'),
   description: z.string().min(1, '프로그램 설명을 입력해주세요'),
-  status: z.enum(['draft', 'open', 'closed', 'ongoing', 'completed', 'archived']),
   maxParticipants: z.number().min(1, '최대 참여자 수를 입력해주세요'),
   applyStart: z.string().min(1, '신청 시작일을 입력해주세요'),
   applyEnd: z.string().min(1, '신청 마감일을 입력해주세요'),
@@ -72,6 +73,8 @@ export default function EditProgramPage() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [calculatedStatus, setCalculatedStatus] = useState<string>('');
   const [program, setProgram] = useState<Program | null>(null);
   const [formFields, setFormFields] = useState<FormField[]>([
     {
@@ -123,7 +126,6 @@ export default function EditProgramPage() {
         title: data.title,
         summary: data.summary,  // 한줄 설명 추가
         description: data.description,
-        status: data.status,
         maxParticipants: data.maxParticipants,
         applyStart: data.applyStart ? new Date(data.applyStart).toISOString().slice(0, 16) : '',
         applyEnd: data.applyEnd ? new Date(data.applyEnd).toISOString().slice(0, 16) : '',
@@ -169,6 +171,30 @@ export default function EditProgramPage() {
     }
   }, [user?.organizationId, setValue]);
 
+  // 실시간 시간 업데이트
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // 실시간 상태 계산
+  useEffect(() => {
+    const subscription = watch((value) => {
+      if (value.applyStart && value.applyEnd && value.programStart && value.programEnd) {
+        const status = calculateProgramStatus(
+          value.applyStart,
+          value.applyEnd,
+          value.programStart,
+          value.programEnd
+        );
+        setCalculatedStatus(status);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
   const onSubmit = async (data: ProgramFormData) => {
     setIsLoading(true);
     try {
@@ -178,6 +204,10 @@ export default function EditProgramPage() {
       
       const programData = {
         ...updateData,
+        applyStart: koreanDateTimeStringToUTC(data.applyStart).toISOString(),
+        applyEnd: koreanDateTimeStringToUTC(data.applyEnd).toISOString(),
+        programStart: koreanDateTimeStringToUTC(data.programStart).toISOString(),
+        programEnd: koreanDateTimeStringToUTC(data.programEnd).toISOString(),
         applicationForm: { fields: formFields },
         metadata: {
           ...program?.metadata,
@@ -324,24 +354,12 @@ export default function EditProgramPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">상태 *</Label>
-                <Select 
-                  value={watch('status') || ''} 
-                  onValueChange={(value) => setValue('status', value as 'draft' | 'open' | 'closed' | 'ongoing' | 'completed' | 'archived')}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="상태를 선택해주세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">기획중</SelectItem>
-                    <SelectItem value="open">모집중</SelectItem>
-                    <SelectItem value="closed">종료</SelectItem>
-                    <SelectItem value="archived">보관</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.status && (
-                  <p className="text-sm text-red-600">{errors.status.message}</p>
-                )}
+                <Label>상태 (자동 계산)</Label>
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="text-sm text-blue-800">
+                    프로그램 상태는 신청일과 활동일을 기준으로 자동으로 계산됩니다.
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -485,6 +503,53 @@ export default function EditProgramPage() {
                   <p className="text-sm text-red-600">{errors.programEnd.message}</p>
                 )}
               </div>
+
+              {/* 실시간 상태 표시 */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-blue-800">실시간 상태 계산</h3>
+                  <div className="text-sm text-blue-600">
+                    현재 시간: {currentTime.toLocaleString('ko-KR', {
+                      timeZone: 'Asia/Seoul',
+                      year: 'numeric', month: '2-digit', day: '2-digit',
+                      hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    })}
+                  </div>
+                </div>
+                {calculatedStatus ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-700">계산된 상태:</span>
+                      <Badge
+                        variant="outline"
+                        className={`px-3 py-1 border-0 ${
+                          calculatedStatus === 'before_application' || calculatedStatus === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-300' :
+                          calculatedStatus === 'application_open' || calculatedStatus === 'open' ? 'bg-green-100 text-green-800 border-green-300' :
+                          calculatedStatus === 'in_progress' || calculatedStatus === 'closed' || calculatedStatus === 'ongoing' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                          calculatedStatus === 'completed' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                          'bg-gray-100 text-gray-800 border-gray-300'
+                        }`}
+                      >
+                        {calculatedStatus === 'before_application' || calculatedStatus === 'draft' ? '신청전' :
+                         calculatedStatus === 'application_open' || calculatedStatus === 'open' ? '신청중' :
+                         calculatedStatus === 'in_progress' || calculatedStatus === 'closed' || calculatedStatus === 'ongoing' ? '진행중' :
+                         calculatedStatus === 'completed' ? '완료' :
+                         '알 수 없음'}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-gray-600 space-y-1">
+                      <p>• 신청일 전: 신청전 (before_application)</p>
+                      <p>• 신청 기간: 신청중 (application_open)</p>
+                      <p>• 신청 마감 후: 진행중 (in_progress)</p>
+                      <p>• 프로그램 종료 후: 완료 (completed)</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-500">
+                    모든 날짜를 입력하면 실시간 상태가 표시됩니다.
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -533,7 +598,7 @@ export default function EditProgramPage() {
                       <Label>타입</Label>
                       <Select
                         value={field.type}
-                        onValueChange={(value) => updateFormField(index, { type: value })}
+                        onValueChange={(value: string) => updateFormField(index, { type: value })}
                         disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
                       >
                         <SelectTrigger>
@@ -549,7 +614,7 @@ export default function EditProgramPage() {
                       <Label>필수 여부</Label>
                       <Select
                         value={field.required ? 'true' : 'false'}
-                        onValueChange={(value) => updateFormField(index, { required: value === 'true' })}
+                        onValueChange={(value: string) => updateFormField(index, { required: value === 'true' })}
                         disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
                       >
                         <SelectTrigger>

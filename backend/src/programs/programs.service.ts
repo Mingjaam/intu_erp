@@ -67,44 +67,57 @@ export class ProgramsService {
       return program.status;
     }
 
+    // 기존 상태를 새로운 상태로 변환하는 로직
+    let calculatedStatus: ProgramStatus;
+    
     // 신청 기간 전
     if (now < applyStart) {
       console.log('상태: 신청 전 (before_application)');
-      return ProgramStatus.BEFORE_APPLICATION;
+      calculatedStatus = ProgramStatus.BEFORE_APPLICATION;
     }
-    
     // 신청 기간 중
-    if (now >= applyStart && now <= applyEnd) {
+    else if (now >= applyStart && now <= applyEnd) {
       console.log('상태: 신청 중 (application_open)');
-      return ProgramStatus.APPLICATION_OPEN;
+      calculatedStatus = ProgramStatus.APPLICATION_OPEN;
     }
-    
     // 신청 기간 종료 후, 활동 시작 전
-    if (now > applyEnd && programStart && now < programStart) {
+    else if (now > applyEnd && programStart && now < programStart) {
       console.log('상태: 진행 중 (in_progress) - 신청 마감 후 활동 시작 전');
-      return ProgramStatus.IN_PROGRESS;
+      calculatedStatus = ProgramStatus.IN_PROGRESS;
     }
-    
     // 활동 기간 중
-    if (programStart && programEnd && now >= programStart && now <= programEnd) {
+    else if (programStart && programEnd && now >= programStart && now <= programEnd) {
       console.log('상태: 진행 중 (in_progress)');
-      return ProgramStatus.IN_PROGRESS;
+      calculatedStatus = ProgramStatus.IN_PROGRESS;
     }
-    
     // 활동 종료 후
-    if (programEnd && now > programEnd) {
+    else if (programEnd && now > programEnd) {
       console.log('상태: 완료 (completed)');
-      return ProgramStatus.COMPLETED;
+      calculatedStatus = ProgramStatus.COMPLETED;
     }
-    
     // 활동 기간이 설정되지 않은 경우
-    if (!programStart && !programEnd) {
-      console.log('상태: 진행 중 (in_progress) - 활동 기간 미설정');
-      return ProgramStatus.IN_PROGRESS;
+    else {
+      console.log('상태: 진행 중 (in_progress) - 기본값');
+      calculatedStatus = ProgramStatus.IN_PROGRESS;
     }
-    
-    console.log('상태: 진행 중 (in_progress) - 기본값');
-    return ProgramStatus.IN_PROGRESS;
+
+    // 기존 상태와 새로운 상태 매핑
+    const statusMapping: Record<string, ProgramStatus> = {
+      'draft': ProgramStatus.BEFORE_APPLICATION,
+      'open': ProgramStatus.APPLICATION_OPEN,
+      'closed': ProgramStatus.IN_PROGRESS,
+      'ongoing': ProgramStatus.IN_PROGRESS,
+      'completed': ProgramStatus.COMPLETED,
+      'archived': ProgramStatus.ARCHIVED,
+    };
+
+    // 기존 상태인 경우 매핑된 상태 반환, 아니면 계산된 상태 반환
+    if (statusMapping[program.status]) {
+      console.log(`기존 상태 매핑: ${program.status} -> ${statusMapping[program.status]}`);
+      return statusMapping[program.status];
+    }
+
+    return calculatedStatus;
   }
 
   // 프로그램 상태를 업데이트하는 메서드
@@ -138,9 +151,12 @@ export class ProgramsService {
       .leftJoinAndSelect('applications.selection', 'selection')
       .where('program.isActive = :isActive', { isActive: true });
 
-    // 일반 사용자는 공개된 프로그램만 조회 가능
+    // 일반 사용자는 공개된 프로그램만 조회 가능 (기존 상태와 새로운 상태 모두 지원)
     if (user && user.role === UserRole.APPLICANT) {
-      queryBuilder.andWhere('program.status = :status', { status: ProgramStatus.APPLICATION_OPEN });
+      queryBuilder.andWhere('(program.status = :applicationOpen OR program.status = :open)', { 
+        applicationOpen: ProgramStatus.APPLICATION_OPEN,
+        open: ProgramStatus.OPEN 
+      });
     }
 
     // 관리자/운영자/직원은 자신의 기관 프로그램만 조회
@@ -195,13 +211,16 @@ export class ProgramsService {
 
     // 모집 마감까지 남은 일수 기준으로 정렬 (마감 임박한 것이 위에)
     const sortedPrograms = programsWithStats.sort((a, b) => {
-      // 신청 중인 프로그램만 마감일 기준으로 정렬
-      if (a.status === ProgramStatus.APPLICATION_OPEN && b.status === ProgramStatus.APPLICATION_OPEN) {
+      // 신청 중인 프로그램만 마감일 기준으로 정렬 (기존 상태와 새로운 상태 모두 지원)
+      const aIsOpen = a.status === ProgramStatus.APPLICATION_OPEN || a.status === ProgramStatus.OPEN;
+      const bIsOpen = b.status === ProgramStatus.APPLICATION_OPEN || b.status === ProgramStatus.OPEN;
+      
+      if (aIsOpen && bIsOpen) {
         return a.daysUntilDeadline - b.daysUntilDeadline;
       }
       // 신청 중인 프로그램이 우선
-      if (a.status === ProgramStatus.APPLICATION_OPEN && b.status !== ProgramStatus.APPLICATION_OPEN) return -1;
-      if (a.status !== ProgramStatus.APPLICATION_OPEN && b.status === ProgramStatus.APPLICATION_OPEN) return 1;
+      if (aIsOpen && !bIsOpen) return -1;
+      if (!aIsOpen && bIsOpen) return 1;
       // 같은 상태면 생성일 기준 내림차순
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });

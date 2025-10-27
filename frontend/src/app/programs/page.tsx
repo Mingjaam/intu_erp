@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Calendar, MapPin, Users, LogIn, UserPlus } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,26 +13,37 @@ import { Program } from '@/types/program';
 import { Header } from '@/components/layout/header';
 import { UserSidebar } from '@/components/layout/user-sidebar';
 
-// Program interface는 이미 types/program.ts에서 import하므로 제거
-
 const statusLabels = {
+  // 기존 상태들
+  draft: '신청전',
+  open: '신청중',
+  closed: '진행중',
+  ongoing: '진행중',
+  completed: '완료',
+  archived: '보관',
+  
+  // 새로운 상태들
   before_application: '신청전',
   application_open: '신청중',
   in_progress: '진행중',
-  completed: '완료',
-  archived: '보관',
 };
 
 const statusColors = {
+  // 기존 상태들
+  draft: 'bg-gray-100 text-gray-800',
+  open: 'bg-green-100 text-green-800',
+  closed: 'bg-blue-100 text-blue-800',
+  ongoing: 'bg-blue-100 text-blue-800',
+  completed: 'bg-purple-100 text-purple-800',
+  archived: 'bg-yellow-100 text-yellow-800',
+  
+  // 새로운 상태들
   before_application: 'bg-gray-100 text-gray-800',
   application_open: 'bg-green-100 text-green-800',
   in_progress: 'bg-blue-100 text-blue-800',
-  completed: 'bg-purple-100 text-purple-800',
-  archived: 'bg-yellow-100 text-yellow-800',
 };
 
 export default function ProgramsPage() {
-  const { user } = useAuth();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,17 +86,8 @@ export default function ProgramsPage() {
   };
 
   const isApplicationOpen = (program: Program) => {
-    // 상태가 'application_open'인 경우에만 신청 가능
-    return program.status === 'application_open';
-  };
-
-  // 로그인 다이얼로그 열기
-  const openLoginDialog = (programId: string, programTitle: string) => {
-    setLoginDialog({
-      isOpen: true,
-      programId,
-      programTitle,
-    });
+    // 기존 상태와 새로운 상태 모두 지원
+    return program.status === 'application_open' || program.status === 'open';
   };
 
   // 로그인 다이얼로그 닫기
@@ -186,12 +187,12 @@ export default function ProgramsPage() {
                   )}
                   {/* 상태 배지 */}
                   <div className="absolute top-3 right-3 z-20">
-                    <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium shadow-lg`}>
+                    <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium shadow-lg border-0`}>
                       {statusLabels[program.status]}
                     </Badge>
                   </div>
                   {/* D-Day 배지 */}
-                  {program.status === 'open' && program.daysUntilDeadline !== undefined && (
+                  {program.status === 'application_open' && program.daysUntilDeadline !== undefined && (
                     <div className="absolute top-3 left-3 z-20">
                       <Badge 
                         className={`px-2 py-1 rounded-full text-xs font-bold shadow-lg ${
@@ -226,10 +227,10 @@ export default function ProgramsPage() {
                   <div>
                     {/* 태그들 */}
                     <div className="flex gap-2 mb-3">
-                      <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium`}>
+                      <Badge className={`${statusColors[program.status]} px-2 py-1 rounded-full text-xs font-medium border-0`}>
                         {statusLabels[program.status]}
                       </Badge>
-                      {program.status === 'open' && program.daysUntilDeadline !== undefined && (
+                      {program.status === 'application_open' && program.daysUntilDeadline !== undefined && (
                         <Badge 
                           className={`px-2 py-1 rounded-full text-xs font-bold ${
                             program.daysUntilDeadline <= 3 

@@ -110,12 +110,16 @@ export class DashboardService {
 
   private async getActiveProgramCount(organizationId?: string) {
     if (!organizationId) {
-      return this.programRepository.count({ where: { status: ProgramStatus.APPLICATION_OPEN } });
+      return this.programRepository.count({ 
+        where: { 
+          status: ProgramStatus.APPLICATION_OPEN || ProgramStatus.OPEN 
+        } 
+      });
     }
     return this.programRepository.count({ 
       where: { 
         organizerId: organizationId,
-        status: ProgramStatus.APPLICATION_OPEN 
+        status: ProgramStatus.APPLICATION_OPEN || ProgramStatus.OPEN 
       } 
     });
   }
@@ -415,7 +419,11 @@ export class DashboardService {
       this.userRepository.count(),
       this.programRepository.count(),
       this.applicationRepository.count(),
-      this.programRepository.count({ where: { status: ProgramStatus.APPLICATION_OPEN } }),
+      this.programRepository.count({ 
+        where: { 
+          status: ProgramStatus.APPLICATION_OPEN || ProgramStatus.OPEN 
+        } 
+      }),
       this.getRecentErrors(),
     ]);
 
@@ -467,17 +475,20 @@ export class DashboardService {
     const organizationId = user?.organizationId;
 
     switch (type) {
-      case 'users':
+      case 'users': {
         const users = await this.getUsersForExport(organizationId);
         return this.excelService.exportUsers(users);
+      }
       
-      case 'programs':
+      case 'programs': {
         const programs = await this.getProgramsForExport(organizationId);
         return this.excelService.exportPrograms(programs);
+      }
       
-      case 'applications':
+      case 'applications': {
         const applications = await this.getApplicationsForExport(organizationId);
         return this.excelService.exportApplications(applications);
+      }
       
       default:
         throw new Error(`지원하지 않는 데이터 타입입니다: ${type}`);

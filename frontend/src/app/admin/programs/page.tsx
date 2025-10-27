@@ -22,21 +22,33 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 
 const statusLabels = {
-  draft: '신청 전',
-  open: '모집중',
-  closed: '신청마감',
+  // 기존 상태들
+  draft: '신청전',
+  open: '신청중',
+  closed: '진행중',
   ongoing: '진행중',
   completed: '완료',
   archived: '보관',
+  
+  // 새로운 상태들
+  before_application: '신청전',
+  application_open: '신청중',
+  in_progress: '진행중',
 };
 
 const statusColors = {
+  // 기존 상태들
   draft: 'bg-gray-100 text-gray-800',
   open: 'bg-green-100 text-green-800',
-  closed: 'bg-orange-100 text-orange-800',
+  closed: 'bg-blue-100 text-blue-800',
   ongoing: 'bg-blue-100 text-blue-800',
   completed: 'bg-purple-100 text-purple-800',
   archived: 'bg-yellow-100 text-yellow-800',
+  
+  // 새로운 상태들
+  before_application: 'bg-gray-100 text-gray-800',
+  application_open: 'bg-green-100 text-green-800',
+  in_progress: 'bg-blue-100 text-blue-800',
 };
 
 
@@ -272,13 +284,13 @@ function ProgramsPageContent() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">{program.title}</h3>
-                      <Badge className={statusColors[program.status]}>
+                      <Badge className={`${statusColors[program.status]} border-0`}>
                         {statusLabels[program.status]}
                       </Badge>
-                      {program.status === 'open' && program.daysUntilDeadline !== undefined && (
+                      {(program.status === 'open' || program.status === 'application_open') && program.daysUntilDeadline !== undefined && (
                         <Badge 
                           variant={program.daysUntilDeadline <= 3 ? "destructive" : program.daysUntilDeadline <= 7 ? "secondary" : "outline"}
-                          className="font-bold"
+                          className="font-bold border-0"
                         >
                           {program.daysUntilDeadline > 0 
                             ? `D-${program.daysUntilDeadline}` 

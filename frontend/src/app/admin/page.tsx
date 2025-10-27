@@ -12,7 +12,6 @@ import {
   Users, 
   FolderOpen, 
   FileText, 
-  BarChart3,
   Download,
   Activity,
   RefreshCw,
@@ -22,6 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { Program } from '@/types/program';
 
 interface Todo {
   id: string;
@@ -36,8 +36,7 @@ interface Todo {
 }
 
 // 작은 캘린더 컴포넌트
-function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: string) => void; todos?: Todo[]; programs?: any[] }) {
-  console.log('MiniCalendar 렌더링됨, programs:', programs?.length || 0);
+function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: string) => void; todos?: Todo[]; programs?: Program[] }) {
   
   const today = new Date();
   const currentMonth = today.getMonth();
@@ -126,11 +125,12 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
     return filteredPrograms;
   };
 
-  // 프로그램 기간을 연속된 날짜로 표시하는 함수
+  // 프로그램 기간을 연속된 날짜로 표시하는 함수 (현재 사용하지 않음)
+  /*
   const getProgramPeriods = () => {
     if (!programs || programs.length === 0) return [];
     
-    const periods = [];
+    const periods: Array<{ start: Date; end: Date; type: string; program: Program }> = [];
     
     programs.forEach(program => {
       if (!program.applyStart || !program.applyEnd || !program.programStart || !program.programEnd) {
@@ -195,6 +195,7 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
     
     return periods;
   };
+  */
 
   return (
     <div className="w-full">
@@ -252,11 +253,8 @@ function MiniCalendar({ onDateClick, todos, programs }: { onDateClick?: (date: s
                   const targetDate = new Date(dateStr);
                   const appStart = new Date(program.applyStart);
                   const appEnd = new Date(program.applyEnd);
-                  const actStart = new Date(program.programStart);
-                  const actEnd = new Date(program.programEnd);
                   
                   const isApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
-                  const isActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
                   
                   return (
                     <div
@@ -331,21 +329,33 @@ interface SystemHealth {
 }
 
 const statusColors = {
+  // 기존 상태들
   draft: 'bg-gray-100 text-gray-800',
   open: 'bg-green-100 text-green-800',
-  closed: 'bg-orange-100 text-orange-800',
+  closed: 'bg-blue-100 text-blue-800',
   ongoing: 'bg-blue-100 text-blue-800',
   completed: 'bg-purple-100 text-purple-800',
   archived: 'bg-yellow-100 text-yellow-800',
+  
+  // 새로운 상태들
+  before_application: 'bg-gray-100 text-gray-800',
+  application_open: 'bg-green-100 text-green-800',
+  in_progress: 'bg-blue-100 text-blue-800',
 };
 
 const statusLabels = {
-  draft: '신청 전',
-  open: '모집중',
-  closed: '신청마감',
+  // 기존 상태들
+  draft: '신청전',
+  open: '신청중',
+  closed: '진행중',
   ongoing: '진행중',
   completed: '완료',
   archived: '보관',
+  
+  // 새로운 상태들
+  before_application: '신청전',
+  application_open: '신청중',
+  in_progress: '진행중',
 };
 
 export default function AdminDashboard() {
@@ -355,7 +365,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [programs, setPrograms] = useState<any[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [showTodoDialog, setShowTodoDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>('');
 
@@ -399,17 +409,17 @@ export default function AdminDashboard() {
       console.log('프로그램 목록 응답:', response);
       
       // API 응답 구조 확인
-      let programsData = [];
+      let programsData: Program[] = [];
       if (Array.isArray(response)) {
         programsData = response;
-      } else if (response && Array.isArray(response.data)) {
-        programsData = response.data;
-      } else if (response && response.programs && Array.isArray(response.programs)) {
-        programsData = response.programs;
+      } else if (response && Array.isArray((response as unknown as { data: Program[] }).data)) {
+        programsData = (response as unknown as { data: Program[] }).data;
+      } else if (response && (response as unknown as { programs: Program[] }).programs && Array.isArray((response as unknown as { programs: Program[] }).programs)) {
+        programsData = (response as unknown as { programs: Program[] }).programs;
       }
       
       // 삭제된 프로그램(isActive: false) 필터링
-      const activePrograms = programsData.filter(program => program.isActive !== false);
+      const activePrograms = programsData.filter((program: Program) => program.isActive !== false);
       
       setPrograms(activePrograms);
       console.log('프로그램 목록 설정됨:', activePrograms);
@@ -717,7 +727,7 @@ export default function AdminDashboard() {
                           </Link>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge className={`text-xs ${statusColors[program.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
+                          <Badge className={`text-xs border-0 ${statusColors[program.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
                             {statusLabels[program.status as keyof typeof statusLabels] || (program.status as string)}
                           </Badge>
                           <span className="text-xs text-gray-500">
@@ -885,11 +895,8 @@ export default function AdminDashboard() {
                   const targetDate = new Date(selectedDate);
                   const appStart = new Date(program.applyStart);
                   const appEnd = new Date(program.applyEnd);
-                  const actStart = new Date(program.programStart);
-                  const actEnd = new Date(program.programEnd);
                   
                   const isApplicationPeriod = targetDate >= appStart && targetDate <= appEnd;
-                  const isActivityPeriod = targetDate >= actStart && targetDate <= actEnd;
                   
                   return (
                     <div key={program.id} className="flex items-center justify-between p-2 bg-white rounded border">

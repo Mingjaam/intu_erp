@@ -126,10 +126,11 @@ export class OrganizationsService {
         'COUNT(DISTINCT users.id) as totalUsers',
         'COUNT(DISTINCT programs.id) as totalPrograms',
         'COUNT(DISTINCT visits.id) as totalVisits',
-        'COUNT(DISTINCT CASE WHEN programs.status = :open THEN programs.id END) as activePrograms',
+        'COUNT(DISTINCT CASE WHEN (programs.status = :applicationOpen OR programs.status = :open) THEN programs.id END) as activePrograms',
         'COUNT(DISTINCT CASE WHEN visits.status = :completed THEN visits.id END) as completedVisits',
       ])
       .setParameters({
+        applicationOpen: 'application_open',
         open: 'open',
         completed: 'completed',
       })

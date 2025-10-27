@@ -460,16 +460,16 @@ export default function NewProgramPage() {
                     <Badge 
                       variant="outline" 
                       className={`px-3 py-1 ${
-                        calculatedStatus === 'before_application' ? 'bg-gray-100 text-gray-800 border-gray-300' :
-                        calculatedStatus === 'application_open' ? 'bg-green-100 text-green-800 border-green-300' :
-                        calculatedStatus === 'in_progress' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+                        calculatedStatus === 'before_application' || calculatedStatus === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-300' :
+                        calculatedStatus === 'application_open' || calculatedStatus === 'open' ? 'bg-green-100 text-green-800 border-green-300' :
+                        calculatedStatus === 'in_progress' || calculatedStatus === 'closed' || calculatedStatus === 'ongoing' ? 'bg-blue-100 text-blue-800 border-blue-300' :
                         calculatedStatus === 'completed' ? 'bg-purple-100 text-purple-800 border-purple-300' :
                         'bg-gray-100 text-gray-800 border-gray-300'
                       }`}
                     >
-                      {calculatedStatus === 'before_application' ? '신청전' :
-                       calculatedStatus === 'application_open' ? '신청중' :
-                       calculatedStatus === 'in_progress' ? '진행중' :
+                      {calculatedStatus === 'before_application' || calculatedStatus === 'draft' ? '신청전' :
+                       calculatedStatus === 'application_open' || calculatedStatus === 'open' ? '신청중' :
+                       calculatedStatus === 'in_progress' || calculatedStatus === 'closed' || calculatedStatus === 'ongoing' ? '진행중' :
                        calculatedStatus === 'completed' ? '완료' :
                        '알 수 없음'}
                     </Badge>
