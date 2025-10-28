@@ -16,8 +16,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Plus, Trash2, Loader2, GripVertical, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
-import { calculateProgramStatus, koreanDateTimeStringToUTC } from '@/lib/date-utils';
-import { Badge } from '@/components/ui/badge';
+import { koreanDateTimeStringToUTC } from '@/lib/date-utils';
 
 const programSchema = z.object({
   title: z.string().min(1, '프로그램명을 입력해주세요'),
@@ -32,6 +31,7 @@ const programSchema = z.object({
   fee: z.number().min(0, '참가비는 0 이상이어야 합니다'),
   organizerId: z.string().min(1, '주최 기관을 선택해주세요'),
   imageUrl: z.string().optional(),
+  additionalImageUrl: z.string().optional(),
 });
 
 type ProgramFormData = z.infer<typeof programSchema>;
@@ -44,6 +44,7 @@ interface FormField {
   required: boolean;
   options?: string[];
   placeholder?: string;
+  page?: number; // 페이지 번호 (1부터 시작)
 }
 
 interface Program {
@@ -61,6 +62,7 @@ interface Program {
   fee: number;
   organizerId: string;
   imageUrl?: string;
+  additionalImageUrl?: string;
   applicationForm?: FormField[];
   metadata?: Record<string, unknown>;
 }
@@ -73,8 +75,7 @@ export default function EditProgramPage() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [calculatedStatus, setCalculatedStatus] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [program, setProgram] = useState<Program | null>(null);
   const [formFields, setFormFields] = useState<FormField[]>([
     {
@@ -121,17 +122,17 @@ export default function EditProgramPage() {
       name: 'hometown',
       type: 'text',
       label: '출신지역',
-      description: '시까지만 입력해주세요',
+      description: '시/군/구까지 입력해주세요',
       required: true,
-      placeholder: '예: 서울시',
+      placeholder: '예: 서울시 강남구',
     },
     {
       name: 'residence',
       type: 'text',
       label: '거주지',
-      description: '시까지만 입력해주세요',
+      description: '시/군/구까지 입력해주세요',
       required: true,
-      placeholder: '예: 서울시',
+      placeholder: '예: 서울시 강남구',
     },
   ]);
 
@@ -166,15 +167,21 @@ export default function EditProgramPage() {
         location: data.location,
         fee: data.fee,
         organizerId: data.organizerId,
-        imageUrl: data.imageUrl,  // 이미지 URL 추가
+        imageUrl: data.imageUrl,
+        additionalImageUrl: data.additionalImageUrl,
       });
 
       // 신청서 양식 설정
       if (data.applicationForm) {
         if (Array.isArray(data.applicationForm)) {
-          setFormFields(data.applicationForm);
+          // 기존 필드에 page 속성이 없으면 기본값 1로 설정
+          const fieldsWithPage = data.applicationForm.map(f => ({ ...f, page: f.page || 1 }));
+          setFormFields(fieldsWithPage);
         } else if (data.applicationForm && typeof data.applicationForm === 'object' && 'fields' in data.applicationForm) {
-          setFormFields((data.applicationForm as { fields: FormField[] }).fields);
+          const fields = (data.applicationForm as { fields: FormField[] }).fields;
+          // 기존 필드에 page 속성이 없으면 기본값 1로 설정
+          const fieldsWithPage = fields.map(f => ({ ...f, page: f.page || 1 }));
+          setFormFields(fieldsWithPage);
         }
       }
     } catch (error) {
@@ -202,30 +209,6 @@ export default function EditProgramPage() {
       setValue('organizerId', user.organizationId);
     }
   }, [user?.organizationId, setValue]);
-
-  // 실시간 시간 업데이트
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // 실시간 상태 계산
-  useEffect(() => {
-    const subscription = watch((value) => {
-      if (value.applyStart && value.applyEnd && value.programStart && value.programEnd) {
-        const status = calculateProgramStatus(
-          value.applyStart,
-          value.applyEnd,
-          value.programStart,
-          value.programEnd
-        );
-        setCalculatedStatus(status);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch]);
 
   const onSubmit = async (data: ProgramFormData) => {
     setIsLoading(true);
@@ -268,6 +251,7 @@ export default function EditProgramPage() {
       description: '',
       required: true, // 기본값을 필수로 변경
       placeholder: '입력해주세요',
+      page: currentPage,
     };
     setFormFields([...formFields, newField]);
   };
@@ -280,6 +264,52 @@ export default function EditProgramPage() {
 
   const removeFormField = (index: number) => {
     setFormFields(formFields.filter((_, i) => i !== index));
+  };
+
+  // 총 페이지 수 계산
+  const totalPages = Math.max(1, ...formFields.map(f => f.page || 1));
+
+  // 페이지별 필드 가져오기
+  const getFieldsByPage = (page: number) => {
+    return formFields.filter(f => (f.page || 1) === page);
+  };
+
+  // 페이지 추가
+  const addPage = () => {
+    const newPageNumber = totalPages + 1;
+    setCurrentPage(newPageNumber);
+  };
+
+  // 페이지 삭제
+  const removePage = (pageToRemove: number) => {
+    if (totalPages === 1) {
+      toast.error('최소 1개의 페이지가 필요합니다.');
+      return;
+    }
+    
+    const fieldsToKeep = formFields.filter(f => (f.page || 1) !== pageToRemove);
+    // 페이지 번호 재정렬
+    const reorderedFields = fieldsToKeep.map(f => {
+      const currentPage = f.page || 1;
+      if (currentPage > pageToRemove) {
+        return { ...f, page: currentPage - 1 };
+      }
+      return f;
+    });
+    
+    setFormFields(reorderedFields);
+    if (currentPage === pageToRemove) {
+      setCurrentPage(Math.max(1, pageToRemove - 1));
+    } else if (currentPage > pageToRemove) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // 필드의 페이지 변경
+  const moveFieldToPage = (fieldIndex: number, targetPage: number) => {
+    const updatedFields = [...formFields];
+    updatedFields[fieldIndex] = { ...updatedFields[fieldIndex], page: targetPage };
+    setFormFields(updatedFields);
   };
 
   const duplicateFormField = (index: number) => {
@@ -369,23 +399,24 @@ export default function EditProgramPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            뒤로가기
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900">프로그램 수정</h1>
+    <div className="min-h-screen overflow-y-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              뒤로가기
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900">프로그램 수정</h1>
+          </div>
+          <p className="text-gray-600">{program.title} 프로그램을 수정합니다.</p>
         </div>
-        <p className="text-gray-600">{program.title} 프로그램을 수정합니다.</p>
-      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* 기본 정보 */}
         <Card>
           <CardHeader>
@@ -416,15 +447,6 @@ export default function EditProgramPage() {
                 {errors.summary && (
                   <p className="text-sm text-red-600">{errors.summary.message}</p>
                 )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>상태 (자동 계산)</Label>
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="text-sm text-blue-800">
-                    프로그램 상태는 신청일과 활동일을 기준으로 자동으로 계산됩니다.
-                  </div>
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -487,13 +509,24 @@ export default function EditProgramPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>프로그램 이미지</Label>
+                <Label>대표 이미지</Label>
                 <ImageUpload
                   value={watch('imageUrl')}
                   onChange={(url) => setValue('imageUrl', url)}
                 />
                 <p className="text-xs text-gray-500">
-                  프로그램을 대표하는 이미지를 업로드하세요 (선택사항)
+                  프로그램 목록에 표시될 대표 이미지를 업로드하세요 (선택사항)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>추가 이미지</Label>
+                <ImageUpload
+                  value={watch('additionalImageUrl')}
+                  onChange={(url) => setValue('additionalImageUrl', url)}
+                />
+                <p className="text-xs text-gray-500">
+                  프로그램 상세 페이지에 표시될 추가 이미지를 업로드하세요 (선택사항)
                 </p>
               </div>
             </div>
@@ -504,7 +537,8 @@ export default function EditProgramPage() {
                 id="description"
                 {...register('description')}
                 placeholder="프로그램에 대한 자세한 설명을 입력해주세요"
-                rows={4}
+                rows={6}
+                className="max-w-4xl mx-auto"
               />
               {errors.description && (
                 <p className="text-sm text-red-600">{errors.description.message}</p>
@@ -568,53 +602,6 @@ export default function EditProgramPage() {
                   <p className="text-sm text-red-600">{errors.programEnd.message}</p>
                 )}
               </div>
-
-              {/* 실시간 상태 표시 */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-blue-800">실시간 상태 계산</h3>
-                  <div className="text-sm text-blue-600">
-                    현재 시간: {currentTime.toLocaleString('ko-KR', {
-                      timeZone: 'Asia/Seoul',
-                      year: 'numeric', month: '2-digit', day: '2-digit',
-                      hour: '2-digit', minute: '2-digit', second: '2-digit'
-                    })}
-                  </div>
-                </div>
-                {calculatedStatus ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-sm font-medium text-gray-700">계산된 상태:</span>
-                      <Badge
-                        variant="outline"
-                        className={`px-3 py-1 border-0 ${
-                          calculatedStatus === 'before_application' || calculatedStatus === 'draft' ? 'bg-gray-100 text-gray-800 border-gray-300' :
-                          calculatedStatus === 'application_open' || calculatedStatus === 'open' ? 'bg-green-100 text-green-800 border-green-300' :
-                          calculatedStatus === 'in_progress' || calculatedStatus === 'closed' || calculatedStatus === 'ongoing' ? 'bg-blue-100 text-blue-800 border-blue-300' :
-                          calculatedStatus === 'completed' ? 'bg-purple-100 text-purple-800 border-purple-300' :
-                          'bg-gray-100 text-gray-800 border-gray-300'
-                        }`}
-                      >
-                        {calculatedStatus === 'before_application' || calculatedStatus === 'draft' ? '신청전' :
-                         calculatedStatus === 'application_open' || calculatedStatus === 'open' ? '신청중' :
-                         calculatedStatus === 'in_progress' || calculatedStatus === 'closed' || calculatedStatus === 'ongoing' ? '진행중' :
-                         calculatedStatus === 'completed' ? '완료' :
-                         '알 수 없음'}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-gray-600 space-y-1">
-                      <p>• 신청일 전: 신청전 (before_application)</p>
-                      <p>• 신청 기간: 신청중 (application_open)</p>
-                      <p>• 신청 마감 후: 진행중 (in_progress)</p>
-                      <p>• 프로그램 종료 후: 완료 (completed)</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-gray-500">
-                    모든 날짜를 입력하면 실시간 상태가 표시됩니다.
-                  </div>
-                )}
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -623,11 +610,49 @@ export default function EditProgramPage() {
         <Card>
           <CardHeader>
             <CardTitle>신청서 양식</CardTitle>
-            <CardDescription>참여자가 작성할 신청서 양식을 수정해주세요.</CardDescription>
+            <CardDescription>참여자가 작성할 신청서 양식을 수정해주세요. 페이지를 나누어 질문을 구성할 수 있습니다.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">신청서 필드</h3>
+            {/* 페이지 탭 */}
+            <div className="flex items-center justify-between border-b pb-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {pageNum}페이지
+                  </button>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addPage}
+                  className="ml-2"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  페이지 추가
+                </Button>
+                {totalPages > 1 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => removePage(currentPage)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    현재 페이지 삭제
+                  </Button>
+                )}
+              </div>
               <Button type="button" onClick={addFormField} size="sm">
                 <Plus className="h-4 w-4 mr-2" />
                 필드 추가
@@ -635,7 +660,11 @@ export default function EditProgramPage() {
             </div>
 
             <div className="space-y-4">
-              {formFields.map((field, index) => (
+              <h3 className="text-lg font-medium">페이지 {currentPage} - 신청서 필드</h3>
+              {formFields
+                .map((field, index) => ({ field, index }))
+                .filter(({ field }) => (field.page || 1) === currentPage)
+                .map(({ field, index }) => (
                 <div key={index} className="p-6 border-2 border-gray-200 rounded-lg bg-white hover:border-blue-300 transition-colors">
                   <div className="flex items-start gap-4">
                     {/* 드래그 핸들 */}
@@ -693,6 +722,28 @@ export default function EditProgramPage() {
                           </Select>
                         </div>
                       </div>
+
+                      {/* 페이지 선택 */}
+                      {totalPages > 1 && (
+                        <div className="space-y-2">
+                          <Label>페이지</Label>
+                          <Select
+                            value={String(field.page || 1)}
+                            onValueChange={(value) => moveFieldToPage(index, parseInt(value))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                                <SelectItem key={pageNum} value={String(pageNum)}>
+                                  {pageNum}페이지
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
 
                       <div className="space-y-2">
                         <Label>설명 (선택사항)</Label>
@@ -798,9 +849,9 @@ export default function EditProgramPage() {
                 </div>
               ))}
 
-              {formFields.length === 0 && (
+              {getFieldsByPage(currentPage).length === 0 && (
                 <div className="text-center py-8 text-gray-500">
-                  <p>아직 추가된 신청서 필드가 없습니다.</p>
+                  <p>이 페이지에 추가된 신청서 필드가 없습니다.</p>
                   <p className="text-sm">위의 &quot;필드 추가&quot; 버튼을 클릭하여 필드를 추가해주세요.</p>
                 </div>
               )}
@@ -822,7 +873,8 @@ export default function EditProgramPage() {
             {isLoading ? '저장 중...' : '프로그램 수정'}
           </Button>
         </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

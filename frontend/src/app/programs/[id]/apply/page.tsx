@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 // import { Checkbox } from '@/components/ui/checkbox';
 // import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { LogIn, UserPlus, ArrowLeft } from 'lucide-react';
+import { LogIn, UserPlus, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Program } from '@/types/program';
@@ -27,6 +27,7 @@ interface FormField {
   required: boolean;
   options?: string[];
   placeholder?: string;
+  page?: number; // 페이지 번호 (1부터 시작)
 }
 
 function ApplyPageContent() {
@@ -40,6 +41,7 @@ function ApplyPageContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [existingApplication, setExistingApplication] = useState<Application | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loginDialog, setLoginDialog] = useState<{
     isOpen: boolean;
   }>({
@@ -397,6 +399,52 @@ function ApplyPageContent() {
   const applicationForm = program.applicationForm as { fields: FormField[] };
   const fields = applicationForm?.fields || [];
 
+  // 페이지별 필드 분류
+  const totalPages = Math.max(1, ...fields.map(f => f.page || 1));
+  const fieldsByPage = Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => ({
+    pageNum,
+    fields: fields.filter(f => (f.page || 1) === pageNum)
+  }));
+
+  const currentPageFields = fieldsByPage.find(p => p.pageNum === currentPage)?.fields || [];
+
+  // 다음 페이지로 이동
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // 이전 페이지로 이동
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // 현재 페이지의 필수 필드 검증
+  const validateCurrentPage = () => {
+    const requiredFields = currentPageFields.filter(f => f.required);
+    for (const field of requiredFields) {
+      const value = formData[field.name];
+      if (!value || (typeof value === 'string' && value.trim() === '') || 
+          (Array.isArray(value) && value.length === 0)) {
+        toast.error(`${field.label}은(는) 필수 항목입니다.`);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // 다음 페이지로 이동 (검증 포함)
+  const handleNextPage = () => {
+    if (validateCurrentPage()) {
+      goToNextPage();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -419,6 +467,29 @@ function ApplyPageContent() {
               <Card>
                 <CardHeader>
                   <CardTitle>{isEditing ? '신청서 수정' : '신청서 작성'}</CardTitle>
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 mt-4">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => {
+                            if (pageNum < currentPage || validateCurrentPage()) {
+                              setCurrentPage(pageNum);
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }}
+                          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                            currentPage === pageNum
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent>
                   <form 
@@ -430,19 +501,48 @@ function ApplyPageContent() {
                     }}
                     className="space-y-6"
                   >
-                    {fields.map((field) => renderFormField(field))}
+                    {totalPages > 1 && (
+                      <div className="text-center mb-4">
+                        <p className="text-sm text-gray-600">페이지 {currentPage} / {totalPages}</p>
+                      </div>
+                    )}
                     
-                    <div className="pt-6 border-t">
-                      <Button 
-                        type="submit" 
-                        className="w-full" 
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting 
-                          ? (isEditing ? '수정 중...' : '제출 중...') 
-                          : (isEditing ? '신청서 수정' : '신청 제출')
-                        }
-                      </Button>
+                    {currentPageFields.map((field) => renderFormField(field))}
+                    
+                    <div className="pt-6 border-t flex gap-4">
+                      {currentPage > 1 && (
+                        <Button 
+                          type="button"
+                          variant="outline"
+                          onClick={goToPreviousPage}
+                          className="flex-1"
+                        >
+                          <ChevronLeft className="h-4 w-4 mr-2" />
+                          이전 페이지
+                        </Button>
+                      )}
+                      
+                      {currentPage < totalPages ? (
+                        <Button 
+                          type="button"
+                          onClick={handleNextPage}
+                          className={currentPage === 1 ? 'w-full' : 'flex-1'}
+                        >
+                          다음 페이지
+                          <ChevronRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      ) : (
+                        <Button 
+                          type="submit" 
+                          className={currentPage === 1 ? 'w-full' : 'flex-1'}
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting 
+                            ? (isEditing ? '수정 중...' : '제출 중...') 
+                            : (isEditing ? '신청서 수정' : '신청 제출')
+                          }
+                        </Button>
+                      )}
                     </div>
                   </form>
                 </CardContent>
