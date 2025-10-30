@@ -66,11 +66,9 @@ function ProgramsPageContent() {
       setIsLoading(true);
       console.log('프로그램 목록 조회 시작...');
       
-      // 상태 필터가 있으면 API에 전달
-      const params = statusFilter !== 'all' ? { status: statusFilter } : {};
+      // 모든 프로그램을 가져온 후 클라이언트에서 필터링
       const response = await apiClient.get<{ programs: Program[]; total: number }>(
-        API_ENDPOINTS.PROGRAMS.LIST,
-        params
+        API_ENDPOINTS.PROGRAMS.LIST
       );
       console.log('API 응답:', response);
       const data = response.data || response;
@@ -82,7 +80,7 @@ function ProgramsPageContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter]);
+  }, []);
 
   useEffect(() => {
     if (user?.role === 'admin' || user?.role === 'operator' || user?.role === 'staff') {
@@ -90,10 +88,13 @@ function ProgramsPageContent() {
       const status = searchParams.get('status');
       if (status) {
         setStatusFilter(status);
+      } else {
+        setStatusFilter('all');
       }
+      // 프로그램 목록 가져오기 (초기 로드 시 한 번만)
       fetchPrograms();
     }
-  }, [user, searchParams, statusFilter, fetchPrograms]);
+  }, [user, searchParams, fetchPrograms]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('정말로 이 프로그램을 삭제하시겠습니까?')) {
@@ -113,7 +114,29 @@ function ProgramsPageContent() {
   const filteredPrograms = programs.filter(program => {
     const matchesSearch = program.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (program.description && program.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === 'all' || program.status === statusFilter;
+    
+    // 상태 필터 매핑 (기존 형식과 새로운 형식 모두 지원)
+    let matchesStatus = false;
+    if (statusFilter === 'all') {
+      matchesStatus = true;
+    } else if (statusFilter === 'draft') {
+      // 기획중: draft 또는 before_application
+      matchesStatus = program.status === 'draft' || program.status === 'before_application';
+    } else if (statusFilter === 'open') {
+      // 진행중: open, application_open, closed, ongoing, in_progress
+      matchesStatus = program.status === 'open' || 
+                     program.status === 'application_open' || 
+                     program.status === 'closed' || 
+                     program.status === 'ongoing' || 
+                     program.status === 'in_progress';
+    } else if (statusFilter === 'closed') {
+      // 완료: completed
+      matchesStatus = program.status === 'completed';
+    } else {
+      // 기타: 정확히 일치하는 경우
+      matchesStatus = program.status === statusFilter;
+    }
+    
     return matchesSearch && matchesStatus;
   });
 
@@ -289,8 +312,15 @@ function ProgramsPageContent() {
                       </Badge>
                       {(program.status === 'open' || program.status === 'application_open') && program.daysUntilDeadline !== undefined && (
                         <Badge 
-                          variant={program.daysUntilDeadline <= 3 ? "destructive" : program.daysUntilDeadline <= 7 ? "secondary" : "outline"}
-                          className="font-bold border-0"
+                          className={`font-bold border-0 ${
+                            program.daysUntilDeadline <= 0
+                              ? 'bg-red-600 text-white hover:bg-red-700'
+                              : program.daysUntilDeadline <= 3
+                              ? 'bg-red-500 text-white hover:bg-red-600'
+                              : program.daysUntilDeadline <= 7
+                              ? 'bg-orange-500 text-white hover:bg-orange-600'
+                              : 'bg-blue-500 text-white hover:bg-blue-600'
+                          }`}
                         >
                           {program.daysUntilDeadline > 0 
                             ? `D-${program.daysUntilDeadline}` 

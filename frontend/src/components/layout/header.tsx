@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Settings, Search, Bell, FileText, Shield, Calendar } from 'lucide-react';
+import { LogOut, User, Search, Bell, FileText, Shield } from 'lucide-react';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -75,6 +75,13 @@ export function Header() {
           </div>
 
           <div className="flex items-center space-x-3">
+            {/* 캘린더 버튼 */}
+            <Link href="/calendar">
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 text-xl">
+                📅
+              </Button>
+            </Link>
+            
             {/* 알림 */}
             <Button variant="ghost" size="sm" className="relative text-white hover:bg-white/20">
               <Bell className="h-5 w-5" />
@@ -119,31 +126,19 @@ export function Header() {
                     프로필
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/applications" className="flex items-center">
+                    <FileText className="mr-2 h-4 w-4" />
+                    내 신청서
+                  </Link>
+                </DropdownMenuItem>
                 
                 {/* 관리자 이상일 경우에만 관리자 페이지 메뉴 표시 */}
                 {(user.role === 'admin' || user.role === 'operator' || user.role === 'staff') && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin" className="flex items-center">
-                        <Shield className="mr-2 h-4 w-4" />
-                        관리자 페이지
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/programs" className="flex items-center">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        프로그램 보기
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
-                
-                {/* 일반 사용자일 경우에만 내 신청 목록 표시 */}
-                {user.role === 'applicant' && (
                   <DropdownMenuItem asChild>
-                    <Link href="/applications" className="flex items-center">
-                      <FileText className="mr-2 h-4 w-4" />
-                      내 신청 목록
+                    <Link href="/admin" className="flex items-center">
+                      <Shield className="mr-2 h-4 w-4" />
+                      관리자 페이지
                     </Link>
                   </DropdownMenuItem>
                 )}

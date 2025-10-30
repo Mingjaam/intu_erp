@@ -6,32 +6,11 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { 
   FolderOpen,
-  FileText,
-  Calendar,
   LogIn,
   UserPlus
 } from 'lucide-react';
 
-const userNavigation = [
-  { 
-    name: '프로그램', 
-    href: '/programs', 
-    icon: FolderOpen,
-    color: 'bg-blue-500'
-  },
-  { 
-    name: '내 신청서', 
-    href: '/applications', 
-    icon: FileText,
-    color: 'bg-blue-600'
-  },
-  { 
-    name: '캘린더', 
-    href: '/calendar', 
-    icon: Calendar,
-    color: 'bg-blue-700'
-  },
-];
+const userNavigation: never[] = [];
 
 const guestNavigation = [
   { 
