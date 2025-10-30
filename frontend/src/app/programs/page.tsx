@@ -235,7 +235,6 @@ export default function ProgramsPage() {
             )}
           </div>
         </div>
-      </div>
 
       {/* 로그인 다이얼로그 */}
       <Dialog open={loginDialog.isOpen} onOpenChange={closeLoginDialog}>
