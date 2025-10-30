@@ -102,14 +102,6 @@ export default function EditProgramPage() {
       placeholder: '전화번호를 입력해주세요',
     },
     {
-      name: 'address',
-      type: 'text',
-      label: '거주지 주소',
-      description: '시,군,구 까지만 입력해주세요',
-      required: true,
-      placeholder: '예: 서울시 강남구',
-    },
-    {
       name: 'gender',
       type: 'text',
       label: '성별',
@@ -619,7 +611,7 @@ export default function EditProgramPage() {
                         value={field.label}
                         onChange={(e) => updateFormField(index, { label: e.target.value })}
                         placeholder="필드명을 입력해주세요"
-                        disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
+                        disabled={['name', 'email', 'phone'].includes(field.name)}
                       />
                       <p className="text-xs text-gray-500">
                         ID: {field.name} (자동 생성)
@@ -631,7 +623,7 @@ export default function EditProgramPage() {
                         value={field.description || ''}
                         onChange={(e) => updateFormField(index, { description: e.target.value })}
                         placeholder="필드 설명 (선택사항)"
-                        disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
+                        disabled={['name', 'email', 'phone'].includes(field.name)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -639,7 +631,7 @@ export default function EditProgramPage() {
                       <Select
                         value={field.type}
                         onValueChange={(value: string) => updateFormField(index, { type: value })}
-                        disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
+                        disabled={['name', 'email', 'phone'].includes(field.name)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -655,7 +647,7 @@ export default function EditProgramPage() {
                       <Select
                         value={field.required ? 'true' : 'false'}
                         onValueChange={(value: string) => updateFormField(index, { required: value === 'true' })}
-                        disabled={['name', 'email', 'phone', 'address'].includes(field.name)}
+                        disabled={['name', 'email', 'phone'].includes(field.name)}
                       >
                         <SelectTrigger>
                           <SelectValue />

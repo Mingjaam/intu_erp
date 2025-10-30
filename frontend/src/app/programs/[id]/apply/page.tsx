@@ -57,8 +57,8 @@ function ApplyPageContent() {
         const data = response.data || response;
         setProgram(data);
         
-        // 로그인된 사용자 정보로 기본값 설정 (기본 필드들)
-        if (user) {
+        // 로그인된 사용자 정보로 기본값 설정
+        if (user && !editApplicationId) {
           const getGenderLabel = (gender?: string) => {
             switch (gender) {
               case 'male': return '남';
@@ -67,16 +67,51 @@ function ApplyPageContent() {
             }
           };
 
-          const initialData: Record<string, unknown> = {
-            name: user.name || '',
-            email: user.email || '',
-            phone: user.phone || '',
-            gender: getGenderLabel(user.gender),
-            birthYear: user.birthYear || '',
-            hometown: user.hometown || '',
-            residence: user.residence || '',
-          };
-          setFormData(initialData);
+          // 프로그램의 applicationForm fields 가져오기
+          const applicationForm = data.applicationForm as { fields?: FormField[] } | undefined;
+          const fields = applicationForm?.fields || [];
+          
+          // 사용자 정보에서 모든 필드 가져오기
+          const initialData: Record<string, unknown> = {};
+          
+          // 프로그램의 각 필드에 대해 사용자 정보 매핑
+          fields.forEach(field => {
+            const fieldName = field.name;
+            switch (fieldName) {
+              case 'name':
+                initialData[fieldName] = user.name || '';
+                break;
+              case 'email':
+                initialData[fieldName] = user.email || '';
+                break;
+              case 'phone':
+                initialData[fieldName] = user.phone || '';
+                break;
+              case 'gender':
+                initialData[fieldName] = getGenderLabel(user.gender);
+                break;
+              case 'birthYear':
+                initialData[fieldName] = user.birthYear || '';
+                break;
+              case 'hometown':
+                initialData[fieldName] = user.hometown || '';
+                break;
+              case 'residence':
+                initialData[fieldName] = user.residence || '';
+                break;
+              default:
+                // 다른 필드는 빈 값으로 초기화 (이미 formData에 있는 값 유지)
+                if (!(fieldName in initialData)) {
+                  initialData[fieldName] = '';
+                }
+                break;
+            }
+          });
+          
+          setFormData(prev => ({
+            ...prev,
+            ...initialData
+          }));
         }
       } catch (error) {
         console.error('프로그램 조회 오류:', error);
@@ -192,10 +227,10 @@ function ApplyPageContent() {
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
-              disabled={!!(user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name))}
-              className={user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) ? 'bg-gray-50' : ''}
+              disabled={!!(user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name))}
+              className={user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) ? 'bg-gray-50' : ''}
             />
-            {user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) && (
+            {user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) && (
               <p className="text-xs text-gray-500">로그인된 사용자 정보 (수정 불가)</p>
             )}
           </div>
@@ -218,10 +253,10 @@ function ApplyPageContent() {
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
-              disabled={!!(user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name))}
-              className={user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) ? 'bg-gray-50' : ''}
+              disabled={!!(user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name))}
+              className={user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) ? 'bg-gray-50' : ''}
             />
-            {user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) && (
+            {user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) && (
               <p className="text-xs text-gray-500">로그인된 사용자 정보 (수정 불가)</p>
             )}
           </div>

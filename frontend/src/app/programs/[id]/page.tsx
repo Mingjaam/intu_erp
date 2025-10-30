@@ -8,7 +8,6 @@ import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Calendar, MapPin, FolderOpen, LogIn, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -52,11 +51,6 @@ export default function ProgramDetailPage() {
   const { user } = useAuth();
   const [program, setProgram] = useState<Program | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [loginDialog, setLoginDialog] = useState<{
-    isOpen: boolean;
-  }>({
-    isOpen: false,
-  });
 
   const programId = params.id as string;
 
@@ -102,17 +96,6 @@ export default function ProgramDetailPage() {
       </div>
     );
   }
-
-
-  // 로그인 다이얼로그 열기
-  const openLoginDialog = () => {
-    setLoginDialog({ isOpen: true });
-  };
-
-  // 로그인 다이얼로그 닫기
-  const closeLoginDialog = () => {
-    setLoginDialog({ isOpen: false });
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
@@ -228,20 +211,30 @@ export default function ProgramDetailPage() {
                   <div className="text-center">
                     {user ? (
                       user.role === 'applicant' ? (
-                        <Button 
-                          size="lg" 
-                          className="px-6 py-3" 
-                          asChild
-                          disabled={program.status !== 'application_open' && program.status !== 'open'}
-                        >
-                          <Link href={`/programs/${program.id}/apply`}>
+                        program.status === 'application_open' || program.status === 'open' ? (
+                          <Button 
+                            size="lg" 
+                            className="px-6 py-3" 
+                            asChild
+                          >
+                            <Link href={`/programs/${program.id}/apply`}>
+                              <UserPlus className="h-5 w-5 mr-2" />
+                              신청하기
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button 
+                            size="lg" 
+                            className="px-6 py-3" 
+                            disabled
+                          >
                             <UserPlus className="h-5 w-5 mr-2" />
-                            {program.status === 'application_open' || program.status === 'open' ? '신청하기' : '신청 불가'}
-                          </Link>
-                        </Button>
+                            신청 불가
+                          </Button>
+                        )
                       ) : (
                         <div className="text-center text-gray-600">
-                          <p className="mb-2 text-sm">신청은 신청자(applicant) 역할의 사용자만 가능합니다.</p>
+                          <p className="mb-2 text-sm">신청은 로그인 후 가능합니다.</p>
                           <p className="text-xs">현재 역할: {user.role}</p>
                         </div>
                       )
@@ -250,8 +243,7 @@ export default function ProgramDetailPage() {
                         <Button 
                           size="lg"
                           className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
-                          onClick={openLoginDialog}
-                          disabled={program.status !== 'application_open' && program.status !== 'open'}
+                          disabled
                         >
                           <LogIn className="h-5 w-5 mr-2" />
                           {program.status === 'application_open' || program.status === 'open' ? '로그인 후 신청하기' : '신청 불가'}
@@ -292,71 +284,6 @@ export default function ProgramDetailPage() {
           </div>
         </div>
       </div>
-
-      {/* 로그인 다이얼로그 */}
-      <Dialog open={loginDialog.isOpen} onOpenChange={closeLoginDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center text-lg font-semibold">
-              로그인이 필요한 서비스입니다
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6">
-            {/* 프로그램 정보 */}
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Calendar className="h-8 w-8 text-blue-600" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900">
-                {program.title}
-              </h3>
-              <p className="text-sm text-gray-600">
-                프로그램에 신청하려면 로그인이 필요합니다.
-              </p>
-            </div>
-
-            {/* 안내 메시지 */}
-            <div className="bg-blue-50 rounded-lg p-4">
-              <p className="text-sm text-blue-700 text-center">
-                로그인이 필요한 서비스입니다. 로그인 후 프로그램 신청이 가능합니다.
-              </p>
-            </div>
-
-            {/* 버튼 그룹 */}
-            <div className="space-y-3">
-              <Button
-                asChild
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                size="lg"
-              >
-                <Link href="/auth/login">
-                  <LogIn className="h-5 w-5 mr-2" />
-                  로그인하기
-                </Link>
-              </Button>
-              <Button
-                asChild
-                variant="outline"
-                className="w-full"
-                size="lg"
-              >
-                <Link href="/auth/register">
-                  <UserPlus className="h-5 w-5 mr-2" />
-                  회원가입하기
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={closeLoginDialog}
-                className="w-full"
-                size="lg"
-              >
-                취소
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

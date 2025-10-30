@@ -31,6 +31,7 @@ const statusColors: Record<string, string> = {
 export default function ApplicationDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [application, setApplication] = useState<Application | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -85,12 +86,25 @@ export default function ApplicationDetailPage() {
   }
 
   const renderFormData = (data: Record<string, unknown>) => {
+    // 프로그램의 applicationForm에서 fields 정보 가져오기
+    const applicationForm = application?.program?.applicationForm as { fields?: Array<{ name: string; label: string }> } | undefined;
+    const fields = applicationForm?.fields || [];
+    
+    // 필드 이름을 label로 매핑하는 맵 생성
+    const fieldLabelMap = new Map<string, string>();
+    fields.forEach(field => {
+      fieldLabelMap.set(field.name, field.label);
+    });
+    
     return Object.entries(data).map(([key, value]) => {
       if (key === 'applicantInfo') return null; // 신청자 정보는 별도로 표시
       
+      // 필드의 label이 있으면 label 사용, 없으면 key 사용
+      const displayLabel = fieldLabelMap.get(key) || key;
+      
       return (
         <div key={key} className="flex justify-between py-2 border-b border-gray-100 last:border-b-0">
-          <span className="font-medium text-gray-700">{key}:</span>
+          <span className="font-medium text-gray-700">{displayLabel}:</span>
           <span className="text-gray-900">
             {Array.isArray(value) ? value.join(', ') : String(value)}
           </span>
@@ -230,23 +244,25 @@ export default function ApplicationDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 액션 버튼 */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-3">
-                <Button className="w-full" asChild>
-                  <Link href={`/programs/${application.program.id}`}>
-                    프로그램 상세보기
-                  </Link>
-                </Button>
-                {application.status === 'submitted' && (
-                  <Button variant="outline" className="w-full">
-                    신청 철회
+          {/* 액션 버튼 - 신청자만 표시 */}
+          {user && user.role === 'applicant' && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-3">
+                  <Button className="w-full" asChild>
+                    <Link href={`/programs/${application.program.id}`}>
+                      프로그램 상세보기
+                    </Link>
                   </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  {application.status === 'submitted' && (
+                    <Button variant="outline" className="w-full">
+                      신청 철회
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
