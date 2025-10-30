@@ -56,63 +56,6 @@ function ApplyPageContent() {
         const response = await apiClient.get<Program>(API_ENDPOINTS.PROGRAMS.DETAIL(programId));
         const data = response.data || response;
         setProgram(data);
-        
-        // 로그인된 사용자 정보로 기본값 설정
-        if (user && !editApplicationId) {
-          const getGenderLabel = (gender?: string) => {
-            switch (gender) {
-              case 'male': return '남';
-              case 'female': return '여';
-              default: return '';
-            }
-          };
-
-          // 프로그램의 applicationForm fields 가져오기
-          const applicationForm = data.applicationForm as { fields?: FormField[] } | undefined;
-          const fields = applicationForm?.fields || [];
-          
-          // 사용자 정보에서 모든 필드 가져오기
-          const initialData: Record<string, unknown> = {};
-          
-          // 프로그램의 각 필드에 대해 사용자 정보 매핑
-          fields.forEach(field => {
-            const fieldName = field.name;
-            switch (fieldName) {
-              case 'name':
-                initialData[fieldName] = user.name || '';
-                break;
-              case 'email':
-                initialData[fieldName] = user.email || '';
-                break;
-              case 'phone':
-                initialData[fieldName] = user.phone || '';
-                break;
-              case 'gender':
-                initialData[fieldName] = getGenderLabel(user.gender);
-                break;
-              case 'birthYear':
-                initialData[fieldName] = user.birthYear || '';
-                break;
-              case 'hometown':
-                initialData[fieldName] = user.hometown || '';
-                break;
-              case 'residence':
-                initialData[fieldName] = user.residence || '';
-                break;
-              default:
-                // 다른 필드는 빈 값으로 초기화 (이미 formData에 있는 값 유지)
-                if (!(fieldName in initialData)) {
-                  initialData[fieldName] = '';
-                }
-                break;
-            }
-          });
-          
-          setFormData(prev => ({
-            ...prev,
-            ...initialData
-          }));
-        }
       } catch (error) {
         console.error('프로그램 조회 오류:', error);
         toast.error('프로그램 정보를 불러오는데 실패했습니다.');
@@ -122,28 +65,94 @@ function ApplyPageContent() {
       }
     };
 
-      const fetchExistingApplication = async () => {
-        if (editApplicationId) {
-          try {
-            const response = await apiClient.get<Application>(API_ENDPOINTS.APPLICATIONS.DETAIL(editApplicationId));
-            const data = response.data || response;
-            setExistingApplication(data);
-            setFormData(data.payload);
-            setIsEditing(true);
-          } catch (error) {
-            console.error('기존 신청서 조회 오류:', error);
-            toast.error('기존 신청서를 불러오는데 실패했습니다.');
-          }
+    const fetchExistingApplication = async () => {
+      if (editApplicationId) {
+        try {
+          const response = await apiClient.get<Application>(API_ENDPOINTS.APPLICATIONS.DETAIL(editApplicationId));
+          const data = response.data || response;
+          setExistingApplication(data);
+          setFormData(data.payload);
+          setIsEditing(true);
+        } catch (error) {
+          console.error('기존 신청서 조회 오류:', error);
+          toast.error('기존 신청서를 불러오는데 실패했습니다.');
+        }
+      }
+    };
+
+    if (programId) {
+      fetchProgram();
+      if (editApplicationId) {
+        fetchExistingApplication();
+      }
+    }
+  }, [programId, router, editApplicationId]);
+
+  // 사용자 정보로 폼 데이터 초기화
+  useEffect(() => {
+    if (user && program && !editApplicationId && !isEditing) {
+      const getGenderLabel = (gender?: string) => {
+        switch (gender) {
+          case 'male': return '남';
+          case 'female': return '여';
+          default: return '';
         }
       };
 
-      if (programId) {
-        fetchProgram();
-        if (editApplicationId) {
-          fetchExistingApplication();
+      // 프로그램의 applicationForm fields 가져오기
+      const applicationForm = program.applicationForm as { fields?: FormField[] } | undefined;
+      const fields = applicationForm?.fields || [];
+      
+      // 사용자 정보에서 모든 필드 가져오기
+      const initialData: Record<string, unknown> = {};
+      
+      // 프로그램의 각 필드에 대해 사용자 정보 매핑
+      fields.forEach(field => {
+        const fieldName = field.name;
+        switch (fieldName) {
+          case 'name':
+            if (user.name) initialData[fieldName] = user.name;
+            break;
+          case 'email':
+            if (user.email) initialData[fieldName] = user.email;
+            break;
+          case 'phone':
+            if (user.phone) initialData[fieldName] = user.phone;
+            break;
+          case 'gender':
+            const genderLabel = getGenderLabel(user.gender);
+            if (genderLabel) initialData[fieldName] = genderLabel;
+            break;
+          case 'birthYear':
+            if (user.birthYear !== undefined && user.birthYear !== null) {
+              initialData[fieldName] = user.birthYear;
+            }
+            break;
+          case 'hometown':
+            if (user.hometown) initialData[fieldName] = user.hometown;
+            break;
+          case 'residence':
+            if (user.residence) initialData[fieldName] = user.residence;
+            break;
+          default:
+            // 다른 필드는 초기화하지 않음
+            break;
         }
-      }
-    }, [programId, user, router, editApplicationId]);
+      });
+      
+      // 사용자 정보로 필드 채우기
+      setFormData(prev => {
+        const updated = { ...prev };
+        // initialData에 있는 모든 필드를 적용 (기존 값이 없거나 빈 값일 때만)
+        Object.keys(initialData).forEach(key => {
+          if (!prev[key] || prev[key] === '') {
+            updated[key] = initialData[key];
+          }
+        });
+        return updated;
+      });
+    }
+  }, [user, program, editApplicationId, isEditing]);
 
   const handleInputChange = (fieldName: string, value: unknown) => {
     setFormData(prev => ({
@@ -227,12 +236,7 @@ function ApplyPageContent() {
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
-              disabled={!!(user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name))}
-              className={user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) ? 'bg-gray-50' : ''}
             />
-            {user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) && (
-              <p className="text-xs text-gray-500">로그인된 사용자 정보 (수정 불가)</p>
-            )}
           </div>
         );
 
@@ -253,12 +257,7 @@ function ApplyPageContent() {
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
-              disabled={!!(user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name))}
-              className={user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) ? 'bg-gray-50' : ''}
             />
-            {user && ['name', 'email', 'phone', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) && (
-              <p className="text-xs text-gray-500">로그인된 사용자 정보 (수정 불가)</p>
-            )}
           </div>
         );
 

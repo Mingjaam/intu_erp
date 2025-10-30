@@ -203,24 +203,12 @@ export default function NewProgramPage() {
   };
 
   const updateFormField = (index: number, field: Partial<FormField>) => {
-    // 기본 필드(이름, 이메일, 전화번호)는 수정할 수 없음
-    const currentField = formFields[index];
-    if (currentField && ['name', 'email', 'phone'].includes(currentField.name)) {
-      toast.error('기본 필드(이름, 이메일, 전화번호)는 수정할 수 없습니다.');
-      return;
-    }
     const updatedFields = [...formFields];
     updatedFields[index] = { ...updatedFields[index], ...field };
     setFormFields(updatedFields);
   };
 
   const removeFormField = (index: number) => {
-    // 기본 필드(이름, 이메일, 전화번호)는 삭제할 수 없음
-    const field = formFields[index];
-    if (field && ['name', 'email', 'phone'].includes(field.name)) {
-      toast.error('기본 필드(이름, 이메일, 전화번호)는 삭제할 수 없습니다.');
-      return;
-    }
     setFormFields(formFields.filter((_, i) => i !== index));
   };
 
@@ -540,7 +528,6 @@ export default function NewProgramPage() {
                         value={field.label}
                         onChange={(e) => updateFormField(index, { label: e.target.value })}
                         placeholder="필드명을 입력해주세요"
-                        disabled={['name', 'email', 'phone'].includes(field.name)}
                       />
                       <p className="text-xs text-gray-500">
                         ID: {field.name} (자동 생성)
@@ -552,7 +539,6 @@ export default function NewProgramPage() {
                         value={field.description || ''}
                         onChange={(e) => updateFormField(index, { description: e.target.value })}
                         placeholder="필드 설명 (선택사항)"
-                        disabled={['name', 'email', 'phone'].includes(field.name)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -560,7 +546,6 @@ export default function NewProgramPage() {
                       <Select
                         value={field.type}
                         onValueChange={(value) => updateFormField(index, { type: value })}
-                        disabled={['name', 'email', 'phone'].includes(field.name)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -576,7 +561,6 @@ export default function NewProgramPage() {
                       <Select
                         value={field.required ? 'true' : 'false'}
                         onValueChange={(value) => updateFormField(index, { required: value === 'true' })}
-                        disabled={['name', 'email', 'phone'].includes(field.name)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -589,20 +573,15 @@ export default function NewProgramPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex justify-end">
-                    {!['name', 'email', 'phone'].includes(field.name) && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeFormField(index)}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        삭제
-                      </Button>
-                    )}
-                    {['name', 'email', 'phone'].includes(field.name) && (
-                      <p className="text-sm text-gray-500">기본 필드 (삭제 불가)</p>
-                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeFormField(index)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      삭제
+                    </Button>
                   </div>
                 </div>
               ))}
