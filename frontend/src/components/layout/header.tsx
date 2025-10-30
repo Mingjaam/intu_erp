@@ -2,7 +2,7 @@
 
 // import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ import { LogOut, User, Search, Bell, FileText, Shield } from 'lucide-react';
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -50,19 +51,22 @@ export function Header() {
     );
   }
 
+  const isProgramsPage = pathname === '/programs';
+
   return (
     <header className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <Link href="/programs" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+          <div className="flex items-center">
+            <Link href="/programs" className="flex items-center hover:opacity-80 transition-opacity">
               <h1 className="text-xl font-bold cursor-pointer">
-                {user?.organization?.name || '마을 프로그램'}
+                {isProgramsPage ? 'NUVIO' : (user?.organization?.name || '마을 프로그램')}
               </h1>
             </Link>
           </div>
 
           {/* 검색창 */}
+          {!isProgramsPage && (
           <div className="flex-1 max-w-md mx-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -73,6 +77,7 @@ export function Header() {
               />
             </div>
           </div>
+          )}
 
           <div className="flex items-center space-x-3">
             {/* 캘린더 버튼 */}
