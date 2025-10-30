@@ -148,8 +148,8 @@ export default function ProgramsPage() {
                 return (
                   <Link key={program.id} href={`/programs/${program.id}`}>
                     <Card className="group hover:shadow-xl transition-all duration-300 bg-white border-0 overflow-hidden cursor-pointer flex flex-col rounded-lg">
-                {/* 이미지 영역 - 4:3 비율 */}
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-lg">
+                {/* 이미지 영역 - 세로로 긴 3:4 비율 */}
+                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-t-lg">
                   {program.imageUrl ? (
                     <div className="relative w-full h-full rounded-t-lg overflow-hidden">
                       {/* 흐림 배경 - 빈 공간 채우기 */}
@@ -157,7 +157,7 @@ export default function ProgramsPage() {
                         className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-md scale-110 rounded-t-lg"
                         style={{ backgroundImage: `url(${program.imageUrl})` }}
                       />
-                      {/* 메인 이미지 - 4:3 비율에 맞춤 */}
+                      {/* 메인 이미지 - 3:4 비율에 맞춤 */}
                       <Image
                         src={program.imageUrl}
                         alt={program.title}
