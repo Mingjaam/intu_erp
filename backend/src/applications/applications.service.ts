@@ -49,15 +49,29 @@ export class ApplicationsService {
       throw new ConflictException('이미 신청한 프로그램입니다.');
     }
 
-    // 사용자 정보를 payload에 자동 추가
+    // 사용자 정보를 payload에 자동 추가 (User 엔티티의 최신 정보 사용)
+    // 기본 필드들은 User 엔티티의 정보로 자동 채움
     const enrichedPayload = {
       ...payload,
+      // 기본 필드들은 User 엔티티의 최신 정보로 덮어쓰기 (신청자가 수정하지 못하도록)
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      gender: user.gender ? (user.gender === 'male' ? '남' : '여') : payload.gender || '',
+      birthYear: user.birthYear || payload.birthYear || '',
+      hometown: user.hometown || payload.hometown || '',
+      residence: user.residence || payload.residence || '',
+      address: payload.address || user.residence || '', // address는 payload 우선
       applicantInfo: {
         id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone,
         organizationId: user.organizationId,
+        gender: user.gender,
+        birthYear: user.birthYear,
+        hometown: user.hometown,
+        residence: user.residence,
       },
     };
 
@@ -192,6 +206,23 @@ export class ApplicationsService {
       if (application.status !== ApplicationStatus.SUBMITTED) {
         throw new ForbiddenException('제출된 신청서는 수정할 수 없습니다.');
       }
+    }
+
+    // payload가 업데이트되는 경우, User 엔티티의 최신 정보로 기본 필드들 자동 업데이트
+    if (updateApplicationDto.payload) {
+      const updatedPayload = {
+        ...updateApplicationDto.payload,
+        // 기본 필드들은 User 엔티티의 최신 정보로 덮어쓰기
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        gender: user.gender ? (user.gender === 'male' ? '남' : '여') : updateApplicationDto.payload.gender || '',
+        birthYear: user.birthYear || updateApplicationDto.payload.birthYear || '',
+        hometown: user.hometown || updateApplicationDto.payload.hometown || '',
+        residence: user.residence || updateApplicationDto.payload.residence || '',
+        address: updateApplicationDto.payload.address || user.residence || '', // address는 payload 우선
+      };
+      updateApplicationDto.payload = updatedPayload;
     }
 
     Object.assign(application, updateApplicationDto);
