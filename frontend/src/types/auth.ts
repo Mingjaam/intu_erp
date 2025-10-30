@@ -5,6 +5,11 @@ export enum UserRole {
   APPLICANT = 'applicant',
 }
 
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+}
+
 export interface User {
   id: string;
   email: string;
@@ -14,6 +19,10 @@ export interface User {
   phone?: string;
   isActive: boolean;
   lastLoginAt?: Date;
+  gender?: Gender;
+  birthYear?: number;
+  hometown?: string;
+  residence?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,6 +38,10 @@ export interface RegisterRequest {
   name: string;
   phone?: string;
   organizationId?: string;
+  gender?: Gender;
+  birthYear?: number;
+  hometown?: string;
+  residence?: string;
 }
 
 export interface AuthResponse {

@@ -8,9 +8,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
 import { PasswordValidator } from './password-validator';
+import { Gender } from '@/types/auth';
 
 const registerSchema = z.object({
   email: z.string().email('올바른 이메일 주소를 입력해주세요'),
@@ -20,6 +22,10 @@ const registerSchema = z.object({
     .regex(/[~!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, '비밀번호는 특수문자를 포함해야 합니다'),
   name: z.string().min(2, '이름은 최소 2자 이상이어야 합니다'),
   phone: z.string().min(1, '전화번호는 필수입니다').regex(/^[0-9]+$/, '전화번호는 숫자만 입력해주세요 (하이픈 제외)'),
+  gender: z.enum(['male', 'female']).optional(),
+  birthYear: z.string().optional(),
+  hometown: z.string().optional(),
+  residence: z.string().optional(),
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
@@ -34,6 +40,7 @@ export function RegisterForm() {
     handleSubmit,
     formState: { errors },
     watch,
+    setValue,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
@@ -43,7 +50,21 @@ export function RegisterForm() {
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      await registerUser(data);
+      // birthYear를 문자열에서 숫자로 변환
+      const submitData = {
+        ...data,
+        birthYear: data.birthYear && data.birthYear !== '' ? parseInt(data.birthYear, 10) : undefined,
+      };
+      // 유효성 검사
+      if (submitData.birthYear !== undefined) {
+        const currentYear = new Date().getFullYear();
+        if (submitData.birthYear < 1950 || submitData.birthYear > currentYear || isNaN(submitData.birthYear)) {
+          toast.error('올바른 출생년도를 입력해주세요 (1950 ~ ' + currentYear + ')');
+          setIsLoading(false);
+          return;
+        }
+      }
+      await registerUser(submitData);
       toast.success('회원가입에 성공했습니다');
       
       // 회원가입 후 로그인 페이지로 리다이렉트
@@ -118,6 +139,86 @@ export function RegisterForm() {
             <p className="text-sm text-red-500 flex items-center gap-1">
               <span>⚠️</span>
               {errors.phone.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="gender" className="text-sm font-medium text-gray-700">
+            성별
+          </Label>
+          <Select onValueChange={(value) => setValue('gender', value as Gender)}>
+            <SelectTrigger className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg">
+              <SelectValue placeholder="성별을 선택해주세요" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="male">남</SelectItem>
+              <SelectItem value="female">여</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.gender && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <span>⚠️</span>
+              {errors.gender.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="birthYear" className="text-sm font-medium text-gray-700">
+            출생년도
+          </Label>
+          <Input
+            id="birthYear"
+            type="number"
+            placeholder="예: 1990"
+            className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+            {...register('birthYear')}
+          />
+          {errors.birthYear && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <span>⚠️</span>
+              {errors.birthYear.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="hometown" className="text-sm font-medium text-gray-700">
+            출신지역
+          </Label>
+          <Input
+            id="hometown"
+            type="text"
+            placeholder="예: 서울시"
+            className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+            {...register('hometown')}
+          />
+          <p className="text-xs text-gray-500">시까지만 입력해주세요 (예: 서울시, 부산시)</p>
+          {errors.hometown && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <span>⚠️</span>
+              {errors.hometown.message}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="residence" className="text-sm font-medium text-gray-700">
+            거주지
+          </Label>
+          <Input
+            id="residence"
+            type="text"
+            placeholder="예: 서울시"
+            className="h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-lg"
+            {...register('residence')}
+          />
+          <p className="text-xs text-gray-500">시까지만 입력해주세요 (예: 서울시, 부산시)</p>
+          {errors.residence && (
+            <p className="text-sm text-red-500 flex items-center gap-1">
+              <span>⚠️</span>
+              {errors.residence.message}
             </p>
           )}
         </div>

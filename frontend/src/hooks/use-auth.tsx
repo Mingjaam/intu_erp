@@ -17,6 +17,10 @@ export interface User {
   };
   isActive: boolean;
   lastLoginAt?: string;
+  gender?: 'male' | 'female';
+  birthYear?: number;
+  hometown?: string;
+  residence?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -30,6 +34,10 @@ interface AuthContextType {
     name: string;
     phone?: string;
     organizationId?: string;
+    gender?: 'male' | 'female';
+    birthYear?: number;
+    hometown?: string;
+    residence?: string;
   }) => Promise<void>;
   logout: () => void;
   refreshUserProfile: () => Promise<void>;
@@ -103,6 +111,10 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     name: string;
     phone?: string;
     organizationId?: string;
+    gender?: 'male' | 'female';
+    birthYear?: number;
+    hometown?: string;
+    residence?: string;
   }) => {
     try {
       await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, data);

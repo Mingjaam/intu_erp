@@ -87,6 +87,10 @@ export class AuthService {
       phone: registerDto.phone,
       organizationId: registerDto.organizationId,
       role: UserRole.APPLICANT,
+      gender: registerDto.gender,
+      birthYear: registerDto.birthYear,
+      hometown: registerDto.hometown,
+      residence: registerDto.residence,
     });
 
     const savedUser = await this.userRepository.save(user);

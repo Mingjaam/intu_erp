@@ -17,6 +17,11 @@ export enum UserRole {
   APPLICANT = 'applicant',
 }
 
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -68,6 +73,22 @@ export class User {
 
   @Column({ nullable: true, type: 'date' })
   resignationDate: Date;
+
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    nullable: true,
+  })
+  gender: Gender;
+
+  @Column({ nullable: true, type: 'int' })
+  birthYear: number;
+
+  @Column({ nullable: true })
+  hometown: string;
+
+  @Column({ nullable: true })
+  residence: string;
 
   @CreateDateColumn()
   createdAt: Date;

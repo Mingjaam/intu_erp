@@ -101,6 +101,46 @@ export default function EditProgramPage() {
       required: true,
       placeholder: '전화번호를 입력해주세요',
     },
+    {
+      name: 'address',
+      type: 'text',
+      label: '거주지 주소',
+      description: '시,군,구 까지만 입력해주세요',
+      required: true,
+      placeholder: '예: 서울시 강남구',
+    },
+    {
+      name: 'gender',
+      type: 'text',
+      label: '성별',
+      description: '신청자 성별',
+      required: true,
+      placeholder: '성별',
+    },
+    {
+      name: 'birthYear',
+      type: 'number',
+      label: '출생년도',
+      description: '신청자 출생년도',
+      required: true,
+      placeholder: '예: 1990',
+    },
+    {
+      name: 'hometown',
+      type: 'text',
+      label: '출신지역',
+      description: '시까지만 입력해주세요',
+      required: true,
+      placeholder: '예: 서울시',
+    },
+    {
+      name: 'residence',
+      type: 'text',
+      label: '거주지',
+      description: '시까지만 입력해주세요',
+      required: true,
+      placeholder: '예: 서울시',
+    },
   ]);
 
   const {

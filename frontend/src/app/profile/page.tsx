@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   User, 
   Mail, 
@@ -19,6 +20,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Gender } from '@/types/auth';
 
 const roleLabels: Record<string, string> = {
   admin: '관리자',
@@ -44,6 +46,10 @@ export default function ProfilePage() {
     name: '',
     email: '',
     phone: '',
+    gender: undefined as string | undefined,
+    birthYear: undefined as number | undefined,
+    hometown: '',
+    residence: '',
   });
 
   useEffect(() => {
@@ -52,6 +58,10 @@ export default function ProfilePage() {
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
+        gender: user.gender,
+        birthYear: user.birthYear,
+        hometown: user.hometown || '',
+        residence: user.residence || '',
       });
     }
   }, [user]);
@@ -67,6 +77,10 @@ export default function ProfilePage() {
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
+        gender: user.gender,
+        birthYear: user.birthYear,
+        hometown: user.hometown || '',
+        residence: user.residence || '',
       });
     }
   };
@@ -88,11 +102,21 @@ export default function ProfilePage() {
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | number | Gender | undefined) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const getGenderLabel = (gender?: string) => {
+    switch (gender) {
+      case 'male':
+      case Gender.MALE: return '남';
+      case 'female':
+      case Gender.FEMALE: return '여';
+      default: return '미입력';
+    }
   };
 
   if (!user) {
@@ -209,6 +233,77 @@ export default function ProfilePage() {
                       {roleLabels[user.role] || user.role}
                     </Badge>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gender">성별</Label>
+                  {isEditing ? (
+                    <Select 
+                      value={formData.gender || ''} 
+                      onValueChange={(value) => handleInputChange('gender', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="성별을 선택해주세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="male">남</SelectItem>
+                        <SelectItem value="female">여</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
+                      <span>{getGenderLabel(user.gender)}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="birthYear">출생년도</Label>
+                  {isEditing ? (
+                    <Input
+                      id="birthYear"
+                      type="number"
+                      value={formData.birthYear || ''}
+                      onChange={(e) => handleInputChange('birthYear', e.target.value ? parseInt(e.target.value) : undefined)}
+                      placeholder="예: 1990"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
+                      <span>{user.birthYear || '미입력'}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="hometown">출신지역</Label>
+                  {isEditing ? (
+                    <Input
+                      id="hometown"
+                      value={formData.hometown}
+                      onChange={(e) => handleInputChange('hometown', e.target.value)}
+                      placeholder="예: 서울시"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
+                      <span>{user.hometown || '미입력'}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="residence">거주지</Label>
+                  {isEditing ? (
+                    <Input
+                      id="residence"
+                      value={formData.residence}
+                      onChange={(e) => handleInputChange('residence', e.target.value)}
+                      placeholder="예: 서울시"
+                    />
+                  ) : (
+                    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-md">
+                      <span>{user.residence || '미입력'}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>

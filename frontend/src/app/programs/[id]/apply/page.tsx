@@ -59,10 +59,22 @@ function ApplyPageContent() {
         
         // 로그인된 사용자 정보로 기본값 설정 (기본 필드들)
         if (user) {
+          const getGenderLabel = (gender?: string) => {
+            switch (gender) {
+              case 'male': return '남';
+              case 'female': return '여';
+              default: return '';
+            }
+          };
+
           const initialData: Record<string, unknown> = {
             name: user.name || '',
             email: user.email || '',
             phone: user.phone || '',
+            gender: getGenderLabel(user.gender),
+            birthYear: user.birthYear || '',
+            hometown: user.hometown || '',
+            residence: user.residence || '',
           };
           setFormData(initialData);
         }
@@ -180,10 +192,10 @@ function ApplyPageContent() {
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
-              disabled={!!(user && ['name', 'email', 'phone', 'address'].includes(name))}
-              className={user && ['name', 'email', 'phone', 'address'].includes(name) ? 'bg-gray-50' : ''}
+              disabled={!!(user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name))}
+              className={user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) ? 'bg-gray-50' : ''}
             />
-            {user && ['name', 'email', 'phone', 'address'].includes(name) && (
+            {user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) && (
               <p className="text-xs text-gray-500">로그인된 사용자 정보 (수정 불가)</p>
             )}
           </div>
@@ -206,7 +218,12 @@ function ApplyPageContent() {
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               required={required}
+              disabled={!!(user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name))}
+              className={user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) ? 'bg-gray-50' : ''}
             />
+            {user && ['name', 'email', 'phone', 'address', 'gender', 'birthYear', 'hometown', 'residence'].includes(name) && (
+              <p className="text-xs text-gray-500">로그인된 사용자 정보 (수정 불가)</p>
+            )}
           </div>
         );
 

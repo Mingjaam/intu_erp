@@ -98,15 +98,24 @@ export class ReportsService {
       // payload에서 추가 정보 추출
       const payload = app.payload || {};
       
+      // 사용자 엔티티의 필드와 payload 모두 확인 (payload가 우선)
+      const gender = payload.gender || applicant.gender || '';
+      const birthYear = payload.birthYear || applicant.birthYear || '';
+      const hometown = payload.hometown || applicant.hometown || '';
+      const residence = payload.residence || applicant.residence || '';
+      
+      // 성별 한글 변환
+      const genderLabel = gender === 'male' ? '남' : gender === 'female' ? '여' : '';
+      
       return {
         연번: index + 1,
         프로그램명: program.title,
         운영기간: `${this.formatDate(program.programStart)} ~ ${this.formatDate(program.programEnd)}`,
         성명: applicant.name,
-        성별: payload.gender || '',
-        출생년도: payload.birthYear || '',
-        출신지역: payload.birthRegion || '',
-        참여전거주지: payload.residence || ''
+        성별: genderLabel,
+        출생년도: birthYear ? birthYear.toString() : '',
+        출신지역: hometown,
+        참여전거주지: residence
       };
     });
 

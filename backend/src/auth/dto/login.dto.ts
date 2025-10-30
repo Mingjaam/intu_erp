@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MinLength, IsOptional } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsOptional, IsEnum, IsInt, Min, Max } from 'class-validator';
+import { Gender } from '@/database/entities/user.entity';
 
 export class LoginDto {
   @ApiProperty({ example: 'user@example.com' })
@@ -40,6 +41,28 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   organizationId?: string;
+
+  @ApiProperty({ enum: Gender, example: Gender.MALE, required: false })
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
+
+  @ApiProperty({ example: 1990, required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(1950)
+  @Max(new Date().getFullYear())
+  birthYear?: number;
+
+  @ApiProperty({ example: '서울시', required: false })
+  @IsOptional()
+  @IsString()
+  hometown?: string;
+
+  @ApiProperty({ example: '서울시', required: false })
+  @IsOptional()
+  @IsString()
+  residence?: string;
 }
 
 export class AuthResponseDto {

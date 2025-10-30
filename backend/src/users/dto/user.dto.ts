@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, IsOptional, IsEnum, IsBoolean, IsNotEmpty, MinLength } from 'class-validator';
-import { UserRole } from '@/database/entities/user.entity';
+import { IsEmail, IsString, IsOptional, IsEnum, IsBoolean, IsNotEmpty, MinLength, IsInt, Min, Max } from 'class-validator';
+import { UserRole, Gender } from '@/database/entities/user.entity';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'user@example.com' })
@@ -85,6 +85,28 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiProperty({ enum: Gender, required: false })
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
+
+  @ApiProperty({ example: 1990, required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(1950)
+  @Max(new Date().getFullYear())
+  birthYear?: number;
+
+  @ApiProperty({ example: '서울시', required: false })
+  @IsOptional()
+  @IsString()
+  hometown?: string;
+
+  @ApiProperty({ example: '서울시', required: false })
+  @IsOptional()
+  @IsString()
+  residence?: string;
 }
 
 export class UserResponseDto {
@@ -136,6 +158,18 @@ export class UserResponseDto {
 
   @ApiProperty({ required: false })
   resignationDate?: Date;
+
+  @ApiProperty({ enum: Gender, required: false })
+  gender?: Gender;
+
+  @ApiProperty({ required: false })
+  birthYear?: number;
+
+  @ApiProperty({ required: false })
+  hometown?: string;
+
+  @ApiProperty({ required: false })
+  residence?: string;
 
   @ApiProperty()
   createdAt: Date;
