@@ -68,6 +68,11 @@ export class CreateProgramDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @ApiProperty({ example: '/uploads/images/program-additional-image.jpg', required: false })
+  @IsString()
+  @IsOptional()
+  additionalImageUrl?: string;
 }
 
 export class UpdateProgramDto {
@@ -142,6 +147,11 @@ export class UpdateProgramDto {
   @IsString()
   @IsOptional()
   imageUrl?: string;
+
+  @ApiProperty({ example: '/uploads/images/program-additional-image.jpg', required: false })
+  @IsString()
+  @IsOptional()
+  additionalImageUrl?: string;
 
   @ApiProperty({ example: true, required: false })
   @IsBoolean()

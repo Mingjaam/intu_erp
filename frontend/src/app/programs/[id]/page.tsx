@@ -128,8 +128,9 @@ export default function ProgramDetailPage() {
 
               {/* 2열 레이아웃: 이미지 왼쪽, 정보 카드들 오른쪽 */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* 왼쪽: 이미지 */}
-                <div className="flex justify-center lg:justify-start">
+                {/* 왼쪽: 이미지들 */}
+                <div className="flex flex-col gap-4 justify-center lg:justify-start">
+                  {/* 대표 이미지 */}
                   {program.imageUrl ? (
                     <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-lg">
                       <div className="relative w-full h-full">
@@ -151,7 +152,27 @@ export default function ProgramDetailPage() {
                     <div className="aspect-[3/4] w-full max-w-sm bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
                       <div className="text-white text-center">
                         <FolderOpen className="h-16 w-16 mx-auto mb-4 opacity-80" />
-                        <p className="text-lg font-medium">프로그램 이미지</p>
+                        <p className="text-lg font-medium">대표 이미지</p>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 추가 이미지 */}
+                  {program.additionalImageUrl && (
+                    <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-lg">
+                      <div className="relative w-full h-full">
+                        {/* 흐림 배경 - 빈 공간 채우기 */}
+                        <div 
+                          className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-md scale-110"
+                          style={{ backgroundImage: `url(${program.additionalImageUrl})` }}
+                        />
+                        {/* 추가 이미지 - 3:4 비율에 맞춤 */}
+                        <Image
+                          src={program.additionalImageUrl}
+                          alt={`${program.title} 추가 이미지`}
+                          fill
+                          className="relative z-10 object-contain"
+                        />
                       </div>
                     </div>
                   )}
@@ -258,20 +279,20 @@ export default function ProgramDetailPage() {
             </div>
 
             {/* 프로그램 상세 정보 */}
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-2xl">프로그램 설명</CardTitle>
+                  <CardTitle className="text-2xl text-center">프로그램 설명</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {program.description && (
-                    <div className="prose prose-lg max-w-none">
-                      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{program.description}</p>
+                    <div className="prose prose-lg max-w-none text-center">
+                      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-base md:text-lg">{program.description}</p>
                     </div>
                   )}
                   
                   <div className="mt-8 pt-6 border-t border-gray-200">
-                    <div className="flex items-center text-sm text-gray-600 mb-4">
+                    <div className="flex items-center justify-center text-sm text-gray-600 mb-4">
                       <MapPin className="h-4 w-4 mr-2" />
                       <span>장소: {program.location || '미정'}</span>
                     </div>

@@ -83,6 +83,9 @@ export class Program {
   @Column({ nullable: true })
   imageUrl: string;
 
+  @Column({ nullable: true })
+  additionalImageUrl: string;
+
   @Column({ default: true })
   isActive: boolean;
 

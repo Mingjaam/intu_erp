@@ -34,6 +34,7 @@ export class ProgramsService {
       location: createProgramDto.location,
       fee: createProgramDto.fee,
       imageUrl: createProgramDto.imageUrl,
+      additionalImageUrl: createProgramDto.additionalImageUrl,
       applicationForm: createProgramDto.applicationForm,
       metadata: createProgramDto.metadata,
     });
