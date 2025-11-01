@@ -18,7 +18,6 @@ import { toast } from 'sonner';
 import { Program } from '@/types/program';
 import { Application } from '@/types/application';
 import { Header } from '@/components/layout/header';
-import { UserSidebar } from '@/components/layout/user-sidebar';
 
 interface FormField {
   name: string;
@@ -401,24 +400,22 @@ function ApplyPageContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="flex">
-        <UserSidebar />
-        <div className="flex-1 pb-16 md:pb-0">
-          <div className="container mx-auto px-4 py-8">
-            <div className="mb-6">
-              <Button variant="outline" asChild className="mb-4">
-                <Link href={`/programs/${program.id}`}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  프로그램 상세로 돌아가기
-                </Link>
-              </Button>
-              
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {program.title} {isEditing ? '신청서 수정' : '신청'}
-              </h1>
-            </div>
+      <div className="flex justify-center pb-16 md:pb-0">
+        <div className="w-full max-w-4xl px-4 py-8">
+          <div className="mb-6">
+            <Button variant="outline" asChild className="mb-4">
+              <Link href={`/programs/${program.id}`}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                프로그램 상세로 돌아가기
+              </Link>
+            </Button>
+            
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {program.title} {isEditing ? '신청서 수정' : '신청'}
+            </h1>
+          </div>
 
-            <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto">
               <Card>
                 <CardHeader>
                   <CardTitle>{isEditing ? '신청서 수정' : '신청서 작성'}</CardTitle>
@@ -450,7 +447,6 @@ function ApplyPageContent() {
                   </form>
                 </CardContent>
               </Card>
-            </div>
           </div>
         </div>
       </div>

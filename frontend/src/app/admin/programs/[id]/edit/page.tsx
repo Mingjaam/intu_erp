@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Plus, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Loader2, GripVertical, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { calculateProgramStatus, koreanDateTimeStringToUTC } from '@/lib/date-utils';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +38,7 @@ type ProgramFormData = z.infer<typeof programSchema>;
 
 interface FormField {
   name: string;
-  type: string;
+  type: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'radio' | 'checkbox';
   label: string;
   description?: string;
   required: boolean;
@@ -280,6 +280,51 @@ export default function EditProgramPage() {
 
   const removeFormField = (index: number) => {
     setFormFields(formFields.filter((_, i) => i !== index));
+  };
+
+  const duplicateFormField = (index: number) => {
+    const fieldToDuplicate = formFields[index];
+    const newField: FormField = {
+      ...fieldToDuplicate,
+      name: `field_${Date.now()}`,
+      label: `${fieldToDuplicate.label} (복사본)`,
+    };
+    setFormFields([...formFields.slice(0, index + 1), newField, ...formFields.slice(index + 1)]);
+  };
+
+  const moveFormField = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === formFields.length - 1) return;
+    
+    const newFields = [...formFields];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    [newFields[index], newFields[targetIndex]] = [newFields[targetIndex], newFields[index]];
+    setFormFields(newFields);
+  };
+
+  const addOption = (fieldIndex: number) => {
+    const updatedFields = [...formFields];
+    if (!updatedFields[fieldIndex].options) {
+      updatedFields[fieldIndex].options = [];
+    }
+    updatedFields[fieldIndex].options!.push('새 옵션');
+    setFormFields(updatedFields);
+  };
+
+  const updateOption = (fieldIndex: number, optionIndex: number, value: string) => {
+    const updatedFields = [...formFields];
+    if (updatedFields[fieldIndex].options) {
+      updatedFields[fieldIndex].options![optionIndex] = value;
+      setFormFields(updatedFields);
+    }
+  };
+
+  const removeOption = (fieldIndex: number, optionIndex: number) => {
+    const updatedFields = [...formFields];
+    if (updatedFields[fieldIndex].options) {
+      updatedFields[fieldIndex].options!.splice(optionIndex, 1);
+      setFormFields(updatedFields);
+    }
   };
 
   // 로딩 중이면 로딩 표시
@@ -591,68 +636,164 @@ export default function EditProgramPage() {
 
             <div className="space-y-4">
               {formFields.map((field, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="space-y-2">
-                      <Label>필드명 *</Label>
-                      <Input
-                        value={field.label}
-                        onChange={(e) => updateFormField(index, { label: e.target.value })}
-                        placeholder="필드명을 입력해주세요"
-                      />
-                      <p className="text-xs text-gray-500">
-                        ID: {field.name} (자동 생성)
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>설명</Label>
-                      <Input
-                        value={field.description || ''}
-                        onChange={(e) => updateFormField(index, { description: e.target.value })}
-                        placeholder="필드 설명 (선택사항)"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>타입</Label>
-                      <Select
-                        value={field.type}
-                        onValueChange={(value: string) => updateFormField(index, { type: value })}
+                <div key={index} className="p-6 border-2 border-gray-200 rounded-lg bg-white hover:border-blue-300 transition-colors">
+                  <div className="flex items-start gap-4">
+                    {/* 드래그 핸들 */}
+                    <div className="flex flex-col gap-1 pt-2">
+                      <button
+                        type="button"
+                        className="text-gray-400 hover:text-gray-600 cursor-move"
+                        onClick={() => moveFormField(index, 'up')}
+                        disabled={index === 0}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="text">텍스트</SelectItem>
-                          <SelectItem value="textarea">긴 텍스트</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>필수 여부</Label>
-                      <Select
-                        value={field.required ? 'true' : 'false'}
-                        onValueChange={(value: string) => updateFormField(index, { required: value === 'true' })}
+                        <ChevronUp className="h-4 w-4" />
+                      </button>
+                      <GripVertical className="h-5 w-5 text-gray-400" />
+                      <button
+                        type="button"
+                        className="text-gray-400 hover:text-gray-600 cursor-move"
+                        onClick={() => moveFormField(index, 'down')}
+                        disabled={index === formFields.length - 1}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">필수</SelectItem>
-                          <SelectItem value="false">선택</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
                     </div>
-                  </div>
-                  <div className="mt-4 flex justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeFormField(index)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      삭제
-                    </Button>
+
+                    {/* 필드 설정 */}
+                    <div className="flex-1 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>질문 *</Label>
+                          <Input
+                            value={field.label}
+                            onChange={(e) => updateFormField(index, { label: e.target.value })}
+                            placeholder="질문을 입력해주세요"
+                            className="text-base"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>필드 타입 *</Label>
+                          <Select
+                            value={field.type}
+                            onValueChange={(value) => updateFormField(index, { type: value as FormField['type'] })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="text">단답형</SelectItem>
+                              <SelectItem value="textarea">장문형</SelectItem>
+                              <SelectItem value="email">이메일</SelectItem>
+                              <SelectItem value="tel">전화번호</SelectItem>
+                              <SelectItem value="number">숫자</SelectItem>
+                              <SelectItem value="select">드롭다운</SelectItem>
+                              <SelectItem value="radio">객관식 (하나 선택)</SelectItem>
+                              <SelectItem value="checkbox">체크박스 (여러 개 선택)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>설명 (선택사항)</Label>
+                        <Input
+                          value={field.description || ''}
+                          onChange={(e) => updateFormField(index, { description: e.target.value })}
+                          placeholder="질문에 대한 추가 설명이나 안내사항을 입력해주세요"
+                        />
+                      </div>
+
+                      {/* 옵션이 필요한 필드 타입 */}
+                      {(field.type === 'select' || field.type === 'radio' || field.type === 'checkbox') && (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label>선택 항목</Label>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addOption(index)}
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              옵션 추가
+                            </Button>
+                          </div>
+                          <div className="space-y-2 pl-4 border-l-2 border-blue-200">
+                            {field.options && field.options.length > 0 ? (
+                              field.options.map((option, optionIndex) => (
+                                <div key={optionIndex} className="flex items-center gap-2">
+                                  <Input
+                                    value={option}
+                                    onChange={(e) => updateOption(index, optionIndex, e.target.value)}
+                                    placeholder={`옵션 ${optionIndex + 1}`}
+                                    className="flex-1"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeOption(index, optionIndex)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-500">옵션을 추가해주세요</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* placeholder */}
+                      {(field.type === 'text' || field.type === 'email' || field.type === 'tel' || field.type === 'number') && (
+                        <div className="space-y-2">
+                          <Label>플레이스홀더 (선택사항)</Label>
+                          <Input
+                            value={field.placeholder || ''}
+                            onChange={(e) => updateFormField(index, { placeholder: e.target.value })}
+                            placeholder="예: 이름을 입력해주세요"
+                          />
+                        </div>
+                      )}
+
+                      {/* 필수 여부 */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id={`required-${index}`}
+                          checked={field.required}
+                          onChange={(e) => updateFormField(index, { required: e.target.checked })}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <Label htmlFor={`required-${index}`} className="cursor-pointer">
+                          필수 질문
+                        </Label>
+                      </div>
+                    </div>
+
+                    {/* 액션 버튼 */}
+                    <div className="flex flex-col gap-2 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => duplicateFormField(index)}
+                        title="복사"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeFormField(index)}
+                        className="text-red-600 hover:text-red-700"
+                        title="삭제"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
