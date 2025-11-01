@@ -8,7 +8,7 @@ import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, FolderOpen, LogIn, UserPlus } from 'lucide-react';
+import { Calendar, MapPin, FolderOpen, LogIn, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Program } from '@/types/program';
@@ -51,8 +51,31 @@ export default function ProgramDetailPage() {
   const { user } = useAuth();
   const [program, setProgram] = useState<Program | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const programId = params.id as string;
+
+  // 이미지 배열 생성
+  const images = React.useMemo(() => {
+    const imageList: string[] = [];
+    if (program?.imageUrl) imageList.push(program.imageUrl);
+    if (program?.additionalImageUrl) imageList.push(program.additionalImageUrl);
+    return imageList;
+  }, [program?.imageUrl, program?.additionalImageUrl]);
+
+  // 다음 이미지로 이동
+  const nextImage = () => {
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+
+  // 이전 이미지로 이동
+  const prevImage = () => {
+    if (images.length > 1) {
+      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
 
   useEffect(() => {
     const fetchProgram = async () => {
@@ -61,6 +84,7 @@ export default function ProgramDetailPage() {
         const programResponse = await apiClient.get<Program>(API_ENDPOINTS.PROGRAMS.DETAIL(programId));
         const programData = programResponse.data || programResponse;
         setProgram(programData);
+        setCurrentImageIndex(0); // 프로그램 변경 시 이미지 인덱스 초기화
         
       } catch (error) {
         console.error('프로그램 조회 오류:', error);
@@ -129,24 +153,45 @@ export default function ProgramDetailPage() {
               {/* 이미지와 정보 레이아웃 */}
               <div className="flex flex-col lg:flex-row gap-8 mb-8 justify-center items-start">
                 {/* 이미지 영역 */}
-                <div className={`flex gap-4 justify-center ${program.additionalImageUrl ? 'flex-row' : 'flex-col'} w-full lg:w-auto`}>
-                  {/* 대표 이미지 */}
-                  {program.imageUrl ? (
-                    <div className="relative aspect-[3/4] w-full max-w-xs overflow-hidden rounded-2xl shadow-lg">
-                      <div className="relative w-full h-full">
-                        {/* 흐림 배경 - 빈 공간 채우기 */}
-                        <div 
-                          className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-md scale-110"
-                          style={{ backgroundImage: `url(${program.imageUrl})` }}
-                        />
-                        {/* 메인 이미지 - 3:4 비율에 맞춤 */}
-                        <Image
-                          src={program.imageUrl}
-                          alt={program.title}
-                          fill
-                          className="relative z-10 object-contain"
-                        />
-                      </div>
+                <div className="w-full lg:w-auto flex flex-col items-center">
+                  {images.length > 0 ? (
+                    <div className="relative aspect-[3/4] w-full max-w-xs overflow-hidden rounded-2xl shadow-lg group">
+                      {/* 흐림 배경 - 빈 공간 채우기 */}
+                      <div 
+                        className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-md scale-110"
+                        style={{ backgroundImage: `url(${images[currentImageIndex]})` }}
+                      />
+                      {/* 메인 이미지 - 3:4 비율에 맞춤 */}
+                      <Image
+                        src={images[currentImageIndex]}
+                        alt={`${program.title} 이미지 ${currentImageIndex + 1}`}
+                        fill
+                        className="relative z-10 object-contain"
+                        sizes="(max-width: 768px) 100vw, 320px"
+                      />
+                      
+                      {/* 이미지가 두 개일 때만 화살표 표시 */}
+                      {images.length > 1 && (
+                        <>
+                          {/* 이전 버튼 */}
+                          <button
+                            onClick={prevImage}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="이전 이미지"
+                          >
+                            <ChevronLeft className="h-5 w-5" />
+                          </button>
+                          
+                          {/* 다음 버튼 */}
+                          <button
+                            onClick={nextImage}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                            aria-label="다음 이미지"
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <div className="aspect-[3/4] w-full max-w-xs bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
@@ -157,23 +202,21 @@ export default function ProgramDetailPage() {
                     </div>
                   )}
                   
-                  {/* 추가 이미지 */}
-                  {program.additionalImageUrl && (
-                    <div className="relative aspect-[3/4] w-full max-w-xs overflow-hidden rounded-2xl shadow-lg">
-                      <div className="relative w-full h-full">
-                        {/* 흐림 배경 - 빈 공간 채우기 */}
-                        <div 
-                          className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-md scale-110"
-                          style={{ backgroundImage: `url(${program.additionalImageUrl})` }}
+                  {/* 이미지 인디케이터 (점) - 이미지가 두 개일 때만 표시 */}
+                  {images.length > 1 && (
+                    <div className="flex gap-2 mt-4">
+                      {images.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            index === currentImageIndex
+                              ? 'bg-blue-600 w-6'
+                              : 'bg-gray-300 hover:bg-gray-400'
+                          }`}
+                          aria-label={`이미지 ${index + 1}로 이동`}
                         />
-                        {/* 추가 이미지 - 3:4 비율에 맞춤 */}
-                        <Image
-                          src={program.additionalImageUrl}
-                          alt={`${program.title} 추가 이미지`}
-                          fill
-                          className="relative z-10 object-contain"
-                        />
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>

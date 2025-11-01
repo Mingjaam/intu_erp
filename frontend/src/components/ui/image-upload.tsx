@@ -4,8 +4,8 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
-import { apiClient } from '@/lib/api';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 interface ImageUploadProps {
   value?: string;
@@ -98,18 +98,26 @@ export function ImageUpload({ value, onChange, disabled, className }: ImageUploa
       {preview ? (
         <Card className="relative group">
           <CardContent className="p-0">
-            <div className="relative">
-              <img
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg">
+              {/* 흐림 배경 - 빈 공간 채우기 */}
+              <div 
+                className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-md scale-110"
+                style={{ backgroundImage: `url(${preview})` }}
+              />
+              {/* 메인 이미지 - 3:4 비율에 맞춤 */}
+              <Image
                 src={preview}
                 alt="프로그램 이미지"
-                className="w-full h-48 object-cover rounded-lg"
+                fill
+                className="relative z-10 object-contain"
+                sizes="(max-width: 768px) 100vw, 320px"
               />
               {!disabled && (
                 <Button
                   type="button"
                   variant="destructive"
                   size="sm"
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={handleRemove}
                 >
                   <X className="h-4 w-4" />
@@ -120,12 +128,12 @@ export function ImageUpload({ value, onChange, disabled, className }: ImageUploa
         </Card>
       ) : (
         <Card
-          className={`border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors cursor-pointer ${
+          className={`border-2 border-dashed border-gray-300 hover:border-blue-500 transition-colors cursor-pointer aspect-[3/4] ${
             disabled ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           onClick={handleClick}
         >
-          <CardContent className="flex flex-col items-center justify-center py-12">
+          <CardContent className="flex flex-col items-center justify-center h-full">
             <div className="text-center">
               <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-sm text-gray-600 mb-2">
