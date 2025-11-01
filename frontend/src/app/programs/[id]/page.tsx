@@ -155,7 +155,7 @@ export default function ProgramDetailPage() {
                 {/* 이미지 영역 */}
                 <div className="w-full lg:w-auto flex flex-col items-center">
                   {images.length > 0 ? (
-                    <div className="relative aspect-[3/4] w-full max-w-xs overflow-hidden rounded-2xl shadow-lg group">
+                    <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-lg group">
                       {/* 흐림 배경 - 빈 공간 채우기 */}
                       <div 
                         className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-md scale-110"
@@ -167,7 +167,7 @@ export default function ProgramDetailPage() {
                         alt={`${program.title} 이미지 ${currentImageIndex + 1}`}
                         fill
                         className="relative z-10 object-contain"
-                        sizes="(max-width: 768px) 100vw, 320px"
+                        sizes="(max-width: 768px) 100vw, 384px"
                       />
                       
                       {/* 이미지가 두 개일 때만 화살표 표시 */}
@@ -194,7 +194,7 @@ export default function ProgramDetailPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="aspect-[3/4] w-full max-w-xs bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
+                    <div className="aspect-[3/4] w-full max-w-sm bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
                       <div className="text-white text-center">
                         <FolderOpen className="h-16 w-16 mx-auto mb-4 opacity-80" />
                         <p className="text-lg font-medium">대표 이미지</p>
