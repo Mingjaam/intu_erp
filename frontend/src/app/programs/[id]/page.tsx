@@ -103,7 +103,7 @@ export default function ProgramDetailPage() {
       <div className="flex">
         <UserSidebar />
         <div className="flex-1 pb-16 md:pb-0">
-          <div className="container mx-auto px-6 py-8">
+          <div className="max-w-7xl mx-auto px-6 py-8">
             {/* 프로그램 헤더 */}
             <div className="mb-8">
               {/* 제목, 한줄소개, 상태, 주최 */}
@@ -126,13 +126,13 @@ export default function ProgramDetailPage() {
                 </div>
               </div>
 
-              {/* 2열 레이아웃: 이미지 왼쪽, 정보 카드들 오른쪽 */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* 왼쪽: 이미지들 */}
-                <div className="flex flex-col gap-4 justify-center lg:justify-start">
+              {/* 이미지와 정보 레이아웃 */}
+              <div className="flex flex-col lg:flex-row gap-8 mb-8 justify-center items-start">
+                {/* 이미지 영역 */}
+                <div className={`flex gap-4 justify-center ${program.additionalImageUrl ? 'flex-row' : 'flex-col'} w-full lg:w-auto`}>
                   {/* 대표 이미지 */}
                   {program.imageUrl ? (
-                    <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-lg">
+                    <div className="relative aspect-[3/4] w-full max-w-xs overflow-hidden rounded-2xl shadow-lg">
                       <div className="relative w-full h-full">
                         {/* 흐림 배경 - 빈 공간 채우기 */}
                         <div 
@@ -149,7 +149,7 @@ export default function ProgramDetailPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="aspect-[3/4] w-full max-w-sm bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
+                    <div className="aspect-[3/4] w-full max-w-xs bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center">
                       <div className="text-white text-center">
                         <FolderOpen className="h-16 w-16 mx-auto mb-4 opacity-80" />
                         <p className="text-lg font-medium">대표 이미지</p>
@@ -159,7 +159,7 @@ export default function ProgramDetailPage() {
                   
                   {/* 추가 이미지 */}
                   {program.additionalImageUrl && (
-                    <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden rounded-2xl shadow-lg">
+                    <div className="relative aspect-[3/4] w-full max-w-xs overflow-hidden rounded-2xl shadow-lg">
                       <div className="relative w-full h-full">
                         {/* 흐림 배경 - 빈 공간 채우기 */}
                         <div 
@@ -179,7 +179,7 @@ export default function ProgramDetailPage() {
                 </div>
 
                 {/* 오른쪽: 프로그램 기본 정보 + 신청 버튼 */}
-                <div className="space-y-4">
+                <div className="space-y-4 w-full lg:w-80">
                   {/* 정보 카드들 */}
                   <div className="space-y-3">
                     <Card>
@@ -299,7 +299,6 @@ export default function ProgramDetailPage() {
                   </div>
                 </CardContent>
               </Card>
-
             </div>
           </div>
         </div>
