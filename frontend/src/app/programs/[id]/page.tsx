@@ -13,7 +13,6 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Program } from '@/types/program';
 import { Header } from '@/components/layout/header';
-import { UserSidebar } from '@/components/layout/user-sidebar';
 
 const statusLabels: Record<string, string> = {
   // 기존 상태들
@@ -124,10 +123,8 @@ export default function ProgramDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       <Header />
-      <div className="flex">
-        <UserSidebar />
-        <div className="flex-1 pb-16 md:pb-0">
-          <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="pb-16 md:pb-0">
+        <div className="container mx-auto px-6 py-8">
             {/* 프로그램 헤더 */}
             <div className="mb-8">
               {/* 제목, 한줄소개, 상태, 주최 */}
@@ -343,7 +340,6 @@ export default function ProgramDetailPage() {
                 </CardContent>
               </Card>
             </div>
-          </div>
         </div>
       </div>
     </div>
