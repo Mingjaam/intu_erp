@@ -39,7 +39,7 @@ const roleColors: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { user, refreshUserProfile } = useAuth();
+  const { user, refreshUserProfile, loading: userLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -52,8 +52,14 @@ export default function ProfilePage() {
     residence: '',
   });
 
+  // 페이지 진입 시 사용자 정보 새로고침
   useEffect(() => {
-    if (user) {
+    refreshUserProfile();
+  }, [refreshUserProfile]);
+
+  useEffect(() => {
+    // 사용자 정보 로딩이 완료되고 사용자가 있을 때만 폼 데이터 설정
+    if (!userLoading && user) {
       setFormData({
         name: user.name || '',
         email: user.email || '',
@@ -64,7 +70,7 @@ export default function ProfilePage() {
         residence: user.residence || '',
       });
     }
-  }, [user]);
+  }, [user, userLoading]);
 
   const handleEdit = () => {
     setIsEditing(true);

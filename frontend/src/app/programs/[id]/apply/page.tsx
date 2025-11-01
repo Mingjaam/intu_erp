@@ -34,7 +34,7 @@ function ApplyPageContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, loading: userLoading, refreshUserProfile } = useAuth();
   const [program, setProgram] = useState<Program | null>(null);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +50,13 @@ function ApplyPageContent() {
 
   const programId = params.id as string;
   const editApplicationId = searchParams.get('edit');
+
+  // 사용자 정보가 로드되지 않았으면 새로고침
+  useEffect(() => {
+    if (!userLoading && !user) {
+      refreshUserProfile();
+    }
+  }, [userLoading, user, refreshUserProfile]);
 
   useEffect(() => {
     const fetchProgram = async () => {
@@ -91,7 +98,8 @@ function ApplyPageContent() {
 
   // 사용자 정보로 폼 데이터 초기화
   useEffect(() => {
-    if (user && program && !editApplicationId && !isEditing) {
+    // 사용자 정보 로딩이 완료되고, 사용자가 있고, 프로그램이 있고, 수정 모드가 아닐 때만 실행
+    if (!userLoading && user && program && !editApplicationId && !isEditing) {
       const getGenderLabel = (gender?: string) => {
         switch (gender) {
           case 'male': return '남';
@@ -153,7 +161,7 @@ function ApplyPageContent() {
         return updated;
       });
     }
-  }, [user, program, editApplicationId, isEditing]);
+  }, [userLoading, user, program, editApplicationId, isEditing]);
 
   const handleInputChange = (fieldName: string, value: unknown) => {
     setFormData(prev => ({
