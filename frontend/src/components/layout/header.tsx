@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Search, Bell, FileText, Shield } from 'lucide-react';
+import { LogOut, User, Search, Bell, FileText, Shield, Calendar } from 'lucide-react';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -82,8 +82,8 @@ export function Header() {
           <div className="flex items-center space-x-3">
             {/* 캘린더 버튼 */}
             <Link href="/calendar">
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 text-xl">
-                📅
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                <Calendar className="h-5 w-5" />
               </Button>
             </Link>
             

@@ -411,7 +411,7 @@ export default function ProgramApplicationsPage() {
                   
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/applications/${application.id}`}>
+                      <Link href={`/admin/programs/${programId}/applications/${application.id}`}>
                         <Eye className="h-4 w-4 mr-2" />
                         상세보기
                       </Link>
