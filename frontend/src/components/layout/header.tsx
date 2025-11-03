@@ -1,6 +1,6 @@
 'use client';
 
-// import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
@@ -13,18 +13,93 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Search, Bell, FileText, Shield, Calendar } from 'lucide-react';
+import { LogOut, User, Search, FileText, Shield, Calendar } from 'lucide-react';
+import { apiClient, API_ENDPOINTS } from '@/lib/api';
+
+interface Todo {
+  id: string;
+  title: string;
+  date: string;
+  completed: boolean;
+}
+
+interface Program {
+  id: string;
+  applyEnd: string;
+  status: string;
+}
 
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  // const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   const handleLogout = () => {
     logout();
     router.push('/programs');
   };
+
+  // 알림 개수 가져오기
+  useEffect(() => {
+    if (!user) {
+      setNotificationCount(0);
+      return;
+    }
+
+    const fetchNotificationCount = async () => {
+      try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
+        if (user.role === 'applicant') {
+          // 신청자: 오늘 마감인 프로그램 개수
+          const response = await apiClient.get<{ programs: Program[]; total: number }>(API_ENDPOINTS.PROGRAMS.LIST);
+          const data = response.data || response;
+          const programs = Array.isArray(data) 
+            ? data 
+            : (typeof data === 'object' && data !== null && 'programs' in data)
+              ? (data as { programs: Program[] }).programs
+              : [];
+          
+          const todayDeadlineCount = programs.filter((program: Program) => {
+            if (!program.applyEnd) return false;
+            const applyEndDate = new Date(program.applyEnd);
+            applyEndDate.setHours(0, 0, 0, 0);
+            
+            // 같은 날짜이고 신청 가능한 상태인지 확인
+            return (
+              applyEndDate.getTime() === today.getTime() &&
+              (program.status === 'open' || program.status === 'application_open')
+            );
+          }).length;
+          
+          setNotificationCount(todayDeadlineCount);
+        } else if (user.role === 'admin' || user.role === 'operator' || user.role === 'staff') {
+          // 운영자/직원: 오늘 할일 개수 (미완료만)
+          const response = await apiClient.get<Todo[]>(API_ENDPOINTS.TODOS.LIST);
+          const data = response.data || response;
+          const todos = Array.isArray(data) ? data : [];
+          
+          const todayTodos = todos.filter((todo: Todo) => {
+            return todo.date === todayStr && !todo.completed;
+          });
+          
+          setNotificationCount(todayTodos.length);
+        }
+      } catch (error) {
+        console.error('알림 개수 조회 오류:', error);
+        setNotificationCount(0);
+      }
+    };
+
+    fetchNotificationCount();
+    
+    // 1분마다 갱신
+    const interval = setInterval(fetchNotificationCount, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   if (!user) {
     return (
@@ -35,9 +110,6 @@ export function Header() {
               <h1 className="text-xl font-bold text-gray-900">Nuvio</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/programs">
-                <Button variant="ghost">프로그램 보기</Button>
-              </Link>
               <Link href="/auth/login">
                 <Button variant="outline">로그인</Button>
               </Link>
@@ -82,18 +154,15 @@ export function Header() {
           <div className="flex items-center space-x-3">
             {/* 캘린더 버튼 */}
             <Link href="/calendar">
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+              <Button variant="ghost" size="sm" className="relative text-white hover:bg-white/20">
                 <Calendar className="h-5 w-5" />
+                {notificationCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                    {notificationCount > 99 ? '99+' : notificationCount}
+                  </span>
+                )}
               </Button>
             </Link>
-            
-            {/* 알림 */}
-            <Button variant="ghost" size="sm" className="relative text-white hover:bg-white/20">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                3
-              </span>
-            </Button>
 
             {/* 사용자 프로필 */}
             <DropdownMenu>
