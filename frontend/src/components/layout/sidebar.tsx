@@ -14,7 +14,7 @@ import {
   ChevronDown,
   ChevronRight,
   BarChart3,
-  Calculator
+  Shield
 } from 'lucide-react';
 
 const getNavigation = (userRole: string) => {
@@ -84,13 +84,23 @@ const getNavigation = (userRole: string) => {
     });
   }
 
+  // 관리자만 슈퍼 대시보드 접근 가능
+  if (userRole === 'admin') {
+    baseNavigation.unshift({
+      name: '슈퍼 대시보드', 
+      href: '/admin/super-dashboard', 
+      icon: Shield,
+      children: []
+    });
+  }
+
   return baseNavigation;
 };
 
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['대시보드', '프로그램', '회원', '보고서', '마을 관리', '관리자 전용']);
+  const [expandedItems, setExpandedItems] = useState<string[]>(['대시보드', '프로그램', '회원', '보고서', '마을 관리', '관리자 전용', '슈퍼 대시보드']);
   
   const navigation = getNavigation(user?.role || '');
 

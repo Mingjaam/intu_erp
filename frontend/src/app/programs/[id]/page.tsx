@@ -8,11 +8,15 @@ import { apiClient, API_ENDPOINTS } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, FolderOpen, LogIn, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, FolderOpen, LogIn, UserPlus, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { Program } from '@/types/program';
 import { Header } from '@/components/layout/header';
+import {
+  Dialog,
+  DialogContent,
+} from '@/components/ui/dialog';
 
 const statusLabels: Record<string, string> = {
   // 기존 상태들
@@ -51,6 +55,8 @@ export default function ProgramDetailPage() {
   const [program, setProgram] = useState<Program | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [viewerImageIndex, setViewerImageIndex] = useState(0);
 
   const programId = params.id as string;
 
@@ -73,6 +79,31 @@ export default function ProgramDetailPage() {
   const prevImage = () => {
     if (images.length > 1) {
       setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+
+  // 이미지 뷰어 열기
+  const openImageViewer = (index: number) => {
+    setViewerImageIndex(index);
+    setIsImageViewerOpen(true);
+  };
+
+  // 이미지 뷰어 닫기
+  const closeImageViewer = () => {
+    setIsImageViewerOpen(false);
+  };
+
+  // 뷰어에서 다음 이미지로 이동
+  const nextViewerImage = () => {
+    if (images.length > 1) {
+      setViewerImageIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+
+  // 뷰어에서 이전 이미지로 이동
+  const prevViewerImage = () => {
+    if (images.length > 1) {
+      setViewerImageIndex((prev) => (prev - 1 + images.length) % images.length);
     }
   };
 
@@ -152,7 +183,10 @@ export default function ProgramDetailPage() {
                 {/* 이미지 영역 */}
                 <div className="flex flex-col items-center justify-center lg:flex-1">
                   {images.length > 0 ? (
-                    <div className="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl shadow-lg group">
+                    <div 
+                      className="relative aspect-[3/4] w-full max-w-md overflow-hidden rounded-2xl shadow-lg group cursor-pointer"
+                      onClick={() => openImageViewer(currentImageIndex)}
+                    >
                       {/* 흐림 배경 - 빈 공간 채우기 */}
                       <div 
                         className="absolute inset-0 w-full h-full bg-cover bg-center filter blur-md scale-110"
@@ -163,7 +197,7 @@ export default function ProgramDetailPage() {
                         src={images[currentImageIndex]}
                         alt={`${program.title} 이미지 ${currentImageIndex + 1}`}
                         fill
-                        className="relative z-10 object-contain"
+                        className="relative z-10 object-contain transition-transform group-hover:scale-105"
                         sizes="(max-width: 768px) 100vw, 448px"
                       />
                       
@@ -342,6 +376,83 @@ export default function ProgramDetailPage() {
             </div>
         </div>
       </div>
+
+      {/* 이미지 뷰어 팝업 */}
+      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-auto h-auto p-0 bg-black/95 border-none">
+          <div className="relative w-full h-full flex items-center justify-center">
+            {/* 닫기 버튼 */}
+            <button
+              onClick={closeImageViewer}
+              className="absolute top-4 right-4 z-50 bg-black/70 hover:bg-black/90 text-white rounded-full p-2 transition-colors"
+              aria-label="닫기"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            {/* 이전 버튼 */}
+            {images.length > 1 && (
+              <button
+                onClick={prevViewerImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-50 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 transition-colors"
+                aria-label="이전 이미지"
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </button>
+            )}
+
+            {/* 이미지 */}
+            {images.length > 0 && (
+              <div className="relative w-full h-[90vh] flex items-center justify-center p-4">
+                <Image
+                  src={images[viewerImageIndex]}
+                  alt={`${program.title} 이미지 ${viewerImageIndex + 1}`}
+                  fill
+                  className="object-contain"
+                  sizes="95vw"
+                  priority
+                />
+              </div>
+            )}
+
+            {/* 다음 버튼 */}
+            {images.length > 1 && (
+              <button
+                onClick={nextViewerImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-50 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 transition-colors"
+                aria-label="다음 이미지"
+              >
+                <ChevronRight className="h-8 w-8" />
+              </button>
+            )}
+
+            {/* 이미지 인디케이터 */}
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex gap-2">
+                {images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setViewerImageIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === viewerImageIndex
+                        ? 'bg-white w-6'
+                        : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                    aria-label={`이미지 ${index + 1}로 이동`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 이미지 카운터 */}
+            {images.length > 1 && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-black/70 text-white px-4 py-2 rounded-full text-sm">
+                {viewerImageIndex + 1} / {images.length}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
