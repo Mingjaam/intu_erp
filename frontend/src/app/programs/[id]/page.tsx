@@ -379,7 +379,7 @@ export default function ProgramDetailPage() {
 
       {/* 이미지 뷰어 팝업 */}
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] w-auto h-auto p-0 bg-black/95 border-none">
+        <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] p-0 bg-black/95 border-none overflow-hidden">
           <div className="relative w-full h-full flex items-center justify-center">
             {/* 닫기 버튼 */}
             <button
@@ -403,14 +403,12 @@ export default function ProgramDetailPage() {
 
             {/* 이미지 */}
             {images.length > 0 && (
-              <div className="relative w-full h-[90vh] flex items-center justify-center p-4">
-                <Image
+              <div className="relative w-full h-full flex items-center justify-center p-8">
+                <img
                   src={images[viewerImageIndex]}
                   alt={`${program.title} 이미지 ${viewerImageIndex + 1}`}
-                  fill
-                  className="object-contain"
-                  sizes="95vw"
-                  priority
+                  className="max-w-full max-h-full object-contain"
+                  style={{ maxWidth: '95vw', maxHeight: '95vh' }}
                 />
               </div>
             )}
