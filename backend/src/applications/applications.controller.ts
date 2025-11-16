@@ -42,8 +42,11 @@ export class ApplicationsController {
   }
 
   @Get('programs/:programId')
-  @ApiOperation({ summary: '특정 프로그램의 신청서 목록 조회' })
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR, UserRole.STAFF)
+  @ApiOperation({ summary: '특정 프로그램의 신청서 목록 조회 (관리자 전용)' })
   @ApiResponse({ status: 200, description: '프로그램 신청서 목록을 성공적으로 조회했습니다.' })
+  @ApiResponse({ status: 403, description: '권한이 없습니다.' })
   findByProgram(@Param('programId') programId: string, @Query() query: ApplicationQueryDto, @Request() req) {
     return this.applicationsService.findAll({ ...query, programId }, req.user);
   }

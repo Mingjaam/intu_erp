@@ -84,3 +84,7 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+# Documentation (SECURITY_PLAN.md는 제외)
+docs/*
+!docs/SECURITY_PLAN.md
