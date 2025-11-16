@@ -149,7 +149,7 @@ export function ProgramsList({ programs }: ProgramsListProps) {
                   {/* 마을 이름 */}
                   <div className="flex items-center gap-1 text-sm text-gray-500 mt-auto">
                     <MapPin className="h-4 w-4" />
-                    {program.organizer.name}
+                    {program.organizer?.name || '마을'}
                   </div>
                 </div>
               </Card>

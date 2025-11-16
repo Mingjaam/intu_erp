@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Header } from '@/components/layout/header';
+import { HeaderWrapper } from '@/components/layout/header-wrapper';
 import { ProgramsList } from '@/components/programs/programs-list';
 import { Program } from '@/types/program';
 
@@ -30,12 +30,18 @@ async function getPrograms(): Promise<Program[]> {
 
     const data = await response.json();
     // 백엔드 응답 구조에 따라 처리
+    let programs: Program[] = [];
     if (data.programs && Array.isArray(data.programs)) {
-      return data.programs;
+      programs = data.programs;
     } else if (Array.isArray(data)) {
-      return data;
+      programs = data;
     }
-    return [];
+    
+    // organizer가 없는 경우 기본값 설정하여 hydration 에러 방지
+    return programs.map(program => ({
+      ...program,
+      organizer: program.organizer || { id: '', name: '마을', type: 'village' },
+    }));
   } catch (error) {
     console.error('프로그램 목록 조회 오류:', error);
     return [];
@@ -50,7 +56,7 @@ export default async function ProgramsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
-      <Header />
+      <HeaderWrapper />
       <div className="pb-16 md:pb-0">
         <div className="container mx-auto px-6 py-8">
           {/* 히어로 섹션 */}
