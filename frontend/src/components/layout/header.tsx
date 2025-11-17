@@ -107,7 +107,7 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Nuvio</h1>
+              <h1 className="text-xl font-bold text-gray-900">청년 마을</h1>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/auth/login">
@@ -132,7 +132,7 @@ export function Header() {
           <div className="flex items-center">
             <Link href="/programs" className="flex items-center hover:opacity-80 transition-opacity">
               <h1 className="text-xl font-bold cursor-pointer">
-                {isProgramsPage ? 'NUVIO' : (user?.organization?.name || '마을 프로그램')}
+                {isProgramsPage ? '청년 마을' : (user?.organization?.name || '청년 마을 프로그램')}
               </h1>
             </Link>
           </div>
