@@ -1,5 +1,8 @@
 import { MetadataRoute } from 'next';
 
+// 동적 렌더링 명시 (프로그램 목록은 실시간으로 변경될 수 있음)
+export const dynamic = 'force-dynamic';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://nuvio.kr/api';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://nuvio.kr';
 
