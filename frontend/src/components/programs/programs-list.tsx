@@ -48,13 +48,16 @@ export function ProgramsList({ programs }: ProgramsListProps) {
     programTitle: '',
   });
 
+  // UTC 기준으로 날짜 포맷팅하여 서버/클라이언트 일관성 유지
   const formatDateShort = (dateString: string | undefined | null) => {
     if (!dateString) return '미정';
     try {
+      // UTC 기준으로 파싱하여 서버/클라이언트 일관성 유지
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return '미정';
-      const month = date.getMonth() + 1;
-      const day = date.getDate();
+      // UTC 기준으로 월/일 추출
+      const month = date.getUTCMonth() + 1;
+      const day = date.getUTCDate();
       return `${month}/${day}`;
     } catch {
       return '미정';
@@ -142,8 +145,8 @@ export function ProgramsList({ programs }: ProgramsListProps) {
                 
                 {/* 정보 영역 - 이미지 아래 */}
                 <div className="p-4 flex flex-col flex-1">
-                  {/* 활동 기간 */}
-                  <div className="text-sm text-gray-600 mb-3">
+                  {/* 활동 기간 - UTC 기준으로 포맷팅하여 서버/클라이언트 일관성 유지 */}
+                  <div className="text-sm text-gray-600 mb-3" suppressHydrationWarning>
                     진행: {formatDateShort(program.programStart)} - {formatDateShort(program.programEnd)}
                   </div>
                   
