@@ -48,11 +48,17 @@ export function ProgramsList({ programs }: ProgramsListProps) {
     programTitle: '',
   });
 
-  const formatDateShort = (dateString: string) => {
-    const date = new Date(dateString);
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${month}/${day}`;
+  const formatDateShort = (dateString: string | undefined | null) => {
+    if (!dateString) return '미정';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '미정';
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      return `${month}/${day}`;
+    } catch {
+      return '미정';
+    }
   };
 
   const closeLoginDialog = () => {
@@ -111,9 +117,9 @@ export function ProgramsList({ programs }: ProgramsListProps) {
                       {statusLabels[program.status as keyof typeof statusLabels]}
                     </Badge>
                   </div>
-                  {/* D-Day 배지 */}
-                  {program.status === 'application_open' && program.daysUntilDeadline !== undefined && (
-                    <div className="absolute top-3 left-3 z-20">
+                  {/* D-Day 배지 - 클라이언트에서만 렌더링하여 hydration 에러 방지 */}
+                  {program.status === 'application_open' && typeof program.daysUntilDeadline === 'number' && (
+                    <div className="absolute top-3 left-3 z-20" suppressHydrationWarning>
                       <Badge 
                         className={`px-2 py-1 rounded-full text-xs font-bold shadow-lg ${
                           program.daysUntilDeadline <= 3 

@@ -74,11 +74,15 @@ export default async function ProgramsPage() {
             <p className="text-xl text-gray-600 mb-6">함께 성장하는 마을을 위한 다양한 프로그램을 만나보세요</p>
             <div className="flex justify-center space-x-4">
               <div className="bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg">
-                <span className="text-sm font-medium text-gray-700">총 {programs.length}개의 프로그램</span>
+                <span className="text-sm font-medium text-gray-700" suppressHydrationWarning>
+                  총 {programs.length}개의 프로그램
+                </span>
               </div>
               {openProgramsCount > 0 && (
                 <div className="bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg">
-                  <span className="text-sm font-medium text-gray-700">지금 신청 가능</span>
+                  <span className="text-sm font-medium text-gray-700" suppressHydrationWarning>
+                    지금 신청 가능
+                  </span>
                 </div>
               )}
             </div>
