@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { ProgramsService } from './programs.service';
 import { CreateProgramDto, UpdateProgramDto, ProgramQueryDto } from './dto/program.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '@/common/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '@/common/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole } from '@/database/entities/user.entity';
@@ -35,11 +36,12 @@ export class ProgramsController {
   }
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: '프로그램 목록 조회' })
   @ApiResponse({ status: 200, description: '프로그램 목록을 성공적으로 조회했습니다.' })
-  findAll(@Query() query: ProgramQueryDto) {
+  findAll(@Query() query: ProgramQueryDto, @Request() req) {
     console.log('=== 컨트롤러 findAll 호출됨 ===', query);
-    return this.programsService.findAll(query, null);
+    return this.programsService.findAll(query, req.user || null);
   }
 
   @Get('admin')
@@ -54,13 +56,14 @@ export class ProgramsController {
   }
 
   @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: '프로그램 상세 조회' })
   @ApiResponse({ status: 200, description: '프로그램 상세 정보를 성공적으로 조회했습니다.' })
   @ApiResponse({ status: 404, description: '프로그램을 찾을 수 없습니다.' })
   @ApiResponse({ status: 403, description: '접근 권한이 없습니다.' })
   findOne(@Param('id') id: string, @Request() req) {
     console.log('프로그램 상세 조회 요청:', { id, user: req.user });
-    return this.programsService.findOne(id, req.user);
+    return this.programsService.findOne(id, req.user || null);
   }
 
   @Get(':id/stats')

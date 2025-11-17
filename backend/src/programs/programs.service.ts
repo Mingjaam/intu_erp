@@ -145,12 +145,20 @@ export class ProgramsService {
     const { status, organizerId, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
+    // 관리자/운영자/직원인지 확인 (신청서 정보 포함 여부 결정)
+    const isAdminUser = user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR || user.role === UserRole.STAFF);
+
     const queryBuilder = this.programRepository
       .createQueryBuilder('program')
       .leftJoinAndSelect('program.organizer', 'organizer')
-      .leftJoinAndSelect('program.applications', 'applications')
-      .leftJoinAndSelect('applications.selection', 'selection')
       .where('program.isActive = :isActive', { isActive: true });
+
+    // 관리자/운영자/직원만 신청서 정보 조인
+    if (isAdminUser) {
+      queryBuilder
+        .leftJoinAndSelect('program.applications', 'applications')
+        .leftJoinAndSelect('applications.selection', 'selection');
+    }
 
     // 일반 사용자는 공개된 프로그램만 조회 가능 (기존 상태와 새로운 상태 모두 지원)
     if (user && user.role === UserRole.APPLICANT) {
@@ -161,7 +169,7 @@ export class ProgramsService {
     }
 
     // 관리자/운영자/직원은 자신의 기관 프로그램만 조회
-    if (user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR || user.role === UserRole.STAFF) && user.organizationId) {
+    if (isAdminUser && user.organizationId) {
       queryBuilder.andWhere('program.organizerId = :userOrganizationId', { userOrganizationId: user.organizationId });
     }
 
@@ -190,9 +198,21 @@ export class ProgramsService {
 
     // 각 프로그램에 대한 통계 정보 및 모집 마감까지 남은 일수 계산
     const programsWithStats = updatedPrograms.map(program => {
-      const selectedCount = program.applications.filter(app => 
-        app.selection && app.selection.selected
-      ).length;
+      // 관리자/운영자/직원인 경우에만 신청서 정보 사용
+      let selectedCount = 0;
+      let applicationCount = 0;
+      
+      if (isAdminUser && program.applications) {
+        selectedCount = program.applications.filter(app => 
+          app.selection && app.selection.selected
+        ).length;
+        applicationCount = program.applications.length;
+      } else {
+        // 공개 API의 경우 별도 쿼리로 통계만 조회 (신청서 정보는 포함하지 않음)
+        // applicationCount는 나중에 별도 API로 제공하거나 제거
+        applicationCount = 0;
+        selectedCount = 0;
+      }
       
       // 모집 마감까지 남은 일수 계산
       const now = new Date();
@@ -201,13 +221,48 @@ export class ProgramsService {
       
       console.log(`프로그램: ${program.title}, 마감일: ${applyEnd.toISOString()}, 남은 일수: ${daysUntilDeadline}`);
       
-      return {
-        ...program,
-        applicationCount: program.applications.length,
+      // 응답 객체 생성 (민감한 정보 필터링)
+      const programResponse: any = {
+        id: program.id,
+        title: program.title,
+        summary: program.summary,
+        description: program.description,
+        status: program.status,
+        organizerId: program.organizerId,
+        organizer: {
+          id: program.organizer?.id,
+          name: program.organizer?.name,
+          type: program.organizer?.type,
+          // 주소, 연락처 등 민감한 정보 제외
+        },
+        applyStart: program.applyStart,
+        applyEnd: program.applyEnd,
+        programStart: program.programStart,
+        programEnd: program.programEnd,
+        location: program.location,
+        fee: program.fee,
+        maxParticipants: program.maxParticipants,
+        imageUrl: program.imageUrl,
+        additionalImageUrl: program.additionalImageUrl,
+        isActive: program.isActive,
+        createdAt: program.createdAt,
+        updatedAt: program.updatedAt,
+        applicationCount,
         selectedCount,
-        revenue: selectedCount * program.fee,
-        daysUntilDeadline, // 모집 마감까지 남은 일수
+        revenue: isAdminUser ? (selectedCount * program.fee) : 0,
+        daysUntilDeadline,
+        // applicationForm은 공개 API에서 제외 (신청 시에만 필요)
+        // applications는 관리자만 볼 수 있도록
       };
+
+      // 관리자/운영자/직원인 경우에만 신청서 정보 포함
+      if (isAdminUser) {
+        programResponse.applications = program.applications || [];
+        programResponse.applicationForm = program.applicationForm;
+        programResponse.metadata = program.metadata;
+      }
+
+      return programResponse;
     });
 
     // 모집 마감까지 남은 일수 기준으로 정렬 (마감 임박한 것이 위에)
@@ -230,9 +285,17 @@ export class ProgramsService {
   }
 
   async findOne(id: string, user: User | null): Promise<Program> {
+    // 관리자/운영자/직원인지 확인 (신청서 정보 포함 여부 결정)
+    const isAdminUser = user && (user.role === UserRole.ADMIN || user.role === UserRole.OPERATOR || user.role === UserRole.STAFF);
+
+    const relations: string[] = ['organizer'];
+    if (isAdminUser) {
+      relations.push('applications', 'applications.applicant');
+    }
+
     const program = await this.programRepository.findOne({
       where: { id, isActive: true },
-      relations: ['organizer', 'applications', 'applications.applicant'],
+      relations,
     });
 
     if (!program) {
@@ -249,7 +312,42 @@ export class ProgramsService {
       }
     }
 
-    return updatedProgram;
+    // 응답 객체 생성 (민감한 정보 필터링)
+    const programResponse: any = {
+      id: updatedProgram.id,
+      title: updatedProgram.title,
+      summary: updatedProgram.summary,
+      description: updatedProgram.description,
+      status: updatedProgram.status,
+      organizerId: updatedProgram.organizerId,
+      organizer: {
+        id: updatedProgram.organizer?.id,
+        name: updatedProgram.organizer?.name,
+        type: updatedProgram.organizer?.type,
+        // 주소, 연락처 등 민감한 정보 제외
+      },
+      applyStart: updatedProgram.applyStart,
+      applyEnd: updatedProgram.applyEnd,
+      programStart: updatedProgram.programStart,
+      programEnd: updatedProgram.programEnd,
+      location: updatedProgram.location,
+      fee: updatedProgram.fee,
+      maxParticipants: updatedProgram.maxParticipants,
+      imageUrl: updatedProgram.imageUrl,
+      additionalImageUrl: updatedProgram.additionalImageUrl,
+      isActive: updatedProgram.isActive,
+      createdAt: updatedProgram.createdAt,
+      updatedAt: updatedProgram.updatedAt,
+    };
+
+    // 관리자/운영자/직원인 경우에만 신청서 정보 포함
+    if (isAdminUser) {
+      programResponse.applications = updatedProgram.applications || [];
+      programResponse.applicationForm = updatedProgram.applicationForm;
+      programResponse.metadata = updatedProgram.metadata;
+    }
+
+    return programResponse;
   }
 
   async update(id: string, updateProgramDto: UpdateProgramDto, user: User): Promise<Program> {
