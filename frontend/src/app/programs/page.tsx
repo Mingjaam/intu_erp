@@ -3,6 +3,9 @@ import { HeaderWrapper } from '@/components/layout/header-wrapper';
 import { ProgramsList } from '@/components/programs/programs-list';
 import { Program } from '@/types/program';
 
+// 동적 렌더링 명시 (프로그램 목록은 실시간으로 변경될 수 있음)
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: '마을 프로그램 | Nuvio',
   description: '함께 성장하는 마을을 위한 다양한 프로그램을 만나보세요',
