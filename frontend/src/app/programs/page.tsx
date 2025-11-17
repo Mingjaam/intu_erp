@@ -38,10 +38,17 @@ async function getPrograms(): Promise<Program[]> {
     }
     
     // organizer가 없는 경우 기본값 설정하여 hydration 에러 방지
-    return programs.map(program => ({
-      ...program,
-      organizer: program.organizer || { id: '', name: '마을', type: 'village' },
-    }));
+    return programs.map(program => {
+      // organizer 객체가 없거나 필수 필드가 없는 경우 기본값 설정
+      const organizer = program.organizer && program.organizer.id && program.organizer.name
+        ? program.organizer
+        : { id: program.organizerId || '', name: '마을', type: 'village' };
+      
+      return {
+        ...program,
+        organizer,
+      };
+    });
   } catch (error) {
     console.error('프로그램 목록 조회 오류:', error);
     return [];

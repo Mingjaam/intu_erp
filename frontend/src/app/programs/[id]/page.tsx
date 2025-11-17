@@ -142,7 +142,7 @@ export default function ProgramDetailPage() {
                     {statusLabels[program.status]}
                   </Badge>
                   <div className="bg-gray-100 rounded-full px-4 py-2">
-                    <span className="text-sm font-medium text-gray-700">주최: {program.organizer.name}</span>
+                    <span className="text-sm font-medium text-gray-700">주최: {program.organizer?.name || '마을'}</span>
                   </div>
                 </div>
               </div>

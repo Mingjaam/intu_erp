@@ -245,7 +245,7 @@ export default function AdminApplicationDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center text-gray-600">
                     <MapPin className="h-4 w-4 mr-2" />
-                    <span>주최: {program.organizer.name}</span>
+                    <span>주최: {program.organizer?.name || '정보 없음'}</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <Calendar className="h-4 w-4 mr-2" />
