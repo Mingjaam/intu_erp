@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Header } from '@/components/layout/header';
@@ -13,6 +13,7 @@ export default function AdminLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // body의 overflow를 숨겨서 스크롤바 중복 방지
@@ -52,11 +53,14 @@ export default function AdminLayout({
     );
   }
 
+  // /admin 페이지에서는 Sidebar 숨김
+  const isAdminPage = pathname === '/admin';
+
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar />
+      {!isAdminPage && <Sidebar />}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        {!isAdminPage && <Header />}
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>

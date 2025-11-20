@@ -192,6 +192,13 @@ export class ApplicationsService {
       throw new ForbiddenException('접근 권한이 없습니다.');
     }
 
+    // 일반 사용자(APPLICANT)가 조회할 때는 지원자 정보 제외
+    if (user.role === UserRole.APPLICANT) {
+      const applicationResponse = { ...application } as any;
+      applicationResponse.applicant = null;
+      return applicationResponse as Application;
+    }
+
     return application;
   }
 
