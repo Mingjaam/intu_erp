@@ -53,14 +53,17 @@ export default function AdminLayout({
     );
   }
 
-  // /admin 페이지에서는 Sidebar 숨김
+  // /admin 페이지에서 일반 사용자가 접속한 경우에만 Sidebar 숨김
+  // 관리자/운영자/직원은 메뉴가 보이도록 함
   const isAdminPage = pathname === '/admin';
+  const isAdminUser = user.role === 'admin' || user.role === 'operator' || user.role === 'staff';
+  const shouldHideMenu = isAdminPage && !isAdminUser;
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {!isAdminPage && <Sidebar />}
+      {!shouldHideMenu && <Sidebar />}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {!isAdminPage && <Header />}
+        {!shouldHideMenu && <Header />}
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
