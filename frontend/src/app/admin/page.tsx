@@ -12,7 +12,6 @@ import {
   Users, 
   FolderOpen, 
   FileText, 
-  Download,
   Activity,
   RefreshCw,
   Plus,
@@ -476,39 +475,6 @@ export default function AdminDashboard() {
     setShowTodoDialog(true);
   };
 
-  const handleExport = async (type: string) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'}/dashboard/export?type=${type}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // 엑셀 파일을 Blob으로 받기
-      const blob = await response.blob();
-      
-      // 파일 다운로드
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${type}_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success(`${type} 데이터가 성공적으로 다운로드되었습니다.`);
-    } catch (error) {
-      console.error('데이터 내보내기 오류:', error);
-      toast.error('데이터 내보내기에 실패했습니다.');
-    }
-  };
 
   const handleRefresh = () => {
     setIsLoading(true);
@@ -845,33 +811,6 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* 데이터 내보내기 */}
-      <div className="mt-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Download className="h-5 w-5 mr-2" />
-              데이터 내보내기
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <Button onClick={() => handleExport('users')} variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                사용자 데이터
-              </Button>
-              <Button onClick={() => handleExport('programs')} variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                프로그램 데이터
-              </Button>
-              <Button onClick={() => handleExport('applications')} variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                신청서 데이터
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* 할 일 다이얼로그 */}
       <Dialog open={showTodoDialog} onOpenChange={setShowTodoDialog}>
