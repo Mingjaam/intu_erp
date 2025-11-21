@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { 
   Flag, 
   Search, 
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -112,6 +113,21 @@ export default function UserReportsPage() {
     fetchReports(currentPage, searchTerm);
   };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`${userName} 회원을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
+      return;
+    }
+
+    try {
+      await apiClient.delete(`/users/${userId}`);
+      toast.success('회원이 삭제되었습니다.');
+      fetchReports(currentPage, searchTerm);
+    } catch (error) {
+      console.error('회원 삭제 오류:', error);
+      toast.error('회원 삭제에 실패했습니다.');
+    }
+  };
+
 
   if (!user || (user.role !== 'admin' && user.role !== 'operator' && user.role !== 'staff')) {
     return (
@@ -130,7 +146,7 @@ export default function UserReportsPage() {
       <div className="mb-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">불량회원 관리</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">신고 회원</h1>
             <p className="text-gray-600">모든 마을의 회원 신고를 관리할 수 있습니다.</p>
           </div>
           <div className="flex items-center gap-4">
@@ -217,6 +233,19 @@ export default function UserReportsPage() {
                     )}
                   </div>
                   
+                  {/* 삭제 버튼 - 관리자/운영자만 표시 */}
+                  {(user?.role === 'admin' || user?.role === 'operator') && report.reportedUser && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteUser(report.reportedUser!.id, report.reportedUser!.name)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        삭제
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

@@ -45,7 +45,7 @@ const getNavigation = (userRole: string) => {
       icon: Users,
       children: [
         { name: '전체 회원', href: '/admin/users' },
-        { name: '불량회원 관리', href: '/admin/users/reports' },
+        { name: '신고 회원', href: '/admin/users/reports' },
       ]
     },
     { 

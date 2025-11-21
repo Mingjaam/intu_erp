@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Query,
+  Delete,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -226,6 +227,29 @@ export class UsersController {
   ): Promise<ApiResponseDto<null>> {
     await this.usersService.changePassword(req.user.id, changePasswordDto);
     return new ApiResponseDto(null, true, '비밀번호가 변경되었습니다.');
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.ADMIN, UserRole.OPERATOR)
+  @ApiOperation({ summary: '회원 삭제 (관리자/운영자 전용)' })
+  @ApiResponse({
+    status: 200,
+    description: '회원 삭제 성공',
+  })
+  @ApiResponse({
+    status: 403,
+    description: '권한이 없습니다.',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '회원을 찾을 수 없습니다.',
+  })
+  async remove(
+    @Param('id') id: string,
+    @Request() req,
+  ): Promise<ApiResponseDto<null>> {
+    await this.usersService.remove(id, req.user);
+    return new ApiResponseDto(null, true, '회원이 삭제되었습니다.');
   }
 
 }

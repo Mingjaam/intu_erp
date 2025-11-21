@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -494,5 +495,25 @@ export class UsersService {
     await this.userRepository.update(userId, {
       passwordHash: newPasswordHash,
     });
+  }
+
+  async remove(id: string, currentUser: User): Promise<void> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['organization'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 권한 확인: 관리자 또는 운영자만 삭제 가능
+    if (currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.OPERATOR) {
+      throw new ForbiddenException('회원 삭제 권한이 없습니다.');
+    }
+
+    // 회원 비활성화 (soft delete)
+    user.isActive = false;
+    await this.userRepository.save(user);
   }
 }
