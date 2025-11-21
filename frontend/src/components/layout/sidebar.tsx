@@ -43,10 +43,16 @@ const getNavigation = (userRole: string) => {
       name: '회원', 
       href: '/admin/users', 
       icon: Users,
-      children: [
-        { name: '전체 회원', href: '/admin/users' },
-        { name: '신고 회원', href: '/admin/users/reports' },
-      ]
+      children: (() => {
+        const children = [
+          { name: '전체 회원', href: '/admin/users' },
+        ];
+        // 관리자와 운영자만 신고 회원 메뉴 표시
+        if (userRole === 'admin' || userRole === 'operator') {
+          children.push({ name: '신고 회원', href: '/admin/users/reports' });
+        }
+        return children;
+      })()
     },
     { 
       name: '보고서', 
